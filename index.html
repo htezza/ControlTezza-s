@@ -335,25 +335,25 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
   <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
 
- <div class="card p-3 sm:p-4">
-  <p class="text-[11px] sm:text-sm text-slate-500">Pendentes</p>
-  <p id="commitPending" class="privacy-value text-base sm:text-xl font-bold mt-1">R$ 0,00</p>
-</div>
+ <div class="card min-w-0 p-2.5 sm:p-4 overflow-hidden">
+  <p class="text-[10px] sm:text-sm text-slate-500 truncate">Pendentes</p>
+  <p id="commitPending" class="privacy-value text-[13px] sm:text-xl font-bold mt-1 whitespace-nowrap truncate">R$ 0,00</p>
+ </div>
 
-<div class="card p-3 sm:p-4">
-  <p class="text-[11px] sm:text-sm text-slate-500">Atrasados</p>
-  <p id="commitOverdue" class="privacy-value text-base sm:text-xl font-bold mt-1 text-rose-600">R$ 0,00</p>
-</div>
+ <div class="card min-w-0 p-2.5 sm:p-4 overflow-hidden">
+  <p class="text-[10px] sm:text-sm text-slate-500 truncate">Atrasados</p>
+  <p id="commitOverdue" class="privacy-value text-[13px] sm:text-xl font-bold mt-1 text-rose-600 whitespace-nowrap truncate">R$ 0,00</p>
+ </div>
 
-<div class="card p-3 sm:p-4">
-  <p class="text-[11px] sm:text-sm text-slate-500">Próximos 3 dias</p>
-  <p id="commitUpcoming" class="privacy-value text-base sm:text-xl font-bold mt-1 text-orange-600">R$ 0,00</p>
-</div>
- 
-  </div>
+ <div class="card min-w-0 p-2.5 sm:p-4 overflow-hidden">
+  <p class="text-[10px] sm:text-sm text-slate-500 truncate">Próximos 3 dias</p>
+  <p id="commitUpcoming" class="privacy-value text-[13px] sm:text-xl font-bold mt-1 text-orange-600 whitespace-nowrap truncate">R$ 0,00</p>
+ </div>
 
-  <div class="card overflow-hidden">
-    <div class="p-4 sm:p-5 border-b border-slate-100">
+ </div>
+
+ <div class="card overflow-hidden">
+   <div class="p-4 sm:p-5 border-b border-slate-100">
       <h3 class="font-bold">Compromissos em aberto</h3>
     </div>
     <div id="commitmentsList" class="divide-y divide-slate-100"></div>
@@ -3190,27 +3190,19 @@ function renderCommitments(){
     lastMonth=monthKey;
 
     return monthHeader+`
-    <div class="px-4 sm:px-5 py-3 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 ${
-     t.date<todayISO()
-      ?"bg-rose-50"
-      :""
-    }">
+    <div class="px-3 sm:px-5 py-3 sm:py-4 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 hover:bg-slate-50">
 
-     <div class="w-10 h-10 rounded-xl ${
-      t.date<todayISO()
-       ?"bg-rose-100 text-rose-600"
-       :"bg-orange-50 text-orange-600"
-     } flex items-center justify-center">
+     <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm shrink-0">
       !
      </div>
 
-     <div class="flex-1">
+     <div class="min-w-0">
 
-      <div class="font-semibold text-sm">
+      <div class="font-semibold text-sm truncate">
        ${esc(t.description)}
       </div>
 
-      <div class="text-xs text-slate-500 mt-1">
+      <div class="text-[11px] sm:text-xs text-slate-500 mt-1 leading-4">
        ${formatDate(t.date)} ·
        ${esc(categoryName(t.categoryId))} ·
        ${esc(t.institution||"Sem instituição")}
@@ -3219,24 +3211,19 @@ function renderCommitments(){
 
      </div>
 
-     <div class="flex items-center gap-3 sm:gap-4">
+     <div class="flex items-center gap-2 sm:gap-3 shrink-0">
 
-      <div class="text-right">
-
-       <div class="privacy-value font-bold ${
-        t.type==="income"
-         ?"text-emerald-600"
-         :"text-rose-600"
-       }">
-        ${money(t.amount)}
-       </div>
-
-
+      <div class="privacy-value text-right font-bold text-sm sm:text-base ${
+       t.type==="income"
+        ?"text-emerald-600"
+        :"text-rose-600"
+      } whitespace-nowrap">
+       ${money(t.amount)}
       </div>
 
       <button
        onclick="payTransaction('${t.id}')"
-       class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold"
+       class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0"
        title="Dar baixa">
        ✓
       </button>
