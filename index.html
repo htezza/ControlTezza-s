@@ -50,6 +50,10 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 @media(max-width:1279px){.filter-month-wrap{min-width:0}}
 @media(max-width:639px){.month-picker{width:230px}}
 @media(max-width:1279px){.filter-month-wrap{min-width:0}}
+
+@media(max-width:639px){main{padding:12px!important}.page > .mb-4 h2{font-size:18px!important;line-height:1.25}.page > .mb-4 p{font-size:14px!important;line-height:1.45}.card{border-radius:12px}#transactionsTableWrap{display:none}#transactionsMobileList{display:block}#page-lancamentos .transactions-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}#page-lancamentos .transactions-toolbar .btn{flex:1}#page-compromissos .commitment-summary{gap:6px!important}#page-compromissos .commitment-summary .card{padding:10px 8px!important}#page-compromissos .commitment-summary p:first-child{font-size:10px!important;line-height:1.2}#page-compromissos .commitment-summary p:last-child{font-size:11px!important;line-height:1.2;letter-spacing:-.15px}#page-compromissos .commitments-header{padding:13px 14px!important}#page-compromissos .commitment-item{padding:12px 10px!important;grid-template-columns:30px minmax(0,1fr) auto!important;gap:9px!important}#page-compromissos .commitment-icon{width:30px!important;height:30px!important;font-size:13px!important;border-radius:8px!important}#page-compromissos .commitment-name{font-size:14px!important;line-height:1.25}#page-compromissos .commitment-meta{font-size:10px!important;line-height:1.45!important;margin-top:3px!important}#page-compromissos .commitment-value{font-size:13px!important}#page-compromissos .commitment-action{width:30px!important;height:30px!important}#page-categorias .categories-header{display:block!important}#page-categorias .categories-header .btn{width:100%;margin-top:10px}#page-backup .backup-grid{gap:10px!important}#page-backup .backup-card{padding:14px!important}#page-backup .backup-icon{width:38px!important;height:38px!important;font-size:16px!important;border-radius:10px!important;margin-bottom:10px!important}#page-backup .backup-card h3{font-size:15px!important}#page-backup .backup-card p{font-size:12px!important;line-height:1.5!important}#page-backup .backup-status{padding:10px!important;margin-top:12px!important}#page-backup .backup-card .btn{margin-top:12px!important}}
+@media(min-width:640px){#transactionsMobileList{display:none}}
+.transactions-mobile-section{padding:8px 12px;background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.transactions-mobile-item{padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;border-bottom:1px solid #f1f5f9;background:#fff}.transactions-mobile-item.overdue{background:#fff7ed}.transactions-mobile-title{font-size:14px;font-weight:700;line-height:1.3}.transactions-mobile-meta{font-size:10px;color:#64748b;line-height:1.5;margin-top:3px}.transactions-mobile-amount{font-size:13px;font-weight:700;white-space:nowrap;text-align:right}.transactions-mobile-actions{display:flex;justify-content:flex-end;gap:4px;margin-top:7px}.transactions-mobile-action{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -296,7 +300,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   </div>
 
   <div class="card overflow-hidden">
-    <div class="overflow-x-auto">
+    <div id="transactionsTableWrap" class="overflow-x-auto">
       <table class="w-full min-w-[1200px]">
 
      <thead class="bg-slate-50 border-b border-slate-200">
@@ -317,6 +321,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
   </table>
 </div>
+<div id="transactionsMobileList"></div>
 
 <div id="transactionsEmpty" class="hidden p-12 text-center text-slate-400">
   Nenhum lançamento encontrado.
@@ -333,7 +338,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
     <p class="text-sm text-slate-500">Acompanhe o que ainda precisa ser pago ou recebido.</p>
   </div>
 
-  <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
+  <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6 commitment-summary">
 
  <div class="card min-w-0 p-2.5 sm:p-4 overflow-hidden">
   <p class="text-[10px] sm:text-sm text-slate-500 truncate">Pendentes</p>
@@ -353,7 +358,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
  </div>
 
  <div class="card overflow-hidden">
-   <div class="p-4 sm:p-5 border-b border-slate-100">
+   <div class="p-4 sm:p-5 border-b border-slate-100 commitments-header">
       <h3 class="font-bold">Compromissos em aberto</h3>
     </div>
     <div id="commitmentsList" class="divide-y divide-slate-100"></div>
@@ -363,7 +368,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
 <section id="page-categorias" class="page">
 
-  <div class="flex items-center justify-between mb-4">
+  <div class="flex items-center justify-between mb-4 categories-header">
     <div>
       <h2 class="text-lg font-bold">Categorias</h2>
       <p class="text-sm text-slate-500">Organize seus gastos e receitas.</p>
@@ -371,7 +376,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
     <button onclick="openCategoryModal()" class="btn btn-primary">+ Nova categoria</button>
   </div>
 
-  <div class="card overflow-hidden">
+  <div class="card overflow-hidden categories-card">
     <div id="categoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6"></div>
   </div>
 
@@ -384,26 +389,26 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
     <p class="text-sm text-slate-500">Proteja os dados financeiros da sua casa.</p>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 backup-grid">
 
- <div class="card p-6">
-  <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-4">◫</div>
+ <div class="card p-6 backup-card">
+  <div class="w-12 h-12 backup-icon rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-4">◫</div>
   <h3 class="font-bold text-lg">Backup automático</h3>
   <p class="text-sm text-slate-500 mt-2 leading-6">
     Escolha um arquivo JSON no computador. Após cada alteração, o sistema tenta atualizar esse arquivo automaticamente.
   </p>
-  <div class="mt-5 p-4 bg-slate-50 rounded-xl">
+  <div class="mt-5 p-4 bg-slate-50 rounded-xl backup-status">
     <div class="text-xs text-slate-400">Status</div>
     <div id="backupStatus" class="font-semibold text-sm mt-1">Nenhum arquivo configurado</div>
   </div>
   <button onclick="configureBackup()" class="btn btn-primary mt-5 w-full">Configurar arquivo de backup</button>
 </div>
 
-<div class="card p-6 border-violet-200">
-  <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4">☁</div>
+<div class="card p-6 border-violet-200 backup-card">
+  <div class="w-12 h-12 backup-icon rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4">☁</div>
   <h3 class="font-bold text-lg">Sincronização online</h3>
   <p class="text-sm text-slate-500 mt-2 leading-6">O Supabase será usado como banco central. Seus dados locais permanecem preservados e a migração só acontece quando você confirmar.</p>
-  <div class="mt-5 p-4 bg-slate-50 rounded-xl">
+  <div class="mt-5 p-4 bg-slate-50 rounded-xl backup-status">
     <div class="text-xs text-slate-400">Status</div>
     <div id="cloudStatus" class="font-semibold text-sm mt-1">Não configurado</div>
     <div id="cloudDetails" class="text-xs text-slate-500 mt-1"></div>
@@ -412,8 +417,8 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   <button onclick="pullCloudDataManually()" class="btn btn-secondary mt-2 w-full">Carregar dados da nuvem</button>
 </div>
 
-<div class="card p-6">
-  <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-4">↑</div>
+<div class="card p-6 backup-card">
+  <div class="w-12 h-12 backup-icon rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-4">↑</div>
   <h3 class="font-bold text-lg">Restaurar backup</h3>
   <p class="text-sm text-slate-500 mt-2 leading-6">
     Carregue um arquivo JSON criado anteriormente para restaurar seus lançamentos, categorias e configurações.
@@ -424,15 +429,15 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   </label>
 </div>
 
-<div class="card p-6">
-  <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4">↓</div>
+<div class="card p-6 backup-card">
+  <div class="w-12 h-12 backup-icon rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4">↓</div>
   <h3 class="font-bold text-lg">Exportação manual</h3>
   <p class="text-sm text-slate-500 mt-2">Baixe uma cópia dos dados pelo navegador.</p>
   <button onclick="downloadBackup()" class="btn btn-secondary mt-5 w-full">Baixar backup JSON</button>
 </div>
 
 <div class="card p-6 border-rose-200">
-  <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl mb-4">!</div>
+  <div class="w-12 h-12 backup-icon rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl mb-4">!</div>
   <h3 class="font-bold text-lg">Zona de segurança</h3>
   <p class="text-sm text-slate-500 mt-2">Excluir todos os dados desta aplicação. Esta ação não pode ser desfeita.</p>
   <button onclick="resetApplication()" class="btn btn-danger mt-5 w-full">Apagar todos os dados</button>
@@ -2369,6 +2374,35 @@ function renderTransactions(){
  $("transactionsTable").innerHTML=
   section("Entradas",incomes,true)+
   section("Saídas",expenses,false);
+ const mobile=$("transactionsMobileList");
+ if(mobile){
+  let lastType="";
+  mobile.innerHTML=tx.map(t=>{
+   const income=t.type==="income", s=status(t);
+   const section=income?"Entradas":"Saídas";
+   const head=section!==lastType?`<div class="transactions-mobile-section ${income?"text-emerald-600":"text-rose-600"}">${section}</div>`:"";
+   lastType=section;
+   const group=t.installmentGroup?`Parcela ${t.installmentNumber}/${t.installmentTotal}`:t.recurrenceGroup?`Recorrência ${t.recurrenceNumber}/${t.recurrenceTotal}`:"";
+   const statusText=s==="paid"?(income?"Recebido":"Pago"):s==="overdue"?"Atrasado":"Pendente";
+   const statusClass=s==="paid"?"text-emerald-600":s==="overdue"?"text-rose-600":"text-orange-600";
+   const amountClass=income?"text-emerald-600":"text-rose-600";
+   return head+`<div class="transactions-mobile-item ${s==="overdue"?"overdue":""}">
+    <div class="min-w-0">
+     <div class="transactions-mobile-title truncate">${esc(t.description)}</div>
+     ${group?`<div class="text-[10px] text-blue-500 mt-0.5">${group}</div>`:""}
+     <div class="transactions-mobile-meta">${formatDate(t.date)} · ${esc(t.institution||"Sem instituição")} · ${esc(t.responsible||"—")} · ${esc(categoryName(t.categoryId))}</div>
+     <div class="transactions-mobile-actions">
+      <span class="text-[10px] font-bold ${statusClass} mr-auto self-center">${statusText}</span>
+      ${t.paid?`<button onclick="openPaymentHistory('${t.id}')" class="transactions-mobile-action hover:bg-slate-100 text-slate-500" title="Histórico">↺</button>`:`<button onclick="payTransaction('${t.id}')" class="transactions-mobile-action hover:bg-emerald-50 text-emerald-600" title="Dar baixa">✓</button>`}
+      <button onclick="openTransactionModal('${t.id}')" class="transactions-mobile-action hover:bg-blue-50 text-blue-600" title="Editar">✎</button>
+      <button onclick="deleteTransaction('${t.id}')" class="transactions-mobile-action hover:bg-rose-50 text-rose-600" title="Excluir">×</button>
+     </div>
+    </div>
+    <div class="transactions-mobile-amount ${amountClass}">${income?"+":"-"} ${money(t.amount)}</div>
+   </div>`;
+  }).join("");
+ }
+
 
 }
 
@@ -3190,19 +3224,19 @@ function renderCommitments(){
     lastMonth=monthKey;
 
     return monthHeader+`
-    <div class="px-3 sm:px-5 py-3 sm:py-4 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 hover:bg-slate-50">
+    <div class="px-3 sm:px-5 py-3 sm:py-4 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 hover:bg-slate-50 commitment-item">
 
-     <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm shrink-0">
+     <div class="w-8 h-8 rounded-lg commitment-icon bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm shrink-0">
       !
      </div>
 
      <div class="min-w-0">
 
-      <div class="font-semibold text-sm truncate">
+      <div class="font-semibold text-sm truncate commitment-name">
        ${esc(t.description)}
       </div>
 
-      <div class="text-[11px] sm:text-xs text-slate-500 mt-1 leading-4">
+      <div class="text-[11px] sm:text-xs text-slate-500 mt-1 leading-4 commitment-meta">
        ${formatDate(t.date)} ·
        ${esc(categoryName(t.categoryId))} ·
        ${esc(t.institution||"Sem instituição")}
@@ -3213,7 +3247,7 @@ function renderCommitments(){
 
      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
 
-      <div class="privacy-value text-right font-bold text-sm sm:text-base ${
+      <div class="privacy-value text-right font-bold text-sm sm:text-base commitment-value ${
        t.type==="income"
         ?"text-emerald-600"
         :"text-rose-600"
@@ -3223,7 +3257,7 @@ function renderCommitments(){
 
       <button
        onclick="payTransaction('${t.id}')"
-       class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0"
+       class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0 commitment-action"
        title="Dar baixa">
        ✓
       </button>
