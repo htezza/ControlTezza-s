@@ -167,11 +167,57 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) > div{
     gap:2px!important;
   }
-  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button{
-    width:28px!important;
-    height:28px!important;
-    border-radius:7px!important;
-    font-size:13px!important;
+  /* Ações: maiores e mais fáceis de tocar no celular, sem alterar o desktop */
+  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button,
+  #page-compromissos #commitmentsList button{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    min-height:36px!important;
+    border-radius:10px!important;
+    font-size:16px!important;
+    line-height:1!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:1px solid #e2e8f0!important;
+    background:#f8fafc!important;
+    box-sizing:border-box!important;
+    flex-shrink:0!important;
+    touch-action:manipulation!important;
+  }
+
+  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button[title="Dar baixa"],
+  #page-compromissos #commitmentsList button[title="Dar baixa"]{
+    border-color:#bbf7d0!important;
+    background:#f0fdf4!important;
+    color:#059669!important;
+  }
+
+  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button[title="Editar"]{
+    border-color:#bfdbfe!important;
+    background:#eff6ff!important;
+    color:#2563eb!important;
+  }
+
+  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button[title="Excluir"]{
+    border-color:#fecaca!important;
+    background:#fff1f2!important;
+    color:#e11d48!important;
+  }
+
+  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button[title="Ver histórico do pagamento"]{
+    border-color:#e2e8f0!important;
+    background:#f8fafc!important;
+    color:#64748b!important;
+  }
+
+  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) > div{
+    gap:5px!important;
+  }
+
+  #page-compromissos #commitmentsList > div > div:last-child{
+    gap:8px!important;
   }
 
   /* Separadores Entradas / Saídas */
