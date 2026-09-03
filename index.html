@@ -2694,7 +2694,9 @@ function renderTransactions(){
   );
 
  tx.sort(
-  (a,b)=>a.date.localeCompare(b.date)
+  (a,b)=>
+   Number(!!a.paid)-Number(!!b.paid) ||
+   a.date.localeCompare(b.date)
  );
 
  $("transactionsEmpty")
