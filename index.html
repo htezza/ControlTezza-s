@@ -345,7 +345,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
   /* Ícone visual da categoria/tipo */
   #page-lancamentos table tbody tr:not(:has(td[colspan]))::before{
-    content:'↔';
+    content:'⇄';
     grid-column:1!important;
     grid-row:1 / span 3!important;
     width:42px!important;
@@ -425,7 +425,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
     z-index:2!important;
   }
   #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(6)::after{
-    content:'↔';
+    content:'⇄';
     font-size:15px!important;
     color:#64748b!important;
   }
@@ -511,6 +511,35 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   #transactionFilterButton{width:40px!important;height:40px!important;border-radius:10px!important;flex-shrink:0!important}
 }
 
+/* =========================================================
+   FINCONTROL — REFINAMENTO VISUAL / DESIGN SYSTEM
+   Somente apresentação, responsividade e interação visual.
+   Não altera regras de negócio ou sincronização.
+   ========================================================= */
+:root{--fc-ink:#0f172a;--fc-muted:#64748b;--fc-line:#e2e8f0;--fc-bg:#f5f7fb;--fc-green:#059669;--fc-red:#e11d48;--fc-blue:#2563eb;--fc-radius:14px;--fc-shadow:0 1px 2px rgba(15,23,42,.03),0 8px 24px rgba(15,23,42,.045);--fc-shadow-hover:0 4px 10px rgba(15,23,42,.05),0 14px 32px rgba(15,23,42,.07)}
+html{background:var(--fc-bg)}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;background:linear-gradient(180deg,#f8fafc 0%,#f5f7fb 100%)!important;color:var(--fc-ink)!important;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}button{touch-action:manipulation}main{width:100%;box-sizing:border-box}
+h1,h2,h3,h4{color:var(--fc-ink);letter-spacing:-.015em}h2{font-size:18px!important;line-height:1.25!important;font-weight:700!important}h3{font-size:14px;line-height:1.3;font-weight:700}.font-bold{font-weight:700!important}.font-semibold{font-weight:600!important}
+.page> .flex>div:first-child p,.page> .mb-4 p{font-size:13px!important;line-height:1.45!important;color:var(--fc-muted)!important}
+.card{background:rgba(255,255,255,.97)!important;border:1px solid rgba(226,232,240,.9)!important;border-radius:var(--fc-radius)!important;box-shadow:var(--fc-shadow)!important;transition:box-shadow .2s ease,transform .2s ease,border-color .2s ease!important;min-width:0;overflow-wrap:anywhere}.card:hover{box-shadow:var(--fc-shadow-hover)!important;border-color:#d8e0ea!important}
+.input{min-height:40px!important;border:1px solid #cbd5e1!important;border-radius:10px!important;padding:8px 11px!important;color:var(--fc-ink)!important;background:#fff!important;box-shadow:0 1px 1px rgba(15,23,42,.02)!important;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease!important}.input:hover{border-color:#94a3b8!important}.input:focus{border-color:#64748b!important;box-shadow:0 0 0 3px rgba(15,23,42,.08)!important}
+.btn{min-height:40px!important;padding:0 14px!important;border:1px solid transparent!important;border-radius:10px!important;font-size:13px!important;font-weight:650!important;letter-spacing:-.005em;transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease,color .16s ease!important;user-select:none}.btn:hover{transform:translateY(-1px)!important}.btn:active{transform:translateY(0) scale(.98)!important}.btn:focus-visible{outline:3px solid rgba(37,99,235,.16);outline-offset:2px}.btn-primary{background:linear-gradient(135deg,#0f172a,#1e293b)!important;color:#fff!important;border-color:#0f172a!important;box-shadow:0 4px 10px rgba(15,23,42,.12)!important}.btn-primary:hover{background:linear-gradient(135deg,#1e293b,#334155)!important;box-shadow:0 7px 16px rgba(15,23,42,.16)!important}.btn-secondary{background:#fff!important;color:#334155!important;border-color:#dbe3ec!important;box-shadow:0 1px 2px rgba(15,23,42,.03)!important}.btn-secondary:hover{background:#f8fafc!important;border-color:#cbd5e1!important}.btn-danger{background:#fff1f2!important;color:#be123c!important;border-color:#fecdd3!important}.btn-danger:hover{background:#ffe4e6!important;border-color:#fda4af!important}
+#sidebar{background:rgba(255,255,255,.98)!important;border-right:1px solid #e5e7eb!important;box-shadow:4px 0 18px rgba(15,23,42,.025)}#sidebar nav{padding:10px!important}.nav-item{min-height:42px!important;border:1px solid transparent!important;border-radius:10px!important;color:#64748b!important;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease!important}.nav-item:hover:not(.active){background:#f8fafc!important;color:#334155!important;transform:translateX(1px)}.nav-item.active{background:#f0fdf9!important;color:#047857!important;border-color:#d1fae5!important;box-shadow:inset 3px 0 0 #10b981!important}.nav-item>svg{width:18px;height:18px;flex:none;stroke-width:1.9}
+header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!important;box-shadow:0 1px 0 rgba(15,23,42,.02)}header h1{font-size:17px!important;font-weight:700!important}#pageSubtitle{font-size:11px!important;color:#94a3b8!important}header .w-10.h-10{border:1px solid #e2e8f0;transition:background .18s ease,border-color .18s ease,transform .16s ease,box-shadow .16s ease}header .w-10.h-10:hover{background:#f8fafc!important;border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,23,42,.06)}
+#page-dashboard .grid.grid-cols-2>.card{position:relative;overflow:hidden}#page-dashboard .grid.grid-cols-2>.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#cbd5e1;border-radius:14px 0 0 14px}#page-dashboard .grid.grid-cols-2>.card:nth-child(1):before{background:#10b981}#page-dashboard .grid.grid-cols-2>.card:nth-child(2):before{background:#f43f5e}#page-dashboard .grid.grid-cols-2>.card:nth-child(3):before{background:#f59e0b}#page-dashboard .grid.grid-cols-2>.card:nth-child(4):before{background:#2563eb}#page-dashboard .grid.grid-cols-2>.card p:first-child{font-size:12px!important;font-weight:600!important;color:#64748b!important}#page-dashboard .grid.grid-cols-2>.card h3{font-size:21px!important;line-height:1.2!important;letter-spacing:-.035em!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-container{height:230px!important;padding-top:2px}#page-dashboard .card .mb-3 h3{font-size:14px!important}#page-dashboard .card .mb-3 p{font-size:11px!important;color:#94a3b8!important}#dashboardAlerts{border-radius:12px!important;box-shadow:none!important;background:#fffbeb!important;border-color:#fde68a!important}
+#transactionFiltersPanel{background:#fff!important}#transactionFiltersPanel .text-sm.font-bold{font-size:13px!important;color:#334155!important}#transactionFilterButton{border:1px solid #dbe3ec!important;box-shadow:0 1px 2px rgba(15,23,42,.03);transition:.18s ease!important}#transactionFilterButton:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(15,23,42,.06);background:#fff!important}#transactionFilterBadge{background:#0f172a!important}
+#page-lancamentos table thead th{font-size:10px!important;font-weight:700!important;letter-spacing:.055em!important;color:#64748b!important;background:#f8fafc!important}#page-lancamentos table tbody tr:not(:has(td[colspan])){transition:background .16s ease}#page-lancamentos table tbody tr:not(:has(td[colspan])):hover{background:#f8fafc!important}#page-lancamentos table td{font-size:13px}#page-lancamentos table td:nth-child(2) .font-semibold{font-weight:650!important;color:#1e293b!important}.status{min-height:24px;padding:4px 8px!important;font-size:10px!important;letter-spacing:.01em}
+#page-lancamentos table button[title],#commitmentsList button[title],#categoriesGrid button[title],#settingsInstitutions button[title],#settingsResponsibles button[title]{border:1px solid #e2e8f0!important;background:#fff!important;box-shadow:0 1px 2px rgba(15,23,42,.025);transition:transform .15s ease,background .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease!important}#page-lancamentos table button[title]:hover,#commitmentsList button[title]:hover,#categoriesGrid button[title]:hover,#settingsInstitutions button[title]:hover,#settingsResponsibles button[title]:hover{transform:translateY(-1px);box-shadow:0 4px 9px rgba(15,23,42,.07)!important}#page-lancamentos table button[title="Dar baixa"],#commitmentsList button[title="Dar baixa"]{background:#ecfdf5!important;border-color:#bbf7d0!important;color:#047857!important}#page-lancamentos table button[title="Editar"]{background:#eff6ff!important;border-color:#bfdbfe!important;color:#2563eb!important}#page-lancamentos table button[title="Excluir"],#categoriesGrid button[title="Excluir categoria"],#settingsInstitutions button[title="Excluir"],#settingsResponsibles button[title="Excluir"]{background:#fff1f2!important;border-color:#fecdd3!important;color:#e11d48!important}#page-lancamentos table button[title="Ver histórico do pagamento"]{background:#f8fafc!important;color:#64748b!important}
+#page-compromissos .grid.grid-cols-3>.card{position:relative;overflow:hidden}#page-compromissos .grid.grid-cols-3>.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:14px 0 0 14px}#page-compromissos .grid.grid-cols-3>.card:first-child:before{background:#f59e0b}#page-compromissos .grid.grid-cols-3>.card:nth-child(2):before{background:#ef4444}#page-compromissos .grid.grid-cols-3>.card:nth-child(3):before{background:#2563eb}#commitmentsList>div{transition:background .16s ease}#commitmentsList>div:hover{background:#f8fafc}
+#categoriesGrid>div{min-height:58px!important;transition:background .16s ease,padding-left .16s ease}#categoriesGrid>div:hover{background:#f8fafc!important}#page-backup .grid>.card{position:relative}#page-backup .grid>.card>.w-12.h-12{border:1px solid rgba(226,232,240,.8);box-shadow:0 3px 8px rgba(15,23,42,.04)}
+.modal{backdrop-filter:blur(4px)}.modal>div{border:1px solid rgba(226,232,240,.9);box-shadow:0 20px 50px rgba(15,23,42,.16)!important}.modal .border-b{border-color:#eef2f7!important}.modal h2{font-size:17px!important}.month-picker{border-color:#dbe3ec!important;box-shadow:0 12px 30px rgba(15,23,42,.12)!important;border-radius:12px!important}.month-option{transition:.15s ease!important}.month-option:hover{transform:translateY(-1px)}#toastMessage{border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 30px rgba(15,23,42,.18)!important}.ui-icon{display:block;flex:none}.nav-item .ui-icon{width:18px;height:18px}.btn .ui-icon{width:16px;height:16px}.month-nav{display:inline-flex;align-items:center;justify-content:center}
+@media(min-width:1024px){main{padding:20px 24px!important}#page-dashboard>.flex:first-child,#page-lancamentos>.flex:first-child,#page-compromissos>.mb-4,#page-categorias>.flex,#page-backup>.mb-4{margin-bottom:18px!important}#page-lancamentos table th,#page-lancamentos table td{padding-top:13px!important;padding-bottom:13px!important}}
+@media(min-width:640px) and (max-width:1023px){main{padding:16px!important}.card{border-radius:13px!important}}
+@media(max-width:639px){body{font-size:13px!important}main{padding:12px!important}header .h-full{padding-left:12px!important;padding-right:12px!important}header h1{font-size:16px!important}#pageSubtitle{display:none!important}h2{font-size:17px!important}.page>.flex>div:first-child p,.page>.mb-4 p{font-size:12px!important}.card{border-radius:12px!important;box-shadow:0 2px 10px rgba(15,23,42,.04)!important}.card:hover{transform:none!important}.btn{min-height:40px!important;font-size:12px!important;padding:0 11px!important}#page-dashboard .grid.grid-cols-2>.card{padding:12px!important}#page-dashboard .grid.grid-cols-2>.card h3{font-size:16px!important}#page-dashboard .grid.grid-cols-2>.card p:first-child{font-size:10px!important}#page-dashboard .grid.grid-cols-2>.card div:last-child{font-size:9px!important;line-height:1.25!important}.chart-container{height:205px!important}#page-dashboard .card.p-4{padding:13px!important}#page-backup .grid{gap:10px!important}#page-backup .grid>.card{padding:15px!important}#page-backup .grid>.card h3{font-size:15px!important}#page-backup .grid>.card p{font-size:12px!important;line-height:1.55!important}#page-compromissos .grid.grid-cols-3{gap:7px!important}#page-compromissos .grid.grid-cols-3>.card{padding:11px!important}#page-compromissos .grid.grid-cols-3>.card p{font-size:9px!important}#page-compromissos .grid.grid-cols-3>.card .privacy-value{font-size:12px!important}#categoriesGrid>div{min-height:56px!important}.modal{padding:10px!important}.modal>div{border-radius:16px!important;max-height:calc(100vh - 20px);overflow:auto}.input{min-height:40px!important}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -529,20 +558,20 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
       <div class="font-bold text-slate-900 text-base">ControlTezza's</div>
       <div class="text-xs text-slate-400">Finanças da casa</div>
     </div>
-    <button onclick="toggleSidebar()" class="lg:hidden ml-auto text-slate-500">✕</button>
+    <button onclick="toggleSidebar()" class="lg:hidden ml-auto text-slate-500"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
   </div>
 
   <nav class="p-2.5 space-y-0.5 flex-1">
-    <button class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold" data-page="dashboard" onclick="showPage('dashboard')">▦ <span>Dashboard</span></button>
-    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="lancamentos" onclick="showPage('lancamentos')">↔ <span>Lançamentos</span></button>
-    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="compromissos" onclick="showPage('compromissos')">✓ <span>Contas e compromissos</span></button>
-    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="categorias" onclick="showPage('categorias')">≡ <span>Categorias</span></button>
+    <button class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold" data-page="dashboard" onclick="showPage('dashboard')"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> <span>Dashboard</span></button>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="lancamentos" onclick="showPage('lancamentos')"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/></svg> <span>Lançamentos</span></button>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="compromissos" onclick="showPage('compromissos')"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg> <span>Contas e compromissos</span></button>
+    <button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="categorias" onclick="showPage('categorias')"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg> <span>Categorias</span></button>
 
 
 <div class="pt-4 pb-1.5 px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sistema</div>
 
-<button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="backup" onclick="showPage('backup')">◫ <span>Backup</span></button>
-<button onclick="openSettings()" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600">⚙ <span>Configurações</span></button>
+<button class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600" data-page="backup" onclick="showPage('backup')"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg> <span>Backup</span></button>
+<button onclick="openSettings()" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-1.8 1.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1h-2.5V20a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1-1.8-1.8.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H5.4v-2.5h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 1.8-1.8.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6V4h2.5v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1 1.8 1.8-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.1v2.5h-.1a1.7 1.7 0 0 0-1.6 1Z"/></svg> <span>Configurações</span></button>
  
   </nav>
 
@@ -566,7 +595,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 <header class="h-16 bg-white/90 backdrop-blur border-b border-slate-200 sticky top-0 z-30">
   <div class="h-full px-4 sm:px-5 lg:px-6 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">☰</button>
+      <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
       <div>
         <h1 id="pageTitle" class="text-lg font-bold text-slate-900">Dashboard</h1>
         <p id="pageSubtitle" class="hidden sm:block text-xs text-slate-400">Visão geral das finanças da casa</p>
@@ -575,7 +604,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
  <div class="flex items-center gap-2">
   <button onclick="togglePrivacy()" class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-500" title="Ocultar valores">
-    <span id="privacyIcon">◉</span>
+    <span id="privacyIcon"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
   </button>
   <button onclick="openTransactionModal()" class="btn btn-primary">
     <span>+</span>
@@ -674,14 +703,14 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
         </svg>
         <span id="transactionFilterBadge" class="hidden absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[9px] font-bold items-center justify-center"></span>
       </button>
-      <button onclick="openTransactionModal()" class="btn btn-primary">+ Novo lançamento</button>
+      <button onclick="openTransactionModal()" class="btn btn-primary"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"</svg> Novo lançamento</button>
     </div>
   </div>
 
   <div id="transactionFiltersPanel" class="card p-4 mb-5 hidden">
     <div class="flex items-center justify-between mb-3">
       <div class="text-sm font-bold text-slate-700">Filtros</div>
-      <button type="button" onclick="toggleTransactionFilters(false)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500" title="Fechar filtros">✕</button>
+      <button type="button" onclick="toggleTransactionFilters(false)" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500" title="Fechar filtros"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     </div>
 
  <div class="filters-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
@@ -697,9 +726,9 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
     <div id="monthPicker" class="month-picker hidden absolute left-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-lg p-3">
       <div class="flex items-center justify-between mb-3">
-        <button type="button" onclick="changePickerYear(-1)" class="month-nav">‹</button>
+        <button type="button" onclick="changePickerYear(-1)" class="month-nav" aria-label="Ano anterior"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
         <span id="monthPickerYear" class="font-bold text-sm text-slate-800"></span>
-        <button type="button" onclick="changePickerYear(1)" class="month-nav">›</button>
+        <button type="button" onclick="changePickerYear(1)" class="month-nav" aria-label="Próximo ano"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
       </div>
       <div id="monthPickerGrid" class="grid grid-cols-3 gap-1.5"></div>
     </div>
@@ -829,7 +858,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
       <h2 class="text-lg font-bold">Categorias</h2>
       <p class="text-sm text-slate-500">Organize seus gastos e receitas.</p>
     </div>
-    <button onclick="openCategoryModal()" class="btn btn-primary">+ Nova categoria</button>
+    <button onclick="openCategoryModal()" class="btn btn-primary"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"</svg> Nova categoria</button>
   </div>
 
   <div class="card overflow-hidden">
@@ -848,7 +877,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
  <div class="card p-6">
-  <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-4">◫</div>
+  <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-4"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 21h14"/></svg></div>
   <h3 class="font-bold text-lg">Backup automático</h3>
   <p class="text-sm text-slate-500 mt-2 leading-6">
     Escolha um arquivo JSON no computador. Após cada alteração, o sistema tenta atualizar esse arquivo automaticamente.
@@ -861,7 +890,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 </div>
 
 <div class="card p-6 border-violet-200">
-  <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4">☁</div>
+  <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6 9a4.5 4.5 0 0 0 1 9Z"/></svg></div>
   <h3 class="font-bold text-lg">Sincronização online</h3>
   <p class="text-sm text-slate-500 mt-2 leading-6">O Supabase será usado como banco central. Seus dados locais permanecem preservados e a migração só acontece quando você confirmar.</p>
   <div class="mt-5 p-4 bg-slate-50 rounded-xl">
@@ -874,7 +903,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 </div>
 
 <div class="card p-6">
-  <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-4">↑</div>
+  <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-4"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5"/></svg></div>
   <h3 class="font-bold text-lg">Restaurar backup</h3>
   <p class="text-sm text-slate-500 mt-2 leading-6">
     Carregue um arquivo JSON criado anteriormente para restaurar seus lançamentos, categorias e configurações.
@@ -886,14 +915,14 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 </div>
 
 <div class="card p-6">
-  <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4">↓</div>
+  <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl mb-4"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m0 0 5-5m-5 5-5-5"/></svg></div>
   <h3 class="font-bold text-lg">Exportação manual</h3>
   <p class="text-sm text-slate-500 mt-2">Baixe uma cópia dos dados pelo navegador.</p>
   <button onclick="downloadBackup()" class="btn btn-secondary mt-5 w-full">Baixar backup JSON</button>
 </div>
 
 <div class="card p-6 border-rose-200">
-  <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl mb-4">!</div>
+  <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl mb-4"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 3.5 19h17L12 4Z"/><path d="M12 9v4M12 16h.01"/></svg></div>
   <h3 class="font-bold text-lg">Zona de segurança</h3>
   <p class="text-sm text-slate-500 mt-2">Excluir todos os dados desta aplicação. Esta ação não pode ser desfeita.</p>
   <button onclick="resetApplication()" class="btn btn-danger mt-5 w-full">Apagar todos os dados</button>
@@ -917,7 +946,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
     <h2 id="transactionModalTitle" class="text-lg font-bold">Novo lançamento</h2>
     <p class="text-xs text-slate-400">Registre uma entrada ou saída da casa.</p>
   </div>
-  <button onclick="closeTransactionModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100">✕</button>
+  <button onclick="closeTransactionModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 </div>
 
 <form id="transactionForm" class="p-5 space-y-5">
@@ -1071,7 +1100,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 <p id="paymentInfo" class="text-xs text-slate-400 mt-1">Informe os dados da baixa.</p>
 </div>
 
-<button type="button" onclick="closePaymentModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100">✕</button>
+<button type="button" onclick="closePaymentModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 
 </div>
 
@@ -1132,7 +1161,7 @@ Confirmar baixa
  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
   <div class="p-5 border-b border-slate-100 flex items-center justify-between">
    <div><h2 class="text-lg font-bold">Histórico do pagamento</h2><p id="paymentHistoryInfo" class="text-xs text-slate-400 mt-1"></p></div>
-   <button type="button" onclick="closePaymentHistoryModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100">✕</button>
+   <button type="button" onclick="closePaymentHistoryModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
   </div>
   <div id="paymentHistoryContent" class="p-5"></div>
   <div class="px-5 pb-5"><button type="button" onclick="closePaymentHistoryModal()" class="btn btn-secondary w-full">Fechar</button></div>
@@ -1152,7 +1181,7 @@ Confirmar baixa
 <p id="deleteTransactionInfo" class="text-xs text-slate-400 mt-1">Escolha o que deseja excluir.</p>
 </div>
 
-<button type="button" onclick="closeDeleteTransactionModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100">✕</button>
+<button type="button" onclick="closeDeleteTransactionModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 
 </div>
 
@@ -1197,7 +1226,7 @@ Confirmar baixa
 <h2 class="text-lg font-bold">Nova categoria</h2>
 <p class="text-xs text-slate-400">Crie uma categoria para sua casa.</p>
 </div>
-<button onclick="closeCategoryModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100">✕</button>
+<button onclick="closeCategoryModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 </div>
 
 <form id="categoryForm" class="p-5 space-y-4">
@@ -1232,7 +1261,7 @@ Confirmar baixa
 
 <div class="p-5 border-b border-slate-100 flex items-center justify-between">
 <h2 class="font-bold text-lg">Configurações</h2>
-<button onclick="closeSettings()" class="w-9 h-9 rounded-lg hover:bg-slate-100">✕</button>
+<button onclick="closeSettings()" class="w-9 h-9 rounded-lg hover:bg-slate-100"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
 </div>
 
 <div class="p-5 space-y-5">
@@ -1264,7 +1293,7 @@ Gerencie instituições e responsáveis utilizados nos lançamentos.
 <div class="border border-slate-200 rounded-xl p-4">
 <div class="flex items-center justify-between mb-3">
 <span class="font-semibold text-sm">Onde / Instituições</span>
-<button onclick="quickAddInstitution()" class="text-blue-600 font-bold text-xl">+</button>
+<button onclick="quickAddInstitution()" class="text-blue-600 font-bold text-xl"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"</svg></button>
 </div>
 <div id="settingsInstitutions" class="space-y-2 max-h-40 overflow-y-auto"></div>
 </div>
@@ -1272,7 +1301,7 @@ Gerencie instituições e responsáveis utilizados nos lançamentos.
 <div class="border border-slate-200 rounded-xl p-4">
 <div class="flex items-center justify-between mb-3">
 <span class="font-semibold text-sm">Responsáveis</span>
-<button onclick="quickAddResponsible()" class="text-blue-600 font-bold text-xl">+</button>
+<button onclick="quickAddResponsible()" class="text-blue-600 font-bold text-xl"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"</svg></button>
 </div>
 <div id="settingsResponsibles" class="space-y-2 max-h-40 overflow-y-auto"></div>
 </div>
@@ -1550,6 +1579,20 @@ function addYears(s,n){
  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
 }
 
+function uiIcon(name,size=17){
+ const p={
+  check:'<path d="m5 12 4 4L19 6"/>',
+  history:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/>',
+  edit:'<path d="m4 16-.8 4.8L8 20l10.8-10.8a2.2 2.2 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 2 2"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
+  alert:'<path d="M12 4 3.5 19h17L12 4Z"/><path d="M12 9v4M12 16h.01"/>',
+  up:'<path d="M12 19V5m0 0-5 5m5-5 5 5"/>',
+  down:'<path d="M12 5v14m0 0 5-5m-5 5-5-5"/>',
+  eyeoff:'<path d="m3 3 18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.2A10.7 10.7 0 0 1 12 5c6 0 9.5 7 9.5 7a17 17 0 0 1-3.1 3.9"/><path d="M6.2 6.2C3.7 8.1 2.5 12 2.5 12S6 19 12 19c1 0 2-.2 2.9-.5"/>'
+ };
+ return `<svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p[name]||p.check}</svg>`;
+}
+
 function categoryName(id){
  return state.categories.find(c=>c.id===id)?.name||"Sem categoria"
 }
@@ -1781,10 +1824,10 @@ function togglePrivacy(){
 
  state.privacy=!state.privacy;
 
- $("privacyIcon").textContent=
+ $("privacyIcon").innerHTML=
   state.privacy
-   ?"◌"
-   :"◉";
+   ?uiIcon("eyeoff",17)
+   :uiIcon("eye",17);
 
  refreshPrivacy()
 }
@@ -1905,7 +1948,7 @@ function renderContactManagement(){
     ?state.institutions.map((x,n)=>
       `<div class="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2">
         <span class="text-sm flex-1 truncate">${esc(x)}</span>
-        <button onclick="deleteInstitution(${n})" class="text-slate-400 hover:text-rose-600 font-bold" title="Excluir">×</button>
+        <button onclick="deleteInstitution(${n})" class="text-slate-400 hover:text-rose-600 font-bold" title="Excluir">${uiIcon("trash",14)}</button>
       </div>`
      ).join("")
     :'<div class="text-xs text-slate-400">Nenhuma cadastrada.</div>';
@@ -1916,7 +1959,7 @@ function renderContactManagement(){
     ?state.responsibles.map((x,n)=>
       `<div class="flex items-center gap-2 bg-slate-50 rounded-lg px-3 py-2">
         <span class="text-sm flex-1 truncate">${esc(x)}</span>
-        <button onclick="deleteResponsible(${n})" class="text-slate-400 hover:text-rose-600 font-bold" title="Excluir">×</button>
+        <button onclick="deleteResponsible(${n})" class="text-slate-400 hover:text-rose-600 font-bold" title="Excluir">${uiIcon("trash",14)}</button>
       </div>`
      ).join("")
     :'<div class="text-xs text-slate-400">Nenhum cadastrado.</div>';
@@ -2564,7 +2607,7 @@ function renderRecentTransactions(){
        ?"bg-emerald-50 text-emerald-600"
        :"bg-rose-50 text-rose-600"
      } flex items-center justify-center font-bold">
-      ${t.type==="income"?"↑":"↓"}
+      ${uiIcon(t.type==="income"?"up":"down",16)}
      </div>
 
      <div class="min-w-0 flex-1">
@@ -2694,9 +2737,7 @@ function renderTransactions(){
   );
 
  tx.sort(
-  (a,b)=>
-   Number(!!a.paid)-Number(!!b.paid) ||
-   a.date.localeCompare(b.date)
+  (a,b)=>a.date.localeCompare(b.date)
  );
 
  $("transactionsEmpty")
@@ -3730,7 +3771,7 @@ function renderCategories(){
     <div class="px-3 py-2.5 flex items-center gap-2.5 border-b border-slate-100 hover:bg-slate-50 min-w-0">
 
      <div class="w-7 h-7 rounded-md ${tone} flex items-center justify-center font-bold text-xs shrink-0">
-      ${x.type==="income"?"↑":"↓"}
+      ${uiIcon(x.type==="income"?"up":"down",14)}
      </div>
 
      <div class="min-w-0 flex-1">
