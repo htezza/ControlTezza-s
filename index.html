@@ -2737,7 +2737,12 @@ function renderTransactions(){
   );
 
  tx.sort(
-  (a,b)=>a.date.localeCompare(b.date)
+  (a,b)=>{
+   const aPaid=a.paid===true;
+   const bPaid=b.paid===true;
+   if(aPaid!==bPaid) return aPaid?1:-1;
+   return a.date.localeCompare(b.date);
+  }
  );
 
  $("transactionsEmpty")
