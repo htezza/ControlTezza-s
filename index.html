@@ -538,6 +538,16 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
 @media(min-width:1024px){main{padding:20px 24px!important}#page-dashboard>.flex:first-child,#page-lancamentos>.flex:first-child,#page-compromissos>.mb-4,#page-categorias>.flex,#page-backup>.mb-4{margin-bottom:18px!important}#page-lancamentos table th,#page-lancamentos table td{padding-top:13px!important;padding-bottom:13px!important}}
 @media(min-width:640px) and (max-width:1023px){main{padding:16px!important}.card{border-radius:13px!important}}
 @media(max-width:639px){body{font-size:13px!important}main{padding:12px!important}header .h-full{padding-left:12px!important;padding-right:12px!important}header h1{font-size:16px!important}#pageSubtitle{display:none!important}h2{font-size:17px!important}.page>.flex>div:first-child p,.page>.mb-4 p{font-size:12px!important}.card{border-radius:12px!important;box-shadow:0 2px 10px rgba(15,23,42,.04)!important}.card:hover{transform:none!important}.btn{min-height:40px!important;font-size:12px!important;padding:0 11px!important}#page-dashboard .grid.grid-cols-2>.card{padding:12px!important}#page-dashboard .grid.grid-cols-2>.card h3{font-size:16px!important}#page-dashboard .grid.grid-cols-2>.card p:first-child{font-size:10px!important}#page-dashboard .grid.grid-cols-2>.card div:last-child{font-size:9px!important;line-height:1.25!important}.chart-container{height:205px!important}#page-dashboard .card.p-4{padding:13px!important}#page-backup .grid{gap:10px!important}#page-backup .grid>.card{padding:15px!important}#page-backup .grid>.card h3{font-size:15px!important}#page-backup .grid>.card p{font-size:12px!important;line-height:1.55!important}#page-compromissos .grid.grid-cols-3{gap:7px!important}#page-compromissos .grid.grid-cols-3>.card{padding:11px!important}#page-compromissos .grid.grid-cols-3>.card p{font-size:9px!important}#page-compromissos .grid.grid-cols-3>.card .privacy-value{font-size:12px!important}#categoriesGrid>div{min-height:56px!important}.modal{padding:10px!important}.modal>div{border-radius:16px!important;max-height:calc(100vh - 20px);overflow:auto}.input{min-height:40px!important}}
+@media(max-width:639px){
+  /* Ajuste pontual: input de data do modal não ultrapassa a largura no celular. */
+  #transactionModal > div{min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
+  #transactionModal form,
+  #transactionModal form > div,
+  #transactionModal form .grid,
+  #transactionModal form .grid > div{min-width:0!important;max-width:100%!important}
+  #transactionDate{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;display:block!important}
+}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 </style>
@@ -2737,12 +2747,7 @@ function renderTransactions(){
   );
 
  tx.sort(
-  (a,b)=>{
-   const aPaid=a.paid===true;
-   const bPaid=b.paid===true;
-   if(aPaid!==bPaid) return aPaid?1:-1;
-   return a.date.localeCompare(b.date);
-  }
+  (a,b)=>a.date.localeCompare(b.date)
  );
 
  $("transactionsEmpty")
