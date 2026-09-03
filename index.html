@@ -54,6 +54,268 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 @media(max-width:639px){main{padding:12px!important}.page > .mb-4 h2{font-size:18px!important;line-height:1.25}.page > .mb-4 p{font-size:14px!important;line-height:1.45}.card{border-radius:12px}#transactionsTableWrap{display:none}#transactionsMobileList{display:block}#page-lancamentos .transactions-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px}#page-lancamentos .transactions-toolbar .btn{flex:1}#page-compromissos .commitment-summary{gap:6px!important}#page-compromissos .commitment-summary .card{padding:10px 8px!important}#page-compromissos .commitment-summary p:first-child{font-size:10px!important;line-height:1.2}#page-compromissos .commitment-summary p:last-child{font-size:11px!important;line-height:1.2;letter-spacing:-.15px}#page-compromissos .commitments-header{padding:13px 14px!important}#page-compromissos .commitment-item{padding:12px 10px!important;grid-template-columns:30px minmax(0,1fr) auto!important;gap:9px!important}#page-compromissos .commitment-icon{width:30px!important;height:30px!important;font-size:13px!important;border-radius:8px!important}#page-compromissos .commitment-name{font-size:14px!important;line-height:1.25}#page-compromissos .commitment-meta{font-size:10px!important;line-height:1.45!important;margin-top:3px!important}#page-compromissos .commitment-value{font-size:13px!important}#page-compromissos .commitment-action{width:30px!important;height:30px!important}#page-categorias .categories-header{display:block!important}#page-categorias .categories-header .btn{width:100%;margin-top:10px}#page-backup .backup-grid{gap:10px!important}#page-backup .backup-card{padding:14px!important}#page-backup .backup-icon{width:38px!important;height:38px!important;font-size:16px!important;border-radius:10px!important;margin-bottom:10px!important}#page-backup .backup-card h3{font-size:15px!important}#page-backup .backup-card p{font-size:12px!important;line-height:1.5!important}#page-backup .backup-status{padding:10px!important;margin-top:12px!important}#page-backup .backup-card .btn{margin-top:12px!important}}
 @media(min-width:640px){#transactionsMobileList{display:none}}
 .transactions-mobile-section{padding:8px 12px;background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}.transactions-mobile-item{padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;border-bottom:1px solid #f1f5f9;background:#fff}.transactions-mobile-item.overdue{background:#fff7ed}.transactions-mobile-title{font-size:14px;font-weight:700;line-height:1.3}.transactions-mobile-meta{font-size:10px;color:#64748b;line-height:1.5;margin-top:3px}.transactions-mobile-amount{font-size:13px;font-weight:700;white-space:nowrap;text-align:right}.transactions-mobile-actions{display:flex;justify-content:flex-end;gap:4px;margin-top:7px}.transactions-mobile-action{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* ===== PADRÃO VISUAL DAS TELAS ===== */
+:root{
+ --ui-text:#0f172a;
+ --ui-muted:#64748b;
+ --ui-soft:#f8fafc;
+ --ui-border:#e2e8f0;
+ --ui-blue:#2563eb;
+ --ui-green:#059669;
+ --ui-red:#e11d48;
+ --ui-orange:#ea580c;
+}
+
+/* Cabeçalhos de conteúdo */
+#page-lancamentos > .mb-4,
+#page-compromissos > .mb-4,
+#page-categorias > .mb-4,
+#page-backup > .mb-4,
+#page-lancamentos > .flex.mb-4,
+#page-compromissos > .flex.mb-4,
+#page-categorias > .flex.mb-4{
+ margin-bottom:16px!important;
+}
+#page-lancamentos h2,#page-compromissos h2,#page-categorias h2,#page-backup h2{
+ color:var(--ui-text)!important;
+ font-size:18px!important;
+ line-height:1.25!important;
+ font-weight:700!important;
+ letter-spacing:-.01em;
+}
+#page-lancamentos > div:first-child p,
+#page-compromissos > div:first-child p,
+#page-categorias > div:first-child p,
+#page-backup > div:first-child p{
+ color:var(--ui-muted)!important;
+ font-size:13px!important;
+ line-height:1.45!important;
+ margin-top:3px!important;
+}
+
+/* Cards: mesma linguagem do Dashboard */
+#page-lancamentos .card,
+#page-compromissos .card,
+#page-categorias .card,
+#page-backup .card{
+ border:1px solid var(--ui-border)!important;
+ border-radius:12px!important;
+ box-shadow:0 2px 12px rgba(15,23,42,.035)!important;
+ background:#fff!important;
+}
+
+/* Botões */
+#page-lancamentos .btn-primary,
+#page-compromissos .btn-primary,
+#page-categorias .btn-primary,
+#page-backup .btn-primary{
+ background:var(--ui-blue)!important;
+ border-radius:9px!important;
+ padding:8px 13px!important;
+ font-size:13px!important;
+ line-height:1.2!important;
+}
+
+/* ===== LANÇAMENTOS ===== */
+#page-lancamentos .transactions-toolbar{
+ display:flex;
+ align-items:center;
+ justify-content:flex-end;
+ gap:8px;
+}
+#page-lancamentos #transactionFilterButton{
+ width:40px!important;height:40px!important;
+ border-radius:10px!important;
+}
+#page-lancamentos #transactionFilterButton svg{width:18px!important;height:18px!important}
+#page-lancamentos #transactionFiltersPanel{border-radius:12px!important;padding:14px!important}
+#page-lancamentos #transactionsTableWrap table{font-size:13px!important}
+#page-lancamentos #transactionsTableWrap th{
+ font-size:10px!important;
+ letter-spacing:.06em;
+ padding:11px 14px!important;
+}
+#page-lancamentos #transactionsTableWrap td{padding:11px 14px!important}
+#page-lancamentos #transactionsMobileList{display:none}
+
+/* ===== COMPROMISSOS ===== */
+#page-compromissos .commitment-summary{gap:8px!important}
+#page-compromissos .commitment-summary .card{
+ min-width:0!important;
+ overflow:hidden!important;
+ padding:12px!important;
+}
+#page-compromissos .commitment-summary p:first-child{
+ color:var(--ui-muted)!important;
+ font-size:11px!important;
+ line-height:1.2!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}
+#page-compromissos .commitment-summary p:last-child{
+ display:block!important;
+ width:100%!important;
+ max-width:100%!important;
+ overflow:hidden!important;
+ text-overflow:clip!important;
+ white-space:nowrap!important;
+ font-size:13px!important;
+ line-height:1.2!important;
+ letter-spacing:-.45px!important;
+}
+#page-compromissos .commitments-header{
+ padding:14px 16px!important;
+}
+#page-compromissos .commitments-header h3{
+ font-size:15px!important;
+ line-height:1.3!important;
+}
+#page-compromissos #commitmentsList{background:#fff!important}
+#page-compromissos .commitment-item{
+ background:#fff!important;
+ border-bottom:1px solid #f1f5f9!important;
+}
+#page-compromissos .commitment-icon{
+ background:#fff1f2!important;
+ color:#e11d48!important;
+}
+#page-compromissos .commitment-name{color:var(--ui-text)!important}
+#page-compromissos .commitment-meta{color:var(--ui-muted)!important}
+#page-compromissos .commitment-value{letter-spacing:-.25px!important}
+
+/* ===== CATEGORIAS ===== */
+#page-categorias .categories-header{align-items:center!important}
+#page-categorias .categories-card{overflow:hidden!important}
+#page-categorias #categoriesGrid{gap:0!important}
+#page-categorias #categoriesGrid > div{
+ min-height:52px!important;
+ padding:10px 12px!important;
+ border-bottom:1px solid #f1f5f9!important;
+}
+#page-categorias #categoriesGrid > div > div:first-child{
+ width:28px!important;height:28px!important;
+ border-radius:8px!important;
+ font-size:12px!important;
+}
+#page-categorias #categoriesGrid .font-semibold{font-size:13px!important}
+#page-categorias #categoriesGrid .text-\[10px\]{font-size:10px!important}
+
+/* ===== BACKUP ===== */
+#page-backup .backup-grid{gap:12px!important}
+#page-backup .backup-card{padding:16px!important}
+#page-backup .backup-icon{
+ width:40px!important;height:40px!important;
+ border-radius:10px!important;
+ font-size:17px!important;
+ margin-bottom:12px!important;
+}
+#page-backup .backup-card h3{font-size:15px!important;line-height:1.3!important}
+#page-backup .backup-card p{font-size:12px!important;line-height:1.5!important}
+#page-backup .backup-status{padding:12px!important;border-radius:10px!important}
+#page-backup .backup-card .btn{font-size:12px!important;border-radius:9px!important}
+
+/* ===== MOBILE: um único padrão de densidade ===== */
+@media(max-width:639px){
+ main{padding:12px!important}
+ #page-lancamentos,#page-compromissos,#page-categorias,#page-backup{width:100%!important}
+ #page-lancamentos > .mb-4,
+ #page-compromissos > .mb-4,
+ #page-categorias > .mb-4,
+ #page-backup > .mb-4,
+ #page-lancamentos > .flex.mb-4,
+ #page-compromissos > .flex.mb-4,
+ #page-categorias > .flex.mb-4{
+  margin-bottom:14px!important;
+ }
+ #page-lancamentos h2,#page-compromissos h2,#page-categorias h2,#page-backup h2{font-size:18px!important}
+ #page-lancamentos > div:first-child p,
+ #page-compromissos > div:first-child p,
+ #page-categorias > div:first-child p,
+ #page-backup > div:first-child p{font-size:13px!important}
+
+ /* Lançamentos: nunca deixar a tabela estreita aparecer no celular */
+ #page-lancamentos #transactionsTableWrap{display:none!important}
+ #page-lancamentos #transactionsMobileList{display:block!important}
+ #page-lancamentos .transactions-toolbar{width:100%!important;justify-content:flex-start!important;margin-top:8px!important;gap:8px!important}
+ #page-lancamentos .transactions-toolbar .btn{flex:1!important;min-width:0!important;height:40px!important;font-size:13px!important}
+ #page-lancamentos #transactionFilterButton{flex:0 0 40px!important}
+ #page-lancamentos #transactionsMobileList{
+  border:1px solid var(--ui-border)!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  box-shadow:0 2px 12px rgba(15,23,42,.035)!important;
+ }
+ #page-lancamentos .transactions-mobile-section{
+  padding:9px 12px!important;
+  background:#f8fafc!important;
+  border-top:0!important;
+  border-bottom:1px solid var(--ui-border)!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+  letter-spacing:.08em!important;
+ }
+ #page-lancamentos .transactions-mobile-item{
+  padding:12px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:8px!important;
+  background:#fff!important;
+  border-bottom:1px solid #f1f5f9!important;
+ }
+ #page-lancamentos .transactions-mobile-item.overdue{background:#fffaf5!important}
+ #page-lancamentos .transactions-mobile-title{font-size:14px!important;line-height:1.25!important;color:var(--ui-text)!important}
+ #page-lancamentos .transactions-mobile-meta{font-size:10px!important;line-height:1.45!important;color:var(--ui-muted)!important;margin-top:3px!important}
+ #page-lancamentos .transactions-mobile-amount{font-size:12px!important;line-height:1.2!important;letter-spacing:-.25px!important}
+ #page-lancamentos .transactions-mobile-actions{margin-top:7px!important;gap:4px!important}
+ #page-lancamentos .transactions-mobile-action{width:28px!important;height:28px!important;border-radius:8px!important;font-size:12px!important}
+
+ /* Compromissos */
+ #page-compromissos .commitment-summary{gap:6px!important;margin-bottom:14px!important}
+ #page-compromissos .commitment-summary .card{padding:10px 7px!important;border-radius:11px!important}
+ #page-compromissos .commitment-summary p:first-child{font-size:10px!important}
+ #page-compromissos .commitment-summary p:last-child{font-size:11px!important;letter-spacing:-.5px!important}
+ #page-compromissos .commitments-header{padding:13px 14px!important}
+ #page-compromissos .commitment-item{
+  padding:11px 10px!important;
+  grid-template-columns:28px minmax(0,1fr) auto!important;
+  gap:9px!important;
+  min-height:64px!important;
+ }
+ #page-compromissos .commitment-icon{
+  width:28px!important;height:28px!important;
+  border-radius:8px!important;
+  font-size:12px!important;
+ }
+ #page-compromissos .commitment-name{font-size:13px!important;line-height:1.25!important}
+ #page-compromissos .commitment-meta{font-size:10px!important;line-height:1.4!important;margin-top:3px!important}
+ #page-compromissos .commitment-value{font-size:12px!important;line-height:1.2!important}
+ #page-compromissos .commitment-action{width:28px!important;height:28px!important;font-size:13px!important}
+
+ /* Categorias */
+ #page-categorias .categories-header{display:flex!important;align-items:flex-start!important;gap:10px!important}
+ #page-categorias .categories-header > div:first-child{min-width:0!important;flex:1!important}
+ #page-categorias .categories-header .btn{width:auto!important;flex:0 0 auto!important;margin-top:0!important;height:38px!important;padding:8px 10px!important;font-size:12px!important;white-space:nowrap!important}
+ #page-categorias #categoriesGrid > div{min-height:50px!important;padding:9px 11px!important}
+ #page-categorias #categoriesGrid .font-semibold{font-size:13px!important}
+
+ /* Backup */
+ #page-backup .backup-grid{gap:10px!important}
+ #page-backup .backup-card{padding:14px!important}
+ #page-backup .backup-icon{width:36px!important;height:36px!important;font-size:15px!important;margin-bottom:10px!important}
+ #page-backup .backup-card h3{font-size:14px!important}
+ #page-backup .backup-card p{font-size:11px!important;line-height:1.45!important}
+ #page-backup .backup-status{padding:10px!important;margin-top:11px!important}
+ #page-backup .backup-card .btn{margin-top:11px!important;font-size:11px!important;min-height:38px!important}
+}
+
+@media(min-width:640px){
+ #page-lancamentos #transactionsTableWrap{display:block!important}
+ #page-lancamentos #transactionsMobileList{display:none!important}
+}
+
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
