@@ -538,7 +538,11 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
 #visibleFilterMonth{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .15s ease,color .15s ease}
 #visibleFilterMonth:hover{background:#f8fafc}
 #visibleMonthNavigation{min-height:40px}
-@media(max-width:639px){#visibleMonthNavigation{min-width:0}#visibleFilterMonth{min-width:105px!important;width:105px!important;font-size:12px!important;padding-left:4px!important;padding-right:4px!important}.month-nav{width:30px;height:30px}}
+@media(max-width:639px){
+  #visibleMonthNavigation{min-width:190px!important;width:190px!important;box-sizing:border-box!important;gap:2px!important;padding:4px!important;overflow:visible!important}
+  #visibleFilterMonth{min-width:122px!important;width:122px!important;font-size:12px!important;padding-left:2px!important;padding-right:2px!important;overflow:visible!important;text-overflow:clip!important}
+  #visibleMonthNavigation > .month-nav{width:30px!important;min-width:30px!important;height:30px!important;flex:0 0 30px!important}
+}
 @media(max-width:639px){#page-lancamentos > .flex > .btn-primary,#page-lancamentos > .flex .btn-primary{display:none!important}}
 @media(min-width:1024px){main{padding:20px 24px!important}#page-dashboard>.flex:first-child,#page-lancamentos>.flex:first-child,#page-compromissos>.mb-4,#page-categorias>.flex,#page-backup>.mb-4{margin-bottom:18px!important}#page-lancamentos table th,#page-lancamentos table td{padding-top:13px!important;padding-bottom:13px!important}}
 @media(min-width:640px) and (max-width:1023px){main{padding:16px!important}.card{border-radius:13px!important}}
@@ -740,7 +744,7 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
 
         <button type="button" onclick="changeFilterMonth(1)" class="month-nav" title="Próximo mês" aria-label="Próximo mês">
           <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="m9 18 6-6 6"/>
+            <path d="m9 18 6-6-6-6"/>
           </svg>
         </button>
 
