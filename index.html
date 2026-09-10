@@ -528,6 +528,10 @@ h1,h2,h3,h4{color:var(--fc-ink);letter-spacing:-.015em}h2{font-size:18px!importa
 #sidebar{background:rgba(255,255,255,.98)!important;border-right:1px solid #e5e7eb!important;box-shadow:4px 0 18px rgba(15,23,42,.025)}#sidebar nav{padding:10px!important}.nav-item{min-height:42px!important;border:1px solid transparent!important;border-radius:10px!important;color:#64748b!important;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease!important}.nav-item:hover:not(.active){background:#f8fafc!important;color:#334155!important;transform:translateX(1px)}.nav-item.active{background:#f0fdf9!important;color:#047857!important;border-color:#d1fae5!important;box-shadow:inset 3px 0 0 #10b981!important}.nav-item>svg{width:18px;height:18px;flex:none;stroke-width:1.9}
 header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!important;box-shadow:0 1px 0 rgba(15,23,42,.02)}header h1{font-size:17px!important;font-weight:700!important}#pageSubtitle{font-size:11px!important;color:#94a3b8!important}header .w-10.h-10{border:1px solid #e2e8f0;transition:background .18s ease,border-color .18s ease,transform .16s ease,box-shadow .16s ease}header .w-10.h-10:hover{background:#f8fafc!important;border-color:#cbd5e1;transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,23,42,.06)}
 #page-dashboard .grid.grid-cols-2>.card{position:relative;overflow:hidden}#page-dashboard .grid.grid-cols-2>.card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#cbd5e1;border-radius:14px 0 0 14px}#page-dashboard .grid.grid-cols-2>.card:nth-child(1):before{background:#10b981}#page-dashboard .grid.grid-cols-2>.card:nth-child(2):before{background:#f43f5e}#page-dashboard .grid.grid-cols-2>.card:nth-child(3):before{background:#f59e0b}#page-dashboard .grid.grid-cols-2>.card:nth-child(4):before{background:#2563eb}#page-dashboard .grid.grid-cols-2>.card p:first-child{font-size:12px!important;font-weight:600!important;color:#64748b!important}#page-dashboard .grid.grid-cols-2>.card h3{font-size:21px!important;line-height:1.2!important;letter-spacing:-.035em!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#page-dashboard .grid.grid-cols-2>.card[role="button"]{cursor:pointer!important}
+#page-dashboard .grid.grid-cols-2>.card[role="button"]:hover{transform:translateY(-1px)!important}
+#dashboardAlerts[role="button"]{cursor:pointer!important}
+#dashboardAlerts[role="button"]:hover{box-shadow:0 4px 12px rgba(180,83,9,.10)!important}
 .chart-container{height:230px!important;padding-top:2px}#page-dashboard .card .mb-3 h3{font-size:14px!important}#page-dashboard .card .mb-3 p{font-size:11px!important;color:#94a3b8!important}#dashboardAlerts{border-radius:12px!important;box-shadow:none!important;background:#fffbeb!important;border-color:#fde68a!important}
 #transactionFiltersPanel{background:#fff!important}#transactionFiltersPanel .text-sm.font-bold{font-size:13px!important;color:#334155!important}#transactionFilterButton{border:1px solid #dbe3ec!important;box-shadow:0 1px 2px rgba(15,23,42,.03);transition:.18s ease!important}#transactionFilterButton:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(15,23,42,.06);background:#fff!important}#transactionFilterBadge{background:#0f172a!important}
 #page-lancamentos table thead th{font-size:10px!important;font-weight:700!important;letter-spacing:.055em!important;color:#64748b!important;background:#f8fafc!important}#page-lancamentos table tbody tr:not(:has(td[colspan])){transition:background .16s ease}#page-lancamentos table tbody tr:not(:has(td[colspan])):hover{background:#f8fafc!important}#page-lancamentos table td{font-size:13px}#page-lancamentos table td:nth-child(2) .font-semibold{font-weight:650!important;color:#1e293b!important}.status{min-height:24px;padding:4px 8px!important;font-size:10px!important;letter-spacing:.01em}
@@ -702,19 +706,19 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
 
   <div class="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 mb-4">
 
- <div class="card p-3 sm:p-4">
+ <div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver lançamentos que compõem as entradas do mês" onclick="goToDashboardTransactions('income')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('income')}">
   <p class="text-xs sm:text-sm text-slate-500">Entradas do mês</p>
   <h3 id="cardIncome" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-emerald-600">R$ 0,00</h3>
   <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Receitas recebidas</div>
 </div>
 
-<div class="card p-3 sm:p-4">
+<div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver lançamentos que compõem as saídas do mês" onclick="goToDashboardTransactions('expense')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('expense')}">
   <p class="text-xs sm:text-sm text-slate-500">Saídas do mês</p>
   <h3 id="cardExpense" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-rose-600">R$ 0,00</h3>
   <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Gastos pagos</div>
 </div>
 
-<div class="card p-3 sm:p-4">
+<div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver despesas previstas do mês" onclick="goToDashboardTransactions('expected')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('expected')}">
   <p class="text-xs sm:text-sm text-slate-500">Despesas previstas</p>
   <h3 id="cardExpected" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-orange-600">R$ 0,00</h3>
   <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Despesas ainda não pagas</div>
@@ -728,7 +732,7 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
  
   </div>
 
-  <div id="dashboardAlerts" class="hidden card p-4 mb-6 border-orange-200 bg-orange-50"></div>
+  <div id="dashboardAlerts" class="hidden card p-4 mb-6 border-orange-200 bg-orange-50 cursor-pointer" role="button" tabindex="0" title="Ver compromissos atrasados e vencendo nos próximos 3 dias" onclick="goToDashboardTransactions('alerts')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('alerts')}"></div>
 
   <div class="grid grid-cols-1 xl:grid-cols-5 gap-3 mb-4">
     <div class="card p-4 xl:col-span-3">
@@ -1440,6 +1444,9 @@ let state={
 };
 
 let cashFlowChart=null,categoryChart=null,backupHandle=null,backupTimer=null,backupWatchTimer=null,backupLastSignature="",backupLastSyncAt=null;
+
+// Filtro rápido usado pelos atalhos do Dashboard. Não é salvo nos dados.
+let transactionQuickFilter="";
 
 const BACKUP_DB_NAME="fincontrol_backup_db";
 const BACKUP_DB_VERSION=1;
@@ -2337,6 +2344,8 @@ function updateMonthPicker(value){
 
 function changeFilterMonth(delta){
 
+ transactionQuickFilter="";
+
  const el=$("filterMonth");
 
  if(!el)return;
@@ -2431,6 +2440,8 @@ function changePickerYear(delta){
 
 function selectFilterMonth(value){
 
+ transactionQuickFilter="";
+
  $("filterMonth").value=value;
 
  updateMonthPicker(value);
@@ -2443,6 +2454,41 @@ function selectFilterMonth(value){
 /* =========================================================
    DASHBOARD
    ========================================================= */
+
+function goToDashboardTransactions(mode){
+
+ const month=$("dashboardMonth")?.value||monthISO();
+ transactionQuickFilter=mode;
+
+ $("filterCategory").value="";
+ $("filterInstitution").value="";
+ $("filterResponsible").value="";
+ $("filterSearch").value="";
+
+ if(mode==="income"||mode==="expense"){
+  $("filterMonth").value=month;
+  $("filterType").value=mode;
+  $("filterStatus").value="paid";
+  updateMonthPicker(month);
+ }else if(mode==="expected"){
+  $("filterMonth").value=month;
+  $("filterType").value="expense";
+  $("filterStatus").value="";
+  updateMonthPicker(month);
+ }else if(mode==="alerts"){
+  // Alertas podem conter compromissos de meses anteriores, então
+  // o filtro mensal fica desativado para mostrar exatamente o alerta.
+  $("filterMonth").value="";
+  $("filterType").value="";
+  $("filterStatus").value="";
+  const visible=$("visibleFilterMonth");
+  if(visible)visible.textContent="Pendências próximas";
+ }
+
+ showPage("lancamentos");
+ toggleTransactionFilters(true);
+ renderTransactions();
+}
 
 function renderDashboard(){
 
@@ -2841,7 +2887,19 @@ function renderTransactions(){
  resp=$("filterResponsible").value,
  q=$("filterSearch").value.toLowerCase();
 
- if(m)
+ if(transactionQuickFilter==="expected"){
+  tx=tx.filter(t=>t.date.slice(0,7)===m&&t.type==="expense"&&!t.paid);
+ }else if(transactionQuickFilter==="alerts"){
+  const today=todayISO();
+  const lim=new Date(today+"T00:00:00");
+  lim.setDate(lim.getDate()+3);
+  const limitISO=
+   `${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,"0")}-${String(lim.getDate()).padStart(2,"0")}`;
+
+  tx=tx.filter(
+   t=>!t.paid&&t.date<=limitISO
+  );
+ }else if(m)
   tx=tx.filter(
    t=>t.date.slice(0,7)===m
   );
@@ -3028,6 +3086,8 @@ function renderTransactions(){
 }
 
 function clearFilters(){
+
+ transactionQuickFilter="";
 
  $("filterMonth").value=monthISO();
 
