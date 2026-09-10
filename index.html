@@ -1863,6 +1863,10 @@ const titles={
 
 function showPage(p){
 
+ // Ao sair de Lançamentos, descarta filtros temporários aplicados pelo Dashboard.
+ if(p!=="lancamentos")
+  transactionQuickFilter="";
+
  document.querySelectorAll(".page")
  .forEach(x=>x.classList.remove("active"));
 
@@ -1882,7 +1886,23 @@ function showPage(p){
  }
 
  if(p==="dashboard")renderDashboard();
- if(p==="lancamentos")renderTransactions();
+ if(p==="lancamentos"){
+  // Entrada normal na aba: sempre volta ao estado padrão, sem filtros.
+  // Os atalhos do Dashboard preservam seus filtros porque definem
+  // transactionQuickFilter antes de chamar showPage("lancamentos").
+  if(!transactionQuickFilter){
+   $("filterMonth").value=monthISO();
+   updateMonthPicker($("filterMonth").value);
+   $("filterCategory").value="";
+   $("filterType").value="";
+   $("filterStatus").value="";
+   $("filterInstitution").value="";
+   $("filterResponsible").value="";
+   $("filterSearch").value="";
+  }
+  toggleTransactionFilters(false);
+  renderTransactions();
+ }
  if(p==="compromissos")renderCommitments();
  if(p==="categorias")renderCategories();
  if(p==="backup")renderBackupStatus();
@@ -2486,8 +2506,8 @@ function goToDashboardTransactions(mode){
  }
 
  showPage("lancamentos");
- toggleTransactionFilters(true);
- renderTransactions();
+ // Os filtros continuam aplicados, mas o painel permanece fechado.
+ toggleTransactionFilters(false);
 }
 
 function renderDashboard(){
