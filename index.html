@@ -620,6 +620,53 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
     font-size:16px!important;
     -webkit-text-size-adjust:100%!important;
   }
+
+  /* O modal de Registrar pagamento não pode deixar o campo de data
+     ultrapassar a largura disponível no iPhone. Este ajuste é exclusivo
+     desse modal e não altera o layout dos demais formulários. */
+  #paymentModal > div{
+    width:100%!important;
+    max-width:calc(100vw - 20px)!important;
+    box-sizing:border-box!important;
+    min-width:0!important;
+  }
+  /* Registrar pagamento: evita o zoom automático do iPhone e
+     impede que os controles nativos criem largura maior que o modal. */
+  #paymentModal,
+  #paymentModal > div,
+  #paymentModal form{
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    overflow-x:hidden!important;
+  }
+  #paymentModal form,
+  #paymentModal form > div,
+  #paymentModal input,
+  #paymentModal select,
+  #paymentModal textarea{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    font-size:16px!important;
+    -webkit-text-size-adjust:100%!important;
+  }
+  #paymentModal #paymentDate{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:40px!important;
+    box-sizing:border-box!important;
+    font-size:16px!important;
+    -webkit-appearance:none!important;
+    appearance:none!important;
+  }
+  #paymentModal .border-b > div:first-child{
+    min-width:0!important;
+    max-width:100%!important;
+  }
 }
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
