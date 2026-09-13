@@ -608,6 +608,20 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
   }
 }
 
+/* =========================================================
+   AJUSTE MOBILE — evita zoom automático do Safari/iPhone nos campos
+   Campos com fonte menor que 16px fazem o iOS ampliar a tela ao receber foco.
+   Mantemos 16px apenas nos campos de formulário do modal no celular.
+   ========================================================= */
+@media(max-width:639px){
+  #transactionModal input,
+  #transactionModal select,
+  #transactionModal textarea{
+    font-size:16px!important;
+    -webkit-text-size-adjust:100%!important;
+  }
+}
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 </style>
