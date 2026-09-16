@@ -671,6 +671,223 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
+
+/* =========================================================
+   NAVEGAÇÃO MOBILE INFERIOR
+   Exclusiva para telas de celular.
+   Desktop permanece sem qualquer alteração.
+   ========================================================= */
+#mobileBottomNav{
+  display:none;
+}
+
+@media(max-width:639px){
+  /* Esconde completamente a navegação lateral e o botão hamburger no celular */
+  #sidebar,
+  #sidebarOverlay,
+  header button[onclick="toggleSidebar()"]{
+    display:none!important;
+  }
+
+  /* Barra fixa inferior, somente com ícones */
+  #mobileBottomNav{
+    position:fixed;
+    left:10px;
+    right:10px;
+    bottom:calc(10px + env(safe-area-inset-bottom));
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    gap:4px;
+    padding:5px 6px;
+    background:rgba(255,255,255,.96);
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    box-shadow:0 8px 28px rgba(15,23,42,.14);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    z-index:100;
+  }
+
+  #mobileBottomNav .mobile-nav-item{
+    position:relative;
+    width:25%;
+    height:48px;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:0;
+    border-radius:12px;
+    background:transparent;
+    color:#64748b;
+    cursor:pointer;
+    transition:background .18s ease,color .18s ease,transform .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  #mobileBottomNav .mobile-nav-item:active{
+    transform:scale(.94);
+  }
+
+  #mobileBottomNav .mobile-nav-item.active{
+    background:#f0fdf9;
+    color:#047857;
+  }
+
+  #mobileBottomNav .mobile-nav-item.active::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:3px;
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:#10b981;
+    transform:translateX(-50%);
+  }
+
+  /* Espaço para que o conteúdo não fique escondido atrás da barra */
+  body{
+    padding-bottom:82px!important;
+  }
+}
+
+/* Em tablets/desktop, a barra não existe e nada do layout original é alterado. */
+@media(min-width:640px){
+  #mobileBottomNav{
+    display:none!important;
+  }
+}
+
+
+/* =========================================================
+   REFINAMENTO VISUAL — SEPARAÇÃO DE ÁREAS
+   Aplicado principalmente no celular; desktop recebe apenas
+   pequenos detalhes neutros, sem mudança estrutural.
+   ========================================================= */
+
+/* Fundo geral levemente diferenciado para destacar os cards */
+body{
+  background:#f1f5f9!important;
+}
+
+/* Cabeçalho com separação mais clara */
+header{
+  box-shadow:0 1px 0 rgba(15,23,42,.05), 0 3px 12px rgba(15,23,42,.035)!important;
+}
+
+/* Cards com contraste suficiente para não parecer tudo uma única área */
+.card{
+  background:#ffffff!important;
+  border-color:#dfe6ee!important;
+}
+
+/* Áreas de listas ficam visualmente mais organizadas */
+#page-lancamentos > .card,
+#page-compromissos > .card,
+#page-categorias > .card,
+#page-backup .card{
+  box-shadow:0 2px 10px rgba(15,23,42,.055)!important;
+}
+
+/* Cabeçalhos das seções ganham uma pequena faixa lateral */
+#page-dashboard > .flex:first-child,
+#page-lancamentos > .flex:first-child,
+#page-compromissos > .mb-4,
+#page-categorias > .flex,
+#page-backup > .mb-4{
+  position:relative;
+}
+
+@media(max-width:639px){
+  /* Fundo do conteúdo um pouco mais acinzentado para separar dos cards */
+  body{
+    background:#eef2f7!important;
+  }
+
+  main{
+    background:transparent!important;
+  }
+
+  /* Títulos de cada tela ficam visualmente separados */
+  #page-dashboard > .flex:first-child,
+  #page-lancamentos > .flex:first-child,
+  #page-compromissos > .mb-4,
+  #page-categorias > .flex,
+  #page-backup > .mb-4{
+    padding:11px 12px!important;
+    margin-left:-2px!important;
+    margin-right:-2px!important;
+    margin-bottom:10px!important;
+    border-left:3px solid #10b981;
+    border-radius:0 10px 10px 0;
+    background:rgba(255,255,255,.72);
+    box-shadow:0 1px 5px rgba(15,23,42,.035);
+  }
+
+  #page-lancamentos > .flex:first-child{
+    border-left-color:#2563eb;
+  }
+
+  #page-compromissos > .mb-4{
+    border-left-color:#f59e0b;
+  }
+
+  #page-categorias > .flex{
+    border-left-color:#8b5cf6;
+  }
+
+  #page-backup > .mb-4{
+    border-left-color:#64748b;
+  }
+
+  /* Espaçamento entre blocos para criar "respiro" */
+  #page-dashboard .card,
+  #page-lancamentos > .card,
+  #page-compromissos > .card,
+  #page-categorias > .card,
+  #page-backup .card{
+    border-color:#dce4ed!important;
+  }
+
+  /* Cards dos indicadores: cada um recebe uma identificação visual discreta */
+  #page-dashboard .grid.grid-cols-2 > .card{
+    box-shadow:0 2px 8px rgba(15,23,42,.055)!important;
+  }
+
+  /* Listas: linhas um pouco mais destacadas */
+  #page-lancamentos table tbody tr:not(:has(td[colspan])){
+    border-bottom:1px solid #e5eaf0!important;
+  }
+
+  /* Separadores de Entradas/Saídas mais visíveis */
+  #page-lancamentos table tbody tr:has(td[colspan]){
+    background:#e8edf3!important;
+  }
+
+  #page-lancamentos table tbody tr:has(td[colspan]) td{
+    color:#475569!important;
+  }
+
+  /* Compromissos: cada item fica visualmente separado */
+  #commitmentsList > div{
+    border-bottom:1px solid #e8edf2;
+  }
+
+  #commitmentsList > div:last-child{
+    border-bottom:0;
+  }
+
+  /* Barra inferior continua branca, destacada do conteúdo */
+  #mobileBottomNav{
+    background:rgba(255,255,255,.98)!important;
+    border-color:#d7e0e9!important;
+    box-shadow:0 10px 30px rgba(15,23,42,.16)!important;
+  }
+}
+
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -720,6 +937,28 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
     </div>
   </div>
 </aside>
+
+<!-- Navegação inferior exclusiva para celular -->
+<nav id="mobileBottomNav" aria-label="Navegação principal mobile">
+  <button class="mobile-nav-item active" data-page="dashboard" onclick="showPage('dashboard')" aria-label="Dashboard" title="Dashboard">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  </button>
+
+  <button class="mobile-nav-item" data-page="lancamentos" onclick="showPage('lancamentos')" aria-label="Lançamentos" title="Lançamentos">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/>
+    </svg>
+  </button>
+
+  <button class="mobile-nav-item" data-page="compromissos" onclick="showPage('compromissos')" aria-label="Contas e compromissos" title="Contas e compromissos">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="m5 12 4 4L19 6"/>
+    </svg>
+  </button>
+</nav>
 
 <div class="lg:ml-60 min-h-screen">
 
@@ -5061,6 +5300,16 @@ async function init(){
 
 init();
 
+</script>
+
+
+<script>
+document.addEventListener('click', function(e){
+  const item = e.target.closest('#mobileBottomNav .mobile-nav-item');
+  if(!item) return;
+  document.querySelectorAll('#mobileBottomNav .mobile-nav-item')
+    .forEach(btn => btn.classList.toggle('active', btn === item));
+});
 </script>
 
 </body>
