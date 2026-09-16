@@ -671,6 +671,96 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
+
+/* =========================================================
+   NAVEGAÇÃO MOBILE INFERIOR
+   Exclusiva para telas de celular.
+   Desktop permanece sem qualquer alteração.
+   ========================================================= */
+#mobileBottomNav{
+  display:none;
+}
+
+@media(max-width:639px){
+  /* Esconde completamente a navegação lateral e o botão hamburger no celular */
+  #sidebar,
+  #sidebarOverlay,
+  header button[onclick="toggleSidebar()"]{
+    display:none!important;
+  }
+
+  /* Barra fixa inferior, somente com ícones */
+  #mobileBottomNav{
+    position:fixed;
+    left:10px;
+    right:10px;
+    bottom:calc(10px + env(safe-area-inset-bottom));
+    height:58px;
+    display:flex;
+    align-items:center;
+    justify-content:space-around;
+    gap:4px;
+    padding:5px 6px;
+    background:rgba(255,255,255,.96);
+    border:1px solid #e2e8f0;
+    border-radius:16px;
+    box-shadow:0 8px 28px rgba(15,23,42,.14);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    z-index:100;
+  }
+
+  #mobileBottomNav .mobile-nav-item{
+    position:relative;
+    width:25%;
+    height:48px;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:0;
+    border-radius:12px;
+    background:transparent;
+    color:#64748b;
+    cursor:pointer;
+    transition:background .18s ease,color .18s ease,transform .15s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  #mobileBottomNav .mobile-nav-item:active{
+    transform:scale(.94);
+  }
+
+  #mobileBottomNav .mobile-nav-item.active{
+    background:#f0fdf9;
+    color:#047857;
+  }
+
+  #mobileBottomNav .mobile-nav-item.active::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:3px;
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:#10b981;
+    transform:translateX(-50%);
+  }
+
+  /* Espaço para que o conteúdo não fique escondido atrás da barra */
+  body{
+    padding-bottom:82px!important;
+  }
+}
+
+/* Em tablets/desktop, a barra não existe e nada do layout original é alterado. */
+@media(min-width:640px){
+  #mobileBottomNav{
+    display:none!important;
+  }
+}
+
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -720,6 +810,28 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
     </div>
   </div>
 </aside>
+
+<!-- Navegação inferior exclusiva para celular -->
+<nav id="mobileBottomNav" aria-label="Navegação principal mobile">
+  <button class="mobile-nav-item active" data-page="dashboard" onclick="showPage('dashboard')" aria-label="Dashboard" title="Dashboard">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  </button>
+
+  <button class="mobile-nav-item" data-page="lancamentos" onclick="showPage('lancamentos')" aria-label="Lançamentos" title="Lançamentos">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M7 7h10l-3-3m3 3-3 3M17 17H7l3 3m-3-3 3-3"/>
+    </svg>
+  </button>
+
+  <button class="mobile-nav-item" data-page="compromissos" onclick="showPage('compromissos')" aria-label="Contas e compromissos" title="Contas e compromissos">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="m5 12 4 4L19 6"/>
+    </svg>
+  </button>
+</nav>
 
 <div class="lg:ml-60 min-h-screen">
 
@@ -5061,6 +5173,16 @@ async function init(){
 
 init();
 
+</script>
+
+
+<script>
+document.addEventListener('click', function(e){
+  const item = e.target.closest('#mobileBottomNav .mobile-nav-item');
+  if(!item) return;
+  document.querySelectorAll('#mobileBottomNav .mobile-nav-item')
+    .forEach(btn => btn.classList.toggle('active', btn === item));
+});
 </script>
 
 </body>
