@@ -888,6 +888,29 @@ header{
   }
 }
 
+
+/* =========================================================
+   DASHBOARD MOBILE — ORDEM DOS GRÁFICOS
+   Exclusivo para celular:
+   Gastos por categoria primeiro
+   Fluxo de caixa depois
+   Desktop permanece na ordem original.
+   ========================================================= */
+@media(max-width:639px){
+  #page-dashboard .grid.grid-cols-1.xl\:grid-cols-5{
+    display:flex!important;
+    flex-direction:column!important;
+  }
+
+  #page-dashboard .grid.grid-cols-1.xl\:grid-cols-5 > .xl\:col-span-2{
+    order:1!important;
+  }
+
+  #page-dashboard .grid.grid-cols-1.xl\:grid-cols-5 > .xl\:col-span-3{
+    order:2!important;
+  }
+}
+
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
