@@ -3628,24 +3628,32 @@ function shiftCreditInvoiceItems(items,steps,frequency){
  }));
 }
 
+function isCreditCardInvoiceRecurrenceEnabled(){
+ return isCreditCardInvoiceForm() && !!$("recurringEnabled")?.checked;
+}
+
 function createCreditCardInvoiceRecurrence(data){
- const count=Math.max(2,Math.min(120,Number($("recurrenceCount").value)||12));
- const frequency=$("recurrenceFrequency").value;
+ const count=Math.max(2,Math.min(120,Number($("recurrenceCount")?.value)||12));
+ const frequency=$("recurrenceFrequency")?.value==="yearly"?"yearly":"monthly";
  const group=uid("recorrencia-fatura");
+ const createdAt=new Date().toISOString();
+
  for(let i=0;i<count;i++){
   const invoiceDate=frequency==="yearly"?addYears(data.date,i):addMonths(data.date,i);
+  const items=shiftCreditInvoiceItems(data.subTransactions,i,frequency);
+
   state.transactions.push({
    id:uid("tx"),
    ...data,
    date:invoiceDate,
-   paid:i===0?data.paid:false,
-   subTransactions:shiftCreditInvoiceItems(data.subTransactions,i,frequency),
+   paid:i===0?!!data.paid:false,
+   subTransactions:items,
    recurrenceGroup:group,
    recurrenceNumber:i+1,
    recurrenceTotal:count,
    recurrenceFrequency:frequency,
    recurrenceType:"creditCardInvoice",
-   createdAt:new Date().toISOString()
+   createdAt
   });
  }
 }
@@ -3698,7 +3706,14 @@ function closeTransactionModal(){$("transactionModal").classList.remove("open");
 
 function setTransactionType(type){$("transactionType").value=type;const a=$("typeIncome"),b=$("typeExpense");a.className=type==="income"?"rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";b.className=type==="expense"?"rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";const old=$("transactionCategory").value;populateCategorySelects();const ok=state.categories.find(c=>c.id===old&&c.type===type);$("transactionCategory").value=ok?ok.id:(state.categories.find(c=>c.type===type)?.id||"");}
 function toggleInstallments(){const e=$("installmentEnabled").checked;$("installmentFields").classList.toggle("hidden",!e);if(e){$("recurringEnabled").checked=false;$("recurrenceFields").classList.add("hidden");}}
-function toggleRecurrence(){const e=$("recurringEnabled").checked;$("recurrenceFields").classList.toggle("hidden",!e);if(e){$("installmentEnabled").checked=false;$("installmentFields").classList.add("hidden");}}
+function toggleRecurrence(){
+ const e=$("recurringEnabled").checked;
+ $("recurrenceFields").classList.toggle("hidden",!e);
+ if(e){
+  $("installmentEnabled").checked=false;
+  $("installmentFields").classList.add("hidden");
+ }
+}
 
 /* =========================================================
    SALVAR / EDITAR LANÇAMENTO
@@ -3797,7 +3812,7 @@ $("transactionForm").addEventListener("submit",e=>{
     const i=state.transactions.findIndex(t=>t.id===id);
     if(i>=0)state.transactions[i]={...state.transactions[i],...data,date};
    }
-  }else if($("recurringEnabled").checked){
+  }else if(isCreditCardInvoiceRecurrenceEnabled()){
    createCreditCardInvoiceRecurrence(data);
   }else{
    state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});
