@@ -1380,8 +1380,14 @@ body{padding-bottom:92px!important}
     display:none!important;
   }
 
-  #page-compromissos #commitmentsList .fc-commit-date{
+  #page-compromissos #commitmentsList .fc-commit-row > .min-w-0{
     grid-column:2!important;
+    grid-row:1 / span 3!important;
+    min-width:0!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-commit-date{
+    grid-column:auto!important;
     grid-row:1!important;
     font-size:11px!important;
     line-height:1.2!important;
@@ -1390,8 +1396,6 @@ body{padding-bottom:92px!important}
   }
 
   #page-compromissos #commitmentsList .fc-commit-description{
-    grid-column:2!important;
-    grid-row:2!important;
     min-width:0!important;
     font-size:15px!important;
     line-height:1.25!important;
@@ -1403,8 +1407,6 @@ body{padding-bottom:92px!important}
   }
 
   #page-compromissos #commitmentsList .fc-commit-meta{
-    grid-column:2!important;
-    grid-row:3!important;
     min-width:0!important;
     margin-top:0!important;
     font-size:11px!important;
@@ -1427,7 +1429,8 @@ body{padding-bottom:92px!important}
     flex-wrap:nowrap!important;
     gap:5px!important;
     max-width:none!important;
-    min-width:0!important;
+    min-width:112px!important;
+    width:112px!important;
     flex-shrink:0!important;
   }
 
