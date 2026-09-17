@@ -1417,6 +1417,50 @@ body{padding-bottom:92px!important}
 }
 </style>
 
+
+<style id="fincontrol-mobile-final-fixes">
+@media (max-width: 639px){
+  /* DATA DA COMPRA — somente no lançamento de fatura */
+  #creditCardItemDraft,
+  #creditCardItemDraft .grid,
+  #creditCardItemDraft .grid > div{
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  #creditCardDraftDate{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    inline-size:100%!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+    font-size:16px!important;
+    line-height:1.25!important;
+    text-align:left!important;
+    -webkit-appearance:none!important;
+    appearance:none!important;
+  }
+
+  /* Evita que o texto nativo de data fique centralizado/cortado no iPhone. */
+  #creditCardDraftDate::-webkit-date-and-time-value{
+    text-align:left!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+
+  /* Toast de erro/sucesso precisa ficar acima do modal no celular. */
+  #toast{
+    z-index:2147483647!important;
+  }
+}
+</style>
+
 </head>
 
 <body class="text-slate-800">
@@ -3554,7 +3598,7 @@ function addCreditCardItem(item={}){creditCardItems.push({id:item.id||uid("cc"),
 function removeCreditCardItem(i){if(i<0||i>=creditCardItems.length)return;if(creditCardItemEditingIndex===i)resetCreditCardItemDraft();else if(creditCardItemEditingIndex>i)creditCardItemEditingIndex--;creditCardItems.splice(i,1);renderCreditCardItems();}
 function editCreditCardItem(i){const x=creditCardItems[i];if(!x)return;creditCardItemEditingIndex=i;$("creditCardDraftDescription").value=x.description||"";$("creditCardDraftCategory").innerHTML=categoryOptionsHTML(x.categoryId||"");$("creditCardDraftAmount").value=Number(x.amount)||"";$("creditCardDraftDate").value=x.date||todayISO();$("creditCardDraftTitle").textContent=`Editando lançamento ${i+1}`;$("creditCardDraftSave").textContent="Atualizar lançamento";$("creditCardDraftCancel").classList.remove("hidden");$("creditCardDraftDescription").focus();}
 function cancelCreditCardItemEdit(){resetCreditCardItemDraft();}
-function saveCreditCardItemDraft(){const description=$("creditCardDraftDescription").value.trim(),categoryId=$("creditCardDraftCategory").value,amount=Number($("creditCardDraftAmount").value),date=$("creditCardDraftDate").value;if(!description||!categoryId||!(amount>0)||!date){showToast("Preencha descrição, categoria, valor e data da compra.","error");return;}const item={id:creditCardItemEditingIndex>=0?creditCardItems[creditCardItemEditingIndex].id:uid("cc"),description,categoryId,amount,date,paid:$("transactionPaid").checked,createdAt:creditCardItemEditingIndex>=0?(creditCardItems[creditCardItemEditingIndex].createdAt||new Date().toISOString()):new Date().toISOString()};if(creditCardItemEditingIndex>=0)creditCardItems[creditCardItemEditingIndex]=item;else creditCardItems.push(item);renderCreditCardItems();resetCreditCardItemDraft();showToast(creditCardItemEditingIndex>=0?"Lançamento atualizado na lista.":"Lançamento adicionado à fatura.");}
+function saveCreditCardItemDraft(){const description=$("creditCardDraftDescription").value.trim(),categoryId=$("creditCardDraftCategory").value,amount=Number($("creditCardDraftAmount").value),date=$("creditCardDraftDate").value;if(!description||!categoryId||!(amount>0)||!date){showToast("Preencha descrição, categoria, valor e data da compra.","error");return;}const item={id:creditCardItemEditingIndex>=0?creditCardItems[creditCardItemEditingIndex].id:uid("cc"),description,categoryId,amount,date,paid:$("transactionPaid").checked,createdAt:creditCardItemEditingIndex>=0?(creditCardItems[creditCardItemEditingIndex].createdAt||new Date().toISOString()):new Date().toISOString()};if(creditCardItemEditingIndex>=0)creditCardItems[creditCardItemEditingIndex]=item;else creditCardItems.push(item);const wasEditing=creditCardItemEditingIndex>=0;renderCreditCardItems();resetCreditCardItemDraft();showToast(wasEditing?"Lançamento atualizado na lista.":"Lançamento adicionado à fatura.");}
 function renderCreditCardItems(){const c=$("creditCardItems");if(!c)return;c.innerHTML=creditCardItems.length?creditCardItems.map((x,i)=>`<div class="credit-invoice-item"><div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">${i+1}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm text-slate-800 truncate">${esc(x.description)}</div><div class="text-[11px] text-slate-400 mt-1">${formatDate(x.date)} · ${esc(categoryName(x.categoryId))}</div></div><div class="text-right shrink-0"><div class="font-bold text-sm text-rose-600">- ${money(x.amount)}</div><div class="flex gap-1 mt-2 justify-end"><button type="button" onclick="editCreditCardItem(${i})" class="btn btn-secondary !min-h-8 !h-8 !px-2" title="Editar lançamento">${uiIcon("edit",14)}<span class="hidden sm:inline">Editar</span></button><button type="button" onclick="removeCreditCardItem(${i})" class="btn btn-danger !min-h-8 !h-8 !px-2" title="Remover lançamento">${uiIcon("trash",14)}</button></div></div></div></div>`).join(""):`<div class="border border-dashed border-slate-300 rounded-xl p-6 text-center text-sm text-slate-400">Nenhum lançamento adicionado ainda.</div>`;if($("creditCardItemsCount"))$("creditCardItemsCount").textContent=`${creditCardItems.length} ${creditCardItems.length===1?"item":"itens"}`;updateCreditCardTotal();}
 function updateCreditCardTotal(){const total=creditCardItems.reduce((s,x)=>s+(Number(x.amount)||0),0);if($("creditCardItemsTotal"))$("creditCardItemsTotal").textContent=money(total);if($("transactionAmount")){$("transactionAmount").value=total?total.toFixed(2):"";$("transactionAmount").readOnly=isCreditCardInvoiceForm();}}
 function toggleCreditCardMode(){const active=isCreditCardInvoiceForm();$("creditCardInvoiceEditor")?.classList.toggle("hidden",!active);$("transactionCategory")?.closest("div")?.parentElement?.classList.toggle("hidden",active);$("transactionCategoryRequired")?.classList.toggle("hidden",active);$("installmentEnabled")?.closest(".border")?.classList.toggle("hidden",active);$("recurringEnabled")?.closest(".border")?.classList.toggle("hidden",active);if(active){$("transactionType").value="expense";setTransactionType("expense");if(!$("creditCardDraftDate").value)$("creditCardDraftDate").value=$("transactionDate").value||todayISO();if(!$("creditCardDraftCategory").innerHTML)$("creditCardDraftCategory").innerHTML=categoryOptionsHTML("");renderCreditCardItems();}else updateCreditCardTotal();}
