@@ -1256,6 +1256,211 @@ body{padding-bottom:92px!important}
   }
 }
 </style>
+
+<style>
+/* =========================================================
+   FINCONTROL — ÍCONES DE AÇÃO / LIQUID GLASS
+   Lançamentos + Contas e Compromissos
+   ========================================================= */
+
+#page-lancamentos table button[title],
+#page-compromissos #commitmentsList button[title]{
+  width:34px!important;
+  height:34px!important;
+  min-width:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  border-radius:11px!important;
+  border:1px solid rgba(255,255,255,.78)!important;
+  background:rgba(255,255,255,.56)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(180%)!important;
+  backdrop-filter:blur(14px) saturate(180%)!important;
+  box-shadow:
+    0 3px 10px rgba(15,23,42,.08),
+    inset 0 1px 0 rgba(255,255,255,.92)!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:17px!important;
+  line-height:1!important;
+  font-weight:600!important;
+  box-sizing:border-box!important;
+  flex-shrink:0!important;
+  transition:
+    transform .16s ease,
+    background .16s ease,
+    box-shadow .16s ease,
+    border-color .16s ease!important;
+}
+
+#page-lancamentos table button[title]:hover,
+#page-compromissos #commitmentsList button[title]:hover{
+  transform:translateY(-1px)!important;
+  background:rgba(255,255,255,.78)!important;
+  box-shadow:
+    0 5px 14px rgba(15,23,42,.11),
+    inset 0 1px 0 rgba(255,255,255,.98)!important;
+}
+
+#page-lancamentos table button[title]:active,
+#page-compromissos #commitmentsList button[title]:active{
+  transform:scale(.93)!important;
+}
+
+#page-lancamentos table button[title="Dar baixa"],
+#page-compromissos #commitmentsList button[title="Dar baixa"]{
+  color:#059669!important;
+  border-color:rgba(167,243,208,.72)!important;
+  background:rgba(236,253,245,.62)!important;
+}
+
+#page-lancamentos table button[title="Editar"],
+#page-compromissos #commitmentsList button[title="Editar"]{
+  color:#2563eb!important;
+  border-color:rgba(191,219,254,.72)!important;
+  background:rgba(239,246,255,.62)!important;
+}
+
+#page-lancamentos table button[title="Excluir"],
+#page-compromissos #commitmentsList button[title="Excluir"]{
+  color:#e11d48!important;
+  border-color:rgba(254,205,211,.78)!important;
+  background:rgba(255,241,242,.62)!important;
+}
+
+#page-lancamentos table button[title="Ver histórico do pagamento"],
+#page-compromissos #commitmentsList button[title="Ver histórico do pagamento"]{
+  color:#64748b!important;
+  border-color:rgba(203,213,225,.72)!important;
+  background:rgba(248,250,252,.60)!important;
+}
+
+/* Linha de Contas e Compromissos no mesmo padrão de leitura de Lançamentos */
+#page-compromissos #commitmentsList .fc-commit-row{
+  position:relative!important;
+  grid-template-columns:42px minmax(0,1fr) auto!important;
+}
+
+#page-compromissos #commitmentsList .fc-transaction-icon{
+  width:42px!important;
+  height:42px!important;
+  border-radius:14px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:20px!important;
+  font-weight:700!important;
+  border:1px solid rgba(255,255,255,.82)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(180%)!important;
+  backdrop-filter:blur(14px) saturate(180%)!important;
+  box-shadow:
+    0 3px 10px rgba(15,23,42,.07),
+    inset 0 1px 0 rgba(255,255,255,.92)!important;
+}
+
+#page-compromissos #commitmentsList .fc-transaction-icon.is-income{
+  color:#059669!important;
+  background:rgba(236,253,245,.62)!important;
+  border-color:rgba(167,243,208,.72)!important;
+}
+
+#page-compromissos #commitmentsList .fc-transaction-icon.is-expense{
+  color:#e11d48!important;
+  background:rgba(255,241,242,.62)!important;
+  border-color:rgba(254,205,211,.78)!important;
+}
+
+#page-compromissos #commitmentsList .fc-commit-date{
+  font-size:11px!important;
+  line-height:1.2!important;
+  color:#94a3b8!important;
+  white-space:nowrap!important;
+}
+
+#page-compromissos #commitmentsList .fc-commit-description{
+  font-size:15px!important;
+  line-height:1.25!important;
+  font-weight:700!important;
+  color:#1e293b!important;
+}
+
+#page-compromissos #commitmentsList .fc-commit-meta{
+  margin-top:2px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  color:#64748b!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+#page-compromissos #commitmentsList .fc-commit-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:5px!important;
+  flex-shrink:0!important;
+}
+
+#page-compromissos #commitmentsList .fc-commit-amount{
+  font-size:15px!important;
+  font-weight:800!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  text-align:right!important;
+  margin-right:3px!important;
+}
+
+@media(max-width:639px){
+  #page-compromissos #commitmentsList .fc-commit-row{
+    grid-template-columns:42px minmax(0,1fr) auto!important;
+    column-gap:10px!important;
+    row-gap:2px!important;
+    padding:13px 12px!important;
+    min-height:94px!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-transaction-icon{
+    width:42px!important;
+    height:42px!important;
+    border-radius:14px!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-commit-date{
+    font-size:11px!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-commit-description{
+    font-size:15px!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-commit-meta{
+    font-size:10px!important;
+    max-width:100%!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-commit-actions{
+    flex-wrap:wrap!important;
+    max-width:150px!important;
+    gap:4px!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-commit-amount{
+    width:100%!important;
+    margin-right:0!important;
+    font-size:15px!important;
+  }
+
+  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button,
+  #page-compromissos #commitmentsList button[title]{
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+    min-height:34px!important;
+    border-radius:11px!important;
+  }
+}
+</style>
 </head>
 
 <body class="text-slate-800">
@@ -4600,43 +4805,75 @@ function renderCommitments(){
 
     lastMonth=monthKey;
 
-    return monthHeader+`
-    <div class="px-3 sm:px-5 py-3 sm:py-4 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 hover:bg-slate-50">
+    const income=t.type==="income";
 
-     <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm shrink-0">
-      !
+    return monthHeader+`
+    <div class="fc-commit-row px-3 sm:px-5 py-3 sm:py-4 grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 hover:bg-slate-50">
+
+     <div class="fc-transaction-icon ${income?"is-income":"is-expense"}">
+      ${income?"↑":"↓"}
      </div>
 
      <div class="min-w-0">
 
-      <div class="font-semibold text-sm truncate">
+      <div class="fc-commit-date">
+       ${formatDate(t.date)}
+      </div>
+
+      <div class="font-semibold text-sm truncate fc-commit-description">
        ${esc(t.description)}
       </div>
 
-      <div class="text-[11px] sm:text-xs text-slate-500 mt-1 leading-4">
-       ${formatDate(t.date)} ·
-       ${esc(categoryName(t.categoryId))} ·
-       ${esc(t.institution||"Sem instituição")}
+      <div class="fc-commit-meta">
+       ${esc(t.institution||"—")} ·
+       ${esc(categoryName(t.categoryId))}
        ${t.responsible?` · ${esc(t.responsible)}`:""}
       </div>
 
      </div>
 
-     <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+     <div class="fc-commit-actions">
 
-      <div class="privacy-value text-right font-bold text-sm sm:text-base ${
-       t.type==="income"
+      <div class="privacy-value fc-commit-amount ${
+       income
         ?"text-emerald-600"
         :"text-rose-600"
-      } whitespace-nowrap">
-       ${money(t.amount)}
+      }">
+       ${income?"+":"-"} ${money(t.amount)}
       </div>
 
+      ${
+       t.paid
+        ?`<button
+            onclick="openPaymentHistory('${t.id}')"
+            class="fc-glass-action fc-action-history"
+            title="Ver histórico do pagamento"
+            aria-label="Ver histórico do pagamento">
+            ↺
+           </button>`
+        :`<button
+            onclick="payTransaction('${t.id}')"
+            class="fc-glass-action fc-action-paid"
+            title="Dar baixa"
+            aria-label="Dar baixa">
+            ✓
+           </button>`
+      }
+
       <button
-       onclick="payTransaction('${t.id}')"
-       class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0"
-       title="Dar baixa">
-       ✓
+       onclick="openTransactionModal('${t.id}')"
+       class="fc-glass-action fc-action-edit"
+       title="Editar"
+       aria-label="Editar">
+       ✎
+      </button>
+
+      <button
+       onclick="deleteTransaction('${t.id}')"
+       class="fc-glass-action fc-action-delete"
+       title="Excluir"
+       aria-label="Excluir">
+       ×
       </button>
 
      </div>
