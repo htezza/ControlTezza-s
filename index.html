@@ -2378,7 +2378,10 @@ function populateDates(){
   ys.appendChild(o);
  }
 
- ys.value=d.getFullYear()
+ ys.value=d.getFullYear();
+
+ /* Atualiza a navegação visual do mês no celular após popular os selects. */
+ setTimeout(updateMobileDashboardMonth,0);
 }
 
 function populateContactLists(){
@@ -2877,9 +2880,20 @@ function goToDashboardTransactions(mode){
 
 function renderDashboard(){
 
- const sel=$("dashboardMonth").value;
+ let sel=$("dashboardMonth")?.value||"";
+ const yearEl=$("dashboardYear");
 
- if(!sel)return;
+ /* Compatibilidade: se o seletor de mês estiver com valor numérico
+    (1 a 12), transforma para YYYY-MM usando o ano selecionado. */
+ if(/^\\d{1,2}$/.test(String(sel))){
+  const month=Number(sel);
+  const year=Number(yearEl?.value)||new Date().getFullYear();
+  if(month>=1&&month<=12){
+   sel=`${year}-${String(month).padStart(2,"0")}`;
+  }
+ }
+
+ if(!/^\\d{4}-\\d{2}$/.test(sel))return;
 
  const tx=
   state.transactions.filter(
@@ -5380,23 +5394,65 @@ document.addEventListener('click', function(e){
 <script>
 function updateMobileDashboardMonth(){
  const m=$("dashboardMonth"), y=$("dashboardYear"), label=$("mobileDashboardMonthLabel");
- if(!m||!y||!label||!m.value||!y.value)return;
- const d=new Date(Number(y.value),Number(m.value)-1,1);
+ if(!m||!y||!label||!m.value)return;
+
+ let value=String(m.value);
+ let d;
+
+ if(/^\\d{4}-\\d{2}$/.test(value)){
+  d=new Date(value+"-01T00:00:00");
+ }else{
+  const month=Number(value);
+  const year=Number(y.value)||new Date().getFullYear();
+  if(!month||month<1||month>12)return;
+  d=new Date(year,month-1,1);
+ }
+
+ if(Number.isNaN(d.getTime()))return;
+
  label.textContent=d.toLocaleDateString("pt-BR",{month:"long",year:"numeric"}).replace(/^./,c=>c.toUpperCase());
 }
 function changeDashboardMonthMobile(delta){
  const m=$("dashboardMonth"), y=$("dashboardYear");
  if(!m||!y)return;
- let month=Number(m.value), year=Number(y.value);
- if(!month||!year)return;
- month+=delta;
- if(month<1){month=12;year--}
- if(month>12){month=1;year++}
- const mo=[...m.options].find(o=>Number(o.value)===month);
- const yo=[...y.options].find(o=>Number(o.value)===year);
- if(!mo||!yo)return;
- m.value=String(month); y.value=String(year);
- renderDashboard(); updateMobileDashboardMonth();
+
+ let value=String(m.value||"");
+ let year, month;
+
+ if(/^\\d{4}-\\d{2}$/.test(value)){
+  const parts=value.split("-");
+  year=Number(parts[0]);
+  month=Number(parts[1]);
+ }else{
+  month=Number(value);
+  year=Number(y.value)||new Date().getFullYear();
+ }
+
+ if(!year||!month)return;
+
+ const d=new Date(year,month-1+delta,1);
+ if(Number.isNaN(d.getTime()))return;
+
+ year=d.getFullYear();
+ month=d.getMonth()+1;
+
+ const normalized=`${year}-${String(month).padStart(2,"0")}`;
+
+ /* O select do Dashboard usa YYYY-MM como valor. */
+ let option=[...m.options].find(o=>o.value===normalized);
+
+ if(!option){
+  option=document.createElement("option");
+  option.value=normalized;
+  option.textContent=d.toLocaleDateString("pt-BR",{month:"long"}).replace(/^./,c=>c.toUpperCase());
+  m.appendChild(option);
+ }
+
+ m.value=normalized;
+ y.value=String(year);
+
+ renderDashboard();
+ updateMobileDashboardMonth();
 }
 function openDashboardMonthMobile(){
  const m=$("dashboardMonth"), y=$("dashboardYear");
