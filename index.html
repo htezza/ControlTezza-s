@@ -919,6 +919,14 @@ header{
   }
 }
 
+
+/* FATURA DE CARTÃO — lançamento pai + sublançamentos */
+.credit-invoice-items{display:flex;flex-direction:column;gap:10px}
+.credit-invoice-item{border:1px solid #e2e8f0;border-radius:12px;padding:12px;background:#f8fafc}
+.credit-invoice-item-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(130px,1fr) minmax(120px,.9fr) 36px;gap:8px;align-items:end}
+.credit-invoice-total{background:#f1f5f9;border-radius:10px;padding:10px 12px}
+.credit-invoice-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800}
+@media(max-width:639px){.credit-invoice-item-grid{grid-template-columns:1fr 1fr;gap:8px}.credit-invoice-item-grid>:first-child{grid-column:1/-1}.credit-invoice-item-grid>:last-child{grid-column:2;grid-row:2;justify-self:end}#creditInvoiceModal>div{max-width:100%!important}}
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -1754,12 +1762,20 @@ body{padding-bottom:92px!important}
 </div>
 
 <div>
-<label class="text-xs font-semibold text-slate-600">Categoria *</label>
+<label class="text-xs font-semibold text-slate-600">Categoria <span id="transactionCategoryRequired">*</span></label>
 <div class="flex gap-2 mt-1">
-<select id="transactionCategory" required class="input"></select>
+<select id="transactionCategory" class="input"></select>
 <button type="button" onclick="quickAddCategory()" class="shrink-0 w-11 h-11 rounded-xl bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 font-bold text-lg" title="Adicionar categoria">+</button>
 </div>
 <div class="text-[11px] text-slate-400 mt-1">Não encontrou a categoria? Clique em + para cadastrar sem sair do lançamento.</div>
+</div>
+
+<div>
+<label class="text-xs font-semibold text-slate-600">Forma de pagamento</label>
+<select id="transactionPaymentMethod" onchange="toggleCreditCardMode()" class="input mt-1">
+<option value="">Não informado</option><option value="Pix">Pix</option><option value="Cartão de crédito">Cartão de crédito</option><option value="Cartão de débito">Cartão de débito</option><option value="Dinheiro">Dinheiro</option><option value="Boleto">Boleto</option><option value="Transferência">Transferência</option><option value="Débito automático">Débito automático</option><option value="Cheque">Cheque</option><option value="Outro">Outro</option>
+</select>
+<div class="text-[11px] text-slate-400 mt-1">Ao escolher cartão de crédito, cadastre cada compra da fatura separadamente.</div>
 </div>
 
 <div>
@@ -1782,6 +1798,12 @@ body{padding-bottom:92px!important}
 
 </div>
 
+<div id="creditCardInvoiceEditor" class="hidden border border-blue-200 bg-blue-50/40 rounded-xl p-4 space-y-4">
+<div class="flex items-start justify-between gap-3"><div><div class="font-semibold text-sm text-slate-800 flex items-center gap-2">Lançamentos da fatura <span class="credit-invoice-badge">Cartão de crédito</span></div><div class="text-xs text-slate-500 mt-1">Cadastre cada compra com sua própria categoria. O valor da fatura será calculado automaticamente.</div></div><button type="button" onclick="addCreditCardItem()" class="btn btn-secondary shrink-0">+ Adicionar lançamento</button></div>
+<div id="creditCardItems" class="credit-invoice-items"></div>
+<div class="credit-invoice-total flex items-center justify-between gap-3"><span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total da fatura</span><span id="creditCardItemsTotal" class="text-lg font-bold text-slate-900">R$ 0,00</span></div>
+</div>
+
 <div>
 <label class="text-xs font-semibold text-slate-600">Observações</label>
 <textarea id="transactionNotes" rows="2" class="input mt-1" placeholder="Informações adicionais..."></textarea>
@@ -1796,7 +1818,7 @@ body{padding-bottom:92px!important}
 </div>
 
 <label class="relative inline-flex items-center cursor-pointer">
-<input id="installmentEnabled" type="checkbox" class="sr-only peer" onchange="toggleInstallments">
+<input id="installmentEnabled" type="checkbox" class="sr-only peer" onchange="toggleInstallments()">
 <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
 </label>
 </div>
@@ -1856,6 +1878,14 @@ body{padding-bottom:92px!important}
 </form>
 </div>
 </div>
+
+<!-- Modal detalhamento da fatura -->
+<div id="creditInvoiceModal" class="modal fixed inset-0 z-[115] items-center justify-center bg-slate-950/50 p-4">
+<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto">
+<div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3"><div><h2 class="text-lg font-bold">Detalhes da fatura</h2><p id="creditInvoiceInfo" class="text-xs text-slate-400 mt-1"></p></div><button type="button" onclick="closeCreditInvoiceModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100">×</button></div>
+<div id="creditInvoiceDetailsContent" class="p-5"></div>
+<div class="px-5 pb-5 flex flex-col-reverse sm:flex-row justify-end gap-2"><button type="button" onclick="closeCreditInvoiceModal()" class="btn btn-secondary">Fechar</button><button type="button" id="creditInvoiceEditButton" class="btn btn-primary">Editar fatura</button></div>
+</div></div>
 
 <!-- NOVO: Modal para registrar a baixa -->
 
@@ -2354,6 +2384,7 @@ function addYears(s,n){
 function uiIcon(name,size=17){
  const p={
   check:'<path d="m5 12 4 4L19 6"/>',
+  card:'<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5v-9Z"/><path d="M3 9h18"/><path d="M7 15h3"/>',
   history:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/>',
   edit:'<path d="m4 16-.8 4.8L8 20l10.8-10.8a2.2 2.2 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 2 2"/>',
   trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/>',
@@ -2463,6 +2494,8 @@ function saveNoBackup(){
   })
  )
 }
+
+function migrateCreditCardInvoices(){state.transactions=state.transactions.map(t=>{if(!t||!t.isCreditCardInvoice)return t;const items=Array.isArray(t.subTransactions)?t.subTransactions:[];const total=items.reduce((a,x)=>a+Number(x.amount||0),0);return {...t,type:"expense",categoryId:null,paymentMethod:"Cartão de crédito",amount:total||Number(t.amount)||0,subTransactions:items};});}
 
 function loadState(){
 
@@ -3187,67 +3220,25 @@ function goToDashboardTransactions(mode){
  toggleTransactionFilters(false);
 }
 
+function getAnalyticsTransactions(){
+ const result=[];
+ state.transactions.forEach(t=>{
+  if(t?.isCreditCardInvoice)(Array.isArray(t.subTransactions)?t.subTransactions:[]).forEach(c=>result.push({...c,type:"expense",creditCardInvoiceId:t.id,creditCardInvoice:true}));
+  else result.push(t);
+ });
+ return result;
+}
+function getTransactionMonthItems(month){return getAnalyticsTransactions().filter(t=>(t.date||"").slice(0,7)===month);}
 function renderDashboard(){
-
- const sel=$("dashboardMonth").value;
-
- if(!sel)return;
-
- const tx=
-  state.transactions.filter(
-   t=>t.date.slice(0,7)===sel
-  );
-
- const inc=
-  tx
-   .filter(t=>t.type==="income"&&t.paid)
-   .reduce(
-    (s,t)=>s+Number(t.amount),
-    0
-   );
-
- const exp=
-  tx
-   .filter(t=>t.type==="expense"&&t.paid)
-   .reduce(
-    (s,t)=>s+Number(t.amount),
-    0
-   );
-
- /* NOVO: despesas do mês ainda não pagas */
- const expected=
-  tx
-   .filter(t=>t.type==="expense"&&!t.paid)
-   .reduce(
-    (s,t)=>s+Number(t.amount),
-    0
-   );
-
+ const sel=$("dashboardMonth").value;if(!sel)return;
+ const tx=getTransactionMonthItems(sel);
+ const inc=tx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const exp=tx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const expected=tx.filter(t=>t.type==="expense"&&!t.paid).reduce((s,t)=>s+Number(t.amount),0);
  const result=inc-exp;
-
- $("cardIncome").textContent=money(inc);
- $("cardExpense").textContent=money(exp);
- $("cardExpected").textContent=money(expected);
- $("cardResult").textContent=money(result);
-
- $("cardResult")
-  .classList
-  .toggle(
-   "text-emerald-600",
-   result>=0
-  );
-
- $("cardResult")
-  .classList
-  .toggle(
-   "text-rose-600",
-   result<0
-  );
-
- renderAlerts();
- renderCashFlowChart(sel);
- renderCategoryChart(tx);
- refreshPrivacy()
+ $("cardIncome").textContent=money(inc);$("cardExpense").textContent=money(exp);$("cardExpected").textContent=money(expected);$("cardResult").textContent=money(result);
+ $("cardResult").classList.toggle("text-emerald-600",result>=0);$("cardResult").classList.toggle("text-rose-600",result<0);
+ renderAlerts();renderCashFlowChart(sel);renderCategoryChart(tx);refreshPrivacy();
 }
 
 function renderAlerts(){
@@ -3301,239 +3292,22 @@ function renderAlerts(){
 }
 
 function renderCashFlowChart(sel){
-
- if(cashFlowChart)
-  cashFlowChart.destroy();
-
- const d=
-  new Date(sel+"-01T00:00:00");
-
- const labels=[],
- inc=[],
- exp=[];
-
- for(let i=5;i>=0;i--){
-
-  const x=
-   new Date(
-    d.getFullYear(),
-    d.getMonth()-i,
-    1
-   );
-
-  const k=
-   `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`;
-
-  const tx=
-   state.transactions.filter(
-    t=>t.date.slice(0,7)===k&&t.paid
-   );
-
-  labels.push(
-   x.toLocaleDateString(
-    "pt-BR",
-    {month:"short"}
-   ).replace(".","")
-  );
-
-  inc.push(
-   tx
-    .filter(t=>t.type==="income")
-    .reduce(
-     (s,t)=>s+Number(t.amount),
-     0
-    )
-  );
-
-  exp.push(
-   tx
-    .filter(t=>t.type==="expense")
-    .reduce(
-     (s,t)=>s+Number(t.amount),
-     0
-    )
-  );
-
- }
-
- cashFlowChart=
-  new Chart(
-   $("cashFlowChart"),
-   {
-    type:"bar",
-    data:{
-     labels,
-     datasets:[
-      {
-       label:"Entradas",
-       data:inc,
-       borderRadius:7
-      },
-      {
-       label:"Saídas",
-       data:exp,
-       borderRadius:7
-      }
-     ]
-    },
-    options:{
-     responsive:true,
-     maintainAspectRatio:false,
-     plugins:{
-      legend:{
-       position:"bottom"
-      },
-      tooltip:{
-       callbacks:{
-        label:c=>
-         `${c.dataset.label}: ${money(c.raw)}`
-       }
-      }
-     },
-     scales:{
-      y:{
-       beginAtZero:true,
-       ticks:{
-        callback:v=>money(v)
-       },
-       grid:{
-        color:"#f1f5f9"
-       }
-      },
-      x:{
-       grid:{
-        display:false
-       }
-      }
-     }
-    }
-   }
-  );
-
+ if(cashFlowChart)cashFlowChart.destroy();
+ const d=new Date(sel+"-01T00:00:00"),labels=[],inc=[],exp=[];
+ for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1),k=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`,tx=getTransactionMonthItems(k).filter(t=>t.paid);labels.push(x.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""));inc.push(tx.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0));exp.push(tx.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0));}
+ cashFlowChart=new Chart($("cashFlowChart"),{type:"bar",data:{labels,datasets:[{label:"Entradas",data:inc,borderRadius:7},{label:"Saídas",data:exp,borderRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${money(c.raw)}`}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>money(v)},grid:{color:"#f1f5f9"}},x:{grid:{display:false}}}}});
 }
 
 function renderCategoryChart(tx){
-
- if(categoryChart)
-  categoryChart.destroy();
-
- const g={};
-
- tx
-  .filter(
-   t=>t.type==="expense"&&t.paid
-  )
-  .forEach(t=>{
-
-   const n=categoryName(t.categoryId);
-
-   g[n]=(g[n]||0)+Number(t.amount);
-
-  });
-
- let labels=Object.keys(g),
- data=Object.values(g);
-
- if(!labels.length){
-
-  labels=["Sem despesas"];
-  data=[1];
-
- }
-
- categoryChart=
-  new Chart(
-   $("categoryChart"),
-   {
-    type:"doughnut",
-    data:{
-     labels,
-     datasets:[
-      {
-       data
-      }
-     ]
-    },
-    options:{
-     responsive:true,
-     maintainAspectRatio:false,
-     cutout:"68%",
-     plugins:{
-      legend:{
-       position:"bottom"
-      },
-      tooltip:{
-       callbacks:{
-        label:c=>
-         `${c.label}: ${money(c.raw)}`
-       }
-      }
-     }
-    }
-   }
-  );
-
+ if(categoryChart)categoryChart.destroy();
+ const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+Number(t.amount);});
+ let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[1];}
+ categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
 }
 
 function renderRecentTransactions(){
-
- const c=$("recentTransactions");
-
- const tx=
-  [...state.transactions]
-   .sort(
-    (a,b)=>b.date.localeCompare(a.date)
-   )
-   .slice(0,6);
-
- c.innerHTML=
-  tx.length
-   ?tx.map(t=>
-    `<div class="px-5 py-4 flex items-center gap-4">
-
-     <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${
-      t.type==="income"
-       ?"bg-emerald-50 text-emerald-600"
-       :"bg-rose-50 text-rose-600"
-     } flex items-center justify-center font-bold">
-      ${uiIcon(t.type==="income"?"up":"down",16)}
-     </div>
-
-     <div class="min-w-0 flex-1">
-
-      <div class="font-semibold text-sm truncate">
-       ${esc(t.description)}
-      </div>
-
-      <div class="text-xs text-slate-400 mt-1">
-       ${formatDate(t.date)} · ${esc(categoryName(t.categoryId))}
-       ${t.institution?` · ${esc(t.institution)}`:""}
-      </div>
-
-     </div>
-
-     <div class="text-right">
-
-      <div class="privacy-value font-bold text-sm ${
-       t.type==="income"
-        ?"text-emerald-600"
-        :"text-rose-600"
-      }">
-       ${t.type==="income"?"+":"-"} ${money(t.amount)}
-      </div>
-
-      <div class="mt-1">
-       ${statusHTML(status(t))}
-      </div>
-
-     </div>
-
-    </div>`
-   ).join("")
-   :`<div class="p-10 text-center text-slate-400">
-      Nenhum lançamento cadastrado.
-     </div>`;
-
+ const c=$("recentTransactions"),tx=[...state.transactions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+ c.innerHTML=tx.length?tx.map(t=>{const invoice=!!t.isCreditCardInvoice,n=Array.isArray(t.subTransactions)?t.subTransactions.length:0;return `<div class="px-5 py-4 flex items-center gap-4"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${t.type==="income"?"bg-emerald-50 text-emerald-600":"bg-rose-50 text-rose-600"} flex items-center justify-center font-bold">${uiIcon(invoice?"card":t.type==="income"?"up":"down",16)}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm truncate">${esc(t.description)}</div><div class="text-xs text-slate-400 mt-1">${formatDate(t.date)} · ${invoice?`Fatura · ${n} lançamento(s)`:esc(categoryName(t.categoryId))}${t.institution?` · ${esc(t.institution)}`:""}</div></div><div class="text-right"><div class="privacy-value font-bold text-sm ${t.type==="income"?"text-emerald-600":"text-rose-600"}">${t.type==="income"?"+":"-"} ${money(t.amount)}</div><div class="mt-1">${statusHTML(status(t))}</div></div></div>`;}).join(""):`<div class="p-10 text-center text-slate-400">Nenhum lançamento cadastrado.</div>`;
 }
 
 function updateTransactionFilterBadge(){
@@ -3571,215 +3345,18 @@ function toggleTransactionFilters(force){
 }
 
 function renderTransactions(){
-
- updateTransactionFilterBadge();
-
- let tx=[...state.transactions];
-
- let m=$("filterMonth").value,
- cat=$("filterCategory").value,
- type=$("filterType").value,
- st=$("filterStatus").value,
- inst=$("filterInstitution").value,
- resp=$("filterResponsible").value,
- q=$("filterSearch").value.toLowerCase();
-
- if(transactionQuickFilter==="expected"){
-  tx=tx.filter(t=>t.date.slice(0,7)===m&&t.type==="expense"&&!t.paid);
- }else if(transactionQuickFilter==="alerts"){
-  const today=todayISO();
-  const lim=new Date(today+"T00:00:00");
-  lim.setDate(lim.getDate()+3);
-  const limitISO=
-   `${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,"0")}-${String(lim.getDate()).padStart(2,"0")}`;
-
-  tx=tx.filter(
-   t=>!t.paid&&t.date<=limitISO
-  );
- }else if(m)
-  tx=tx.filter(
-   t=>t.date.slice(0,7)===m
-  );
-
- if(cat)
-  tx=tx.filter(
-   t=>t.categoryId===cat
-  );
-
- if(type)
-  tx=tx.filter(
-   t=>t.type===type
-  );
-
- if(st)
-  tx=tx.filter(
-   t=>status(t)===st
-  );
-
- if(inst)
-  tx=tx.filter(
-   t=>(t.institution||"")===inst
-  );
-
- if(resp)
-  tx=tx.filter(
-   t=>(t.responsible||"")===resp
-  );
-
- if(q)
-  tx=tx.filter(
-   t=>
-    (t.description||"")
-     .toLowerCase()
-     .includes(q)||
-    (t.notes||"")
-     .toLowerCase()
-     .includes(q)
-  );
-
- tx.sort(
-  (a,b)=>{
-   const aPaid=a.paid===true;
-   const bPaid=b.paid===true;
-   if(aPaid!==bPaid) return aPaid?1:-1;
-   return a.date.localeCompare(b.date);
-  }
- );
-
- $("transactionsEmpty")
-  .classList
-  .toggle(
-   "hidden",
-   !!tx.length
-  );
-
- const renderRow=t=>{
-
-   const s=status(t),
-   income=t.type==="income";
-
-   let group=
-    t.installmentGroup
-     ?`<div class="text-[10px] text-slate-400">
-        Parcela ${t.installmentNumber}/${t.installmentTotal}
-       </div>`
-     :t.recurrenceGroup
-      ?`<div class="text-[10px] text-blue-500">
-         Recorrência ${t.recurrenceNumber}/${t.recurrenceTotal}
-        </div>`
-      :"";
-
-   return `
-    <tr class="${
-     s==="overdue"
-      ?"alert-row"
-      :""
-    } hover:bg-slate-50">
-
-     <td class="px-5 py-4 text-sm">
-      ${formatDate(t.date)}
-     </td>
-
-     <td class="px-5 py-4">
-      <div class="font-semibold text-sm">
-       ${esc(t.description)}
-      </div>
-      ${group}
-     </td>
-
-     <td class="px-5 py-4 text-sm text-slate-500">
-      ${esc(t.institution||"—")}
-     </td>
-
-     <td class="px-5 py-4 text-sm text-slate-500">
-      ${esc(t.responsible||"—")}
-     </td>
-
-     <td class="px-5 py-4 text-sm text-slate-500">
-      ${esc(categoryName(t.categoryId))}
-     </td>
-
-     <td class="px-5 py-4 text-xs font-bold ${
-      income
-       ?"text-emerald-600"
-       :"text-rose-600"
-     }">
-      ${income?"ENTRADA":"SAÍDA"}
-     </td>
-
-     <td class="px-5 py-4 font-bold ${
-      income
-       ?"text-emerald-600"
-       :"text-rose-600"
-     }">
-      ${income?"+":"-"} ${money(t.amount)}
-     </td>
-
-     <td class="px-5 py-4">
-      ${statusHTML(s)}
-     </td>
-
-     <td class="px-5 py-4">
-
-      <div class="flex justify-end gap-1">
-
-       ${
-        t.paid
-         ?`<button
-             onclick="openPaymentHistory('${t.id}')"
-             class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500"
-             title="Ver histórico do pagamento">
-             ↺
-            </button>`
-         :`<button
-             onclick="payTransaction('${t.id}')"
-             class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600"
-             title="Dar baixa">
-             ✓
-            </button>`
-       }
-
-       <button
-        onclick="openTransactionModal('${t.id}')"
-        class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600"
-        title="Editar">
-        ✎
-       </button>
-
-       <button
-        onclick="deleteTransaction('${t.id}')"
-        class="w-8 h-8 rounded-lg hover:bg-rose-50 text-rose-600"
-        title="Excluir">
-        ×
-       </button>
-
-      </div>
-
-     </td>
-
-    </tr>
-   `;
-  };
-
- const incomes=tx.filter(t=>t.type==="income");
- const expenses=tx.filter(t=>t.type==="expense");
-
- const section=(title,items,income)=>items.length
-  ?`<tr>
-     <td colspan="9" class="px-5 py-2.5 bg-slate-50 border-t border-b border-slate-200 text-[11px] font-bold uppercase tracking-wide ${
-      income
-       ?"text-emerald-600"
-       :"text-rose-600"
-     }">
-      ${title}
-     </td>
-    </tr>${items.map(renderRow).join("")}`
-  :"";
-
- $("transactionsTable").innerHTML=
-  section("Entradas",incomes,true)+
-  section("Saídas",expenses,false);
-
+ updateTransactionFilterBadge();let tx=[...state.transactions];
+ const m=$("filterMonth").value,cat=$("filterCategory").value,type=$("filterType").value,st=$("filterStatus").value,inst=$("filterInstitution").value,resp=$("filterResponsible").value,q=$("filterSearch").value.toLowerCase();
+ if(transactionQuickFilter==="expected")tx=tx.filter(t=>t.date.slice(0,7)===m&&!t.paid&&t.type==="expense");
+ else if(transactionQuickFilter==="alerts"){const today=todayISO(),lim=new Date(today+"T00:00:00");lim.setDate(lim.getDate()+3);const z=`${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,"0")}-${String(lim.getDate()).padStart(2,"0")}`;tx=tx.filter(t=>!t.paid&&t.date<=z);}
+ else if(m)tx=tx.filter(t=>t.date.slice(0,7)===m);
+ if(cat)tx=tx.filter(t=>t.categoryId===cat||(t.isCreditCardInvoice&&Array.isArray(t.subTransactions)&&t.subTransactions.some(c=>c.categoryId===cat)));
+ if(type)tx=tx.filter(t=>t.type===type);if(st)tx=tx.filter(t=>status(t)===st);if(inst)tx=tx.filter(t=>(t.institution||"")===inst);if(resp)tx=tx.filter(t=>(t.responsible||"")===resp);
+ if(q)tx=tx.filter(t=>(t.description||"").toLowerCase().includes(q)||(t.notes||"").toLowerCase().includes(q)||(t.isCreditCardInvoice&&Array.isArray(t.subTransactions)&&t.subTransactions.some(c=>(c.description||"").toLowerCase().includes(q))));
+ tx.sort((a,b)=>{const ap=a.paid===true,bp=b.paid===true;if(ap!==bp)return ap?1:-1;return a.date.localeCompare(b.date);});
+ $("transactionsEmpty").classList.toggle("hidden",!!tx.length);
+ const renderRow=t=>{const s=status(t),income=t.type==="income",invoice=!!t.isCreditCardInvoice,n=Array.isArray(t.subTransactions)?t.subTransactions.length:0;const group=t.installmentGroup?`<div class="text-[10px] text-slate-400">Parcela ${t.installmentNumber}/${t.installmentTotal}</div>`:t.recurrenceGroup?`<div class="text-[10px] text-blue-500">Recorrência ${t.recurrenceNumber}/${t.recurrenceTotal}</div>`:invoice?`<div class="text-[10px] text-blue-500">Fatura · ${n} lançamento(s)</div>`:"";return `<tr class="${s==="overdue"?"alert-row":""} hover:bg-slate-50"><td class="px-5 py-4 text-sm">${formatDate(t.date)}</td><td class="px-5 py-4"><div class="font-semibold text-sm flex items-center gap-2">${invoice?`<span class="text-blue-600">▣</span>`:""}${esc(t.description)}</div>${group}</td><td class="px-5 py-4 text-sm text-slate-500">${esc(t.institution||"—")}</td><td class="px-5 py-4 text-sm text-slate-500">${esc(t.responsible||"—")}</td><td class="px-5 py-4 text-sm text-slate-500">${invoice?`<span class="text-blue-600 font-semibold">Múltiplas categorias</span>`:esc(categoryName(t.categoryId))}</td><td class="px-5 py-4 text-xs font-bold ${income?"text-emerald-600":"text-rose-600"}">${income?"ENTRADA":"SAÍDA"}</td><td class="px-5 py-4 font-bold ${income?"text-emerald-600":"text-rose-600"}">${income?"+":"-"} ${money(t.amount)}</td><td class="px-5 py-4">${statusHTML(s)}</td><td class="px-5 py-4"><div class="flex justify-end gap-1">${invoice?`<button onclick="openCreditInvoice('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600" title="Ver fatura">▣</button>`:""}${t.paid?`<button onclick="openPaymentHistory('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500" title="Ver histórico do pagamento">↺</button>`:`<button onclick="payTransaction('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600" title="Dar baixa">✓</button>`}<button onclick="openTransactionModal('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600" title="Editar">✎</button><button onclick="deleteTransaction('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-rose-600" title="Excluir">×</button></div></td></tr>`;};
+ const incomes=tx.filter(t=>t.type==="income"),expenses=tx.filter(t=>t.type==="expense");const section=(title,items,income)=>items.length?`<tr><td colspan="9" class="px-5 py-2.5 bg-slate-50 border-t border-b border-slate-200 text-[11px] font-bold uppercase tracking-wide ${income?"text-emerald-600":"text-rose-600"}">${title}</td></tr>${items.map(renderRow).join("")}`:"";$("transactionsTable").innerHTML=section("Entradas",incomes,true)+section("Saídas",expenses,false);
 }
 
 function clearFilters(){
@@ -3802,397 +3379,30 @@ function clearFilters(){
  renderTransactions()
 }
 
-function openTransactionModal(id=null){
-
- $("transactionForm").reset();
-
- $("transactionId").value=id||"";
-
- $("transactionDate").value=todayISO();
-
- $("transactionPaid").checked=true;
-
- $("installmentEnabled").checked=false;
- $("recurringEnabled").checked=false;
-
- $("installmentFields").classList.add("hidden");
- $("recurrenceFields").classList.add("hidden");
-
- populateCategorySelects();
-
- setTransactionType("income");
-
- if(id){
-
-  const t=
-   state.transactions.find(
-    x=>x.id===id
-   );
-
-  if(!t)return;
-
-  $("transactionModalTitle").textContent=
-   "Editar lançamento";
-
-  $("transactionDescription").value=
-   t.description;
-
-  $("transactionAmount").value=
-   t.amount;
-
-  $("transactionDate").value=
-   t.date;
-
-  $("transactionCategory").value=
-   t.categoryId;
-
-  $("transactionInstitution").value=
-   t.institution||"";
-
-  $("transactionResponsible").value=
-   t.responsible||"";
-
-  $("transactionNotes").value=
-   t.notes||"";
-
-  $("transactionPaid").checked=
-   !!t.paid;
-
-  setTransactionType(t.type);
-
- }else{
-
-  $("transactionModalTitle").textContent=
-   "Novo lançamento";
-
- }
-
- $("transactionModal").classList.add("open")
-}
+let creditCardItems=[];
+function isCreditCardInvoiceForm(){return $("transactionPaymentMethod")?.value==="Cartão de crédito";}
+function categoryOptionsHTML(selected=""){return '<option value="">Selecione...</option>'+state.categories.filter(c=>c.type==="expense").map(c=>`<option value="${esc(c.id)}" ${c.id===selected?"selected":""}>${esc(c.name)}</option>`).join("");}
+function addCreditCardItem(item={}){creditCardItems.push({id:item.id||uid("cc"),description:item.description||"",categoryId:item.categoryId||"",amount:Number(item.amount)||0,date:item.date||$("transactionDate").value||todayISO(),paid:!!item.paid});renderCreditCardItems();}
+function removeCreditCardItem(i){creditCardItems.splice(i,1);renderCreditCardItems();}
+function updateCreditCardItem(i,f,v){if(!creditCardItems[i])return;creditCardItems[i][f]=f==="amount"?Number(v)||0:v;updateCreditCardTotal();}
+function renderCreditCardItems(){const c=$("creditCardItems");if(!c)return;c.innerHTML=creditCardItems.length?creditCardItems.map((x,i)=>`<div class="credit-invoice-item"><div class="credit-invoice-item-grid"><div><label class="text-[11px] font-semibold text-slate-600">Descrição da compra *</label><input class="input mt-1" value="${esc(x.description)}" placeholder="Ex.: Supermercado" oninput="updateCreditCardItem(${i},'description',this.value)"></div><div><label class="text-[11px] font-semibold text-slate-600">Categoria *</label><select class="input mt-1" onchange="updateCreditCardItem(${i},'categoryId',this.value)">${categoryOptionsHTML(x.categoryId)}</select></div><div><label class="text-[11px] font-semibold text-slate-600">Valor *</label><input class="input mt-1" type="number" min="0.01" step="0.01" value="${Number(x.amount)||0}" oninput="updateCreditCardItem(${i},'amount',this.value)"></div><button type="button" onclick="removeCreditCardItem(${i})" class="w-9 h-10 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 font-bold" title="Remover lançamento">×</button></div><div class="mt-2"><label class="text-[11px] font-semibold text-slate-600">Data da compra *</label><input class="input mt-1" type="date" value="${esc(x.date)}" onchange="updateCreditCardItem(${i},'date',this.value)"></div></div>`).join(""):`<div class="border border-dashed border-slate-300 rounded-xl p-6 text-center text-sm text-slate-400">Nenhum lançamento adicionado. Clique em <strong>+ Adicionar lançamento</strong> para começar.</div>`;updateCreditCardTotal();}
+function updateCreditCardTotal(){const total=creditCardItems.reduce((s,x)=>s+(Number(x.amount)||0),0);if($("creditCardItemsTotal"))$("creditCardItemsTotal").textContent=money(total);if($("transactionAmount")){$("transactionAmount").value=total?total.toFixed(2):"";$("transactionAmount").readOnly=isCreditCardInvoiceForm();}}
+function toggleCreditCardMode(){const active=isCreditCardInvoiceForm();$("creditCardInvoiceEditor")?.classList.toggle("hidden",!active);$("transactionCategory")?.closest("div")?.parentElement?.classList.toggle("hidden",active);$("transactionCategoryRequired")?.classList.toggle("hidden",active);$("installmentEnabled")?.closest(".border")?.classList.toggle("hidden",active);$("recurringEnabled")?.closest(".border")?.classList.toggle("hidden",active);if(active){$("transactionType").value="expense";setTransactionType("expense");if(!creditCardItems.length)addCreditCardItem({date:$("transactionDate").value||todayISO()});renderCreditCardItems();}else updateCreditCardTotal();}
+function openTransactionModal(id=null){$("transactionForm").reset();creditCardItems=[];$("transactionId").value=id||"";$("transactionDate").value=todayISO();$("transactionPaid").checked=true;$("installmentEnabled").checked=false;$("recurringEnabled").checked=false;$("transactionPaymentMethod").value="";$("creditCardInvoiceEditor").classList.add("hidden");$("installmentFields").classList.add("hidden");$("recurrenceFields").classList.add("hidden");populateCategorySelects();setTransactionType("income");if(id){const t=state.transactions.find(x=>x.id===id);if(!t)return;$("transactionModalTitle").textContent=t.isCreditCardInvoice?"Editar fatura do cartão":"Editar lançamento";$("transactionDescription").value=t.description||"";$("transactionAmount").value=t.amount||"";$("transactionDate").value=t.date||todayISO();$("transactionCategory").value=t.categoryId||"";$("transactionInstitution").value=t.institution||"";$("transactionResponsible").value=t.responsible||"";$("transactionNotes").value=t.notes||"";$("transactionPaid").checked=!!t.paid;$("transactionPaymentMethod").value=t.paymentMethod||"";if(t.isCreditCardInvoice){$("transactionPaymentMethod").value="Cartão de crédito";creditCardItems=Array.isArray(t.subTransactions)?t.subTransactions.map(x=>({...x,amount:Number(x.amount)||0})):[];}setTransactionType(t.type);}else $("transactionModalTitle").textContent="Novo lançamento";toggleCreditCardMode();$("transactionModal").classList.add("open");}
 
 function closeTransactionModal(){
  $("transactionModal").classList.remove("open")
 }
 
-function setTransactionType(type){
-
- $("transactionType").value=type;
-
- const a=$("typeIncome"),
- b=$("typeExpense");
-
- a.className=
-  type==="income"
-   ?"rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 p-3 font-bold"
-   :"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";
-
- b.className=
-  type==="expense"
-   ?"rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 p-3 font-bold"
-   :"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";
-
- const old=$("transactionCategory").value;
-
- populateCategorySelects();
-
- const ok=
-  state.categories.find(
-   c=>c.id===old&&c.type===type
-  );
-
- $("transactionCategory").value=
-  ok
-   ?ok.id
-   :(state.categories.find(
-      c=>c.type===type
-     )?.id||"");
-
-}
-
-function toggleInstallments(){
-
- const e=$("installmentEnabled").checked;
-
- $("installmentFields")
-  .classList
-  .toggle("hidden",!e);
-
- if(e){
-
-  $("recurringEnabled").checked=false;
-
-  $("recurrenceFields")
-   .classList
-   .add("hidden");
-
- }
-
-}
-
-function toggleRecurrence(){
-
- const e=$("recurringEnabled").checked;
-
- $("recurrenceFields")
-  .classList
-  .toggle("hidden",!e);
-
- if(e){
-
-  $("installmentEnabled").checked=false;
-
-  $("installmentFields")
-   .classList
-   .add("hidden");
-
- }
-
-}
+function setTransactionType(type){$("transactionType").value=type;const a=$("typeIncome"),b=$("typeExpense");a.className=type==="income"?"rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";b.className=type==="expense"?"rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";const old=$("transactionCategory").value;populateCategorySelects();const ok=state.categories.find(c=>c.id===old&&c.type===type);$("transactionCategory").value=ok?ok.id:(state.categories.find(c=>c.type===type)?.id||"");}
+function toggleInstallments(){const e=$("installmentEnabled").checked;$("installmentFields").classList.toggle("hidden",!e);if(e){$("recurringEnabled").checked=false;$("recurrenceFields").classList.add("hidden");}}
+function toggleRecurrence(){const e=$("recurringEnabled").checked;$("recurrenceFields").classList.toggle("hidden",!e);if(e){$("installmentEnabled").checked=false;$("installmentFields").classList.add("hidden");}}
 
 /* =========================================================
    SALVAR / EDITAR LANÇAMENTO
    ========================================================= */
 
-$("transactionForm").addEventListener(
- "submit",
- e=>{
-
-  e.preventDefault();
-
-  const id=$("transactionId").value,
-  type=$("transactionType").value,
-  description=$("transactionDescription").value.trim(),
-  amount=Number($("transactionAmount").value),
-  date=$("transactionDate").value,
-  categoryId=$("transactionCategory").value,
-  institution=$("transactionInstitution").value.trim(),
-  responsible=$("transactionResponsible").value.trim(),
-  notes=$("transactionNotes").value.trim(),
-  paid=$("transactionPaid").checked;
-
-  if(
-   !description||
-   amount<=0||
-   !date||
-   !categoryId
-  ){
-
-   showToast(
-    "Preencha os campos obrigatórios.",
-    "error"
-   );
-
-   return;
-  }
-
-  /* =====================================================
-     ALTERAÇÃO:
-     Edição de lançamento recorrente
-     ===================================================== */
-
-  if(id){
-
-   const current=
-    state.transactions.find(
-     t=>t.id===id
-    );
-
-   if(!current)return;
-
-   const updatedData={
-    type,
-    description,
-    amount,
-    categoryId,
-    institution,
-    responsible,
-    notes,
-    paid
-   };
-
-   if(current.recurrenceGroup){
-
-    const choice=prompt(
-     "Este lançamento faz parte de uma recorrência.\n\n"+
-     "Digite:\n\n"+
-     "1 - Alterar somente este lançamento\n"+
-     "2 - Alterar este e os próximos\n"+
-     "3 - Alterar toda a recorrência\n"+
-     "0 - Cancelar"
-    );
-
-    if(
-     choice===null||
-     choice==="0"
-    ){
-     return;
-    }
-
-    if(
-     !["1","2","3"].includes(choice)
-    ){
-
-     showToast(
-      "Opção inválida.",
-      "error"
-     );
-
-     return;
-    }
-
-    const group=
-     current.recurrenceGroup;
-
-    if(choice==="1"){
-
-     const i=
-      state.transactions.findIndex(
-       t=>t.id===id
-      );
-
-     if(i>=0){
-
-      state.transactions[i]={
-       ...state.transactions[i],
-       ...updatedData,
-       date
-      };
-
-     }
-
-    }else if(choice==="2"){
-
-     /*
-      Mantém a data original de cada
-      lançamento da recorrência.
-      Apenas os dados editados são
-      aplicados ao lançamento atual
-      e aos seguintes.
-     */
-
-     state.transactions=
-      state.transactions.map(t=>{
-
-       if(t.recurrenceGroup!==group)
-        return t;
-
-       if(t.date>=current.date){
-
-        return{
-         ...t,
-         ...updatedData
-        };
-
-       }
-
-       return t;
-
-      });
-
-    }else if(choice==="3"){
-
-     /*
-      Mantém as datas individuais
-      de cada lançamento da recorrência.
-     */
-
-     state.transactions=
-      state.transactions.map(t=>{
-
-       if(t.recurrenceGroup!==group)
-        return t;
-
-       return{
-        ...t,
-        ...updatedData
-       };
-
-      });
-
-    }
-
-    saveState();
-
-    closeTransactionModal();
-
-    refreshAll();
-
-    showToast(
-     "Lançamento atualizado."
-    );
-
-    return;
-
-   }
-
-   /* Edição de lançamento normal */
-
-   const i=
-    state.transactions.findIndex(
-     t=>t.id===id
-    );
-
-   if(i>=0){
-
-    state.transactions[i]={
-     ...state.transactions[i],
-     ...updatedData,
-     date
-    };
-
-   }
-
-   saveState();
-
-   closeTransactionModal();
-
-   refreshAll();
-
-   showToast(
-    "Lançamento atualizado."
-   );
-
-   return;
-
-  }
-
-  const base={
-   type,
-   description,
-   amount,
-   date,
-   categoryId,
-   institution,
-   responsible,
-   notes,
-   paid
-  };
-
-  if($("installmentEnabled").checked)
-   createInstallments(base);
-
-  else if($("recurringEnabled").checked)
-   createRecurrence(base);
-
-  else
-   state.transactions.push({
-    id:uid("tx"),
-    ...base,
-    createdAt:new Date().toISOString()
-   });
-
-  saveState();
-
-  closeTransactionModal();
-
-  refreshAll();
-
-  showToast(
-   "Lançamento salvo com sucesso."
-  );
-
- }
-);
+$("transactionForm").addEventListener("submit",e=>{e.preventDefault();const id=$("transactionId").value,type=$("transactionType").value,description=$("transactionDescription").value.trim(),amount=Number($("transactionAmount").value),date=$("transactionDate").value,categoryId=$("transactionCategory").value,institution=$("transactionInstitution").value.trim(),responsible=$("transactionResponsible").value.trim(),notes=$("transactionNotes").value.trim(),paid=$("transactionPaid").checked,paymentMethod=$("transactionPaymentMethod").value;const invoice=paymentMethod==="Cartão de crédito";if(!description||!date||(invoice?creditCardItems.length===0:amount<=0)||(!invoice&&!categoryId)){showToast("Preencha os campos obrigatórios.","error");return;}if(invoice){const invalid=creditCardItems.some(x=>!String(x.description||"").trim()||!x.categoryId||!x.date||!(Number(x.amount)>0));if(invalid){showToast("Preencha descrição, categoria, valor e data de todas as compras da fatura.","error");return;}const total=creditCardItems.reduce((s,x)=>s+Number(x.amount||0),0),items=creditCardItems.map(x=>({...x,type:"expense",paid,createdAt:x.createdAt||new Date().toISOString()})),data={type:"expense",description,amount:total,date,categoryId:null,institution,responsible,notes,paid,paymentMethod:"Cartão de crédito",isCreditCardInvoice:true,subTransactions:items};if(id){const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...data};}else state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});saveState();closeTransactionModal();refreshAll();showToast("Fatura salva com sucesso.");return;}if(amount<=0||!categoryId){showToast("Preencha os campos obrigatórios.","error");return;}if(id){const current=state.transactions.find(t=>t.id===id);if(!current)return;const updatedData={type,description,amount,categoryId,institution,responsible,notes,paid,paymentMethod};if(current.recurrenceGroup){const choice=prompt("Este lançamento faz parte de uma recorrência.\n\nDigite:\n\n1 - Alterar somente este lançamento\n2 - Alterar este e os próximos\n3 - Alterar toda a recorrência\n0 - Cancelar");if(choice===null||choice==="0")return;if(!["1","2","3"].includes(choice)){showToast("Opção inválida.","error");return;}const group=current.recurrenceGroup;if(choice==="1"){const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...updatedData,date};}else if(choice==="2")state.transactions=state.transactions.map(t=>t.recurrenceGroup===group&&t.date>=current.date?{...t,...updatedData}:t);else state.transactions=state.transactions.map(t=>t.recurrenceGroup===group?{...t,...updatedData}:t);}else{const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...updatedData,date};}saveState();closeTransactionModal();refreshAll();showToast("Lançamento atualizado.");return;}const base={type,description,amount,date,categoryId,institution,responsible,notes,paid,paymentMethod};if($("installmentEnabled").checked)createInstallments(base);else if($("recurringEnabled").checked)createRecurrence(base);else state.transactions.push({id:uid("tx"),...base,createdAt:new Date().toISOString()});saveState();closeTransactionModal();refreshAll();showToast("Lançamento salvo com sucesso.");});
 
 function createInstallments(d){
 
@@ -4267,6 +3477,9 @@ function createRecurrence(d){
    NOVO FLUXO DE BAIXA
    ========================================================= */
 
+function openCreditInvoice(id){const t=state.transactions.find(x=>x.id===id);if(!t||!t.isCreditCardInvoice)return;const items=Array.isArray(t.subTransactions)?t.subTransactions:[];$("creditInvoiceInfo").textContent=`${t.description} · ${t.institution||"Cartão não informado"} · Vencimento ${formatDate(t.date)}`;$("creditInvoiceDetailsContent").innerHTML=`<div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-slate-50 rounded-xl p-3"><div class="text-[11px] text-slate-400">Total da fatura</div><div class="text-lg font-bold mt-1">${money(t.amount)}</div></div><div class="bg-slate-50 rounded-xl p-3"><div class="text-[11px] text-slate-400">Lançamentos</div><div class="text-lg font-bold mt-1">${items.length}</div></div></div><div class="space-y-2">${items.map((x,i)=>`<div class="border border-slate-200 rounded-xl p-3 flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">${i+1}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm truncate">${esc(x.description)}</div><div class="text-xs text-slate-400 mt-1">${formatDate(x.date)} · ${esc(categoryName(x.categoryId))}</div></div><div class="text-right"><div class="font-bold text-sm text-rose-600">- ${money(x.amount)}</div><div class="text-[10px] mt-1">${x.paid?"Pago":"Pendente"}</div></div></div>`).join("")||`<div class="text-center text-slate-400 p-6">Nenhum lançamento nesta fatura.</div>`}</div><div class="mt-4 flex justify-between items-center bg-slate-50 rounded-xl p-4"><span class="font-semibold text-sm">Soma das compras</span><strong>${money(items.reduce((s,x)=>s+Number(x.amount||0),0))}</strong></div>`;$("creditInvoiceEditButton").onclick=()=>{closeCreditInvoiceModal();openTransactionModal(id);};$("creditInvoiceModal").classList.add("open");}
+function closeCreditInvoiceModal(){$("creditInvoiceModal").classList.remove("open");}
+
 function payTransaction(id){
  const t=state.transactions.find(x=>x.id===id);
  if(!t)return;
@@ -4327,11 +3540,13 @@ $("paymentForm").addEventListener("submit",e=>{
  t.paymentHistory.push({amount:paymentAmount,date:paymentDate,method:paymentMethod,institution:paymentInstitution,recordedAt:new Date().toISOString()});
  t.paid=true;
  t.paidAt=new Date().toISOString();
+ if(t.isCreditCardInvoice&&Array.isArray(t.subTransactions))t.subTransactions=t.subTransactions.map(x=>({...x,paid:true,paidAt:t.paidAt}));
  t.paymentDate=paymentDate;
  t.paymentMethod=paymentMethod;
  t.paymentInstitution=paymentInstitution;
  t.paidAmount=paymentAmount;
- t.amount=paymentAmount;
+ if(!t.isCreditCardInvoice)t.amount=paymentAmount;
+ if(t.isCreditCardInvoice&&Array.isArray(t.subTransactions))t.subTransactions=t.subTransactions.map(x=>({...x,paid:true,paidAt:t.paidAt}));
  saveState(); closePaymentModal(); refreshAll();
  showToast(t.type==="income"?"Recebimento registrado com sucesso.":"Pagamento registrado com sucesso.");
 });
@@ -4356,6 +3571,8 @@ function deleteTransaction(id){
   );
 
  if(!t)return;
+
+ if(t.isCreditCardInvoice){if(!confirm(`Excluir a fatura "${t.description}" e os ${Array.isArray(t.subTransactions)?t.subTransactions.length:0} lançamentos de compras?\n\nEsta ação não pode ser desfeita.`))return;state.transactions=state.transactions.filter(x=>x.id!==id);saveState();refreshAll();showToast("Fatura excluída.");return;}
 
  if(t.recurrenceGroup){
 
@@ -5607,6 +4824,15 @@ document
   }
 );
 
+document
+ .getElementById("creditInvoiceModal")
+ .addEventListener(
+  "click",
+  e=>{
+   if(e.target.id==="creditInvoiceModal")closeCreditInvoiceModal();
+  }
+ );
+
 document.addEventListener(
  "keydown",
  e=>{
@@ -5614,6 +4840,7 @@ document.addEventListener(
   if(e.key==="Escape"){
 
    closeTransactionModal();
+   closeCreditInvoiceModal();
    closeCategoryModal();
    closeSettings();
    closeDeleteTransactionModal();
@@ -5640,6 +4867,7 @@ async function init(){
  loadCloudSyncTime();
  initSupabase();
  loadState();
+ migrateCreditCardInvoices();
  populateCategorySelects();
  populateContactLists();
  populateDates();
