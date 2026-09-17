@@ -1264,6 +1264,125 @@ body{padding-bottom:92px!important}
   }
 }
 </style>
+
+<style id="fincontrol-credit-mobile-fix">
+/* =========================================================
+   CORREÇÃO MOBILE — FATURA DO CARTÃO / MODAIS / CALENDÁRIO
+   Não altera o layout desktop.
+   ========================================================= */
+@media(max-width:639px){
+  /* O modal sempre ocupa somente a largura útil da tela. */
+  #transactionModal,
+  #creditInvoiceModal,
+  #paymentModal,
+  #paymentHistoryModal,
+  #deleteTransactionModal{
+    padding:10px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #transactionModal > div,
+  #creditInvoiceModal > div,
+  #paymentModal > div,
+  #paymentHistoryModal > div,
+  #deleteTransactionModal > div{
+    width:100%!important;
+    max-width:calc(100vw - 20px)!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    max-height:calc(100vh - 20px)!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+
+  #transactionModal form,
+  #transactionModal form > div,
+  #transactionModal .grid,
+  #transactionModal .credit-invoice-item,
+  #transactionModal .credit-invoice-item-grid{
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Cabeçalho da área da fatura: título e botão ficam em linhas separadas. */
+  #creditCardInvoiceEditor > .flex:first-child{
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:10px!important;
+  }
+  #creditCardInvoiceEditor > .flex:first-child > div{
+    min-width:0!important;
+    width:100%!important;
+  }
+  #creditCardInvoiceEditor > .flex:first-child > button{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Cada compra usa uma coluna, com o botão de remover ao lado da categoria. */
+  #creditCardInvoiceEditor .credit-invoice-item-grid{
+    grid-template-columns:minmax(0,1fr) 42px!important;
+    gap:8px!important;
+    align-items:end!important;
+  }
+  #creditCardInvoiceEditor .credit-invoice-item-grid > :first-child{
+    grid-column:1 / -1!important;
+    grid-row:auto!important;
+    min-width:0!important;
+  }
+  #creditCardInvoiceEditor .credit-invoice-item-grid > :nth-child(2){
+    grid-column:1!important;
+    grid-row:auto!important;
+    min-width:0!important;
+  }
+  #creditCardInvoiceEditor .credit-invoice-item-grid > :nth-child(3){
+    grid-column:1 / -1!important;
+    grid-row:auto!important;
+    min-width:0!important;
+  }
+  #creditCardInvoiceEditor .credit-invoice-item-grid > :last-child{
+    grid-column:2!important;
+    grid-row:auto!important;
+    width:42px!important;
+    min-width:42px!important;
+    max-width:42px!important;
+    height:40px!important;
+    align-self:end!important;
+    justify-self:stretch!important;
+    box-sizing:border-box!important;
+  }
+
+  #creditCardInvoiceEditor .credit-invoice-item{
+    padding:12px!important;
+    overflow:hidden!important;
+  }
+
+  #creditCardInvoiceEditor .credit-invoice-total{
+    min-width:0!important;
+    width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Campos de data/valor/select não podem ultrapassar o modal. */
+  #transactionModal input,
+  #transactionModal select,
+  #transactionModal textarea{
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+}
+
+/* Modais sempre ficam acima de qualquer seletor de mês. */
+.modal{z-index:200000!important;}
+#monthPicker,
+#mobileDashboardMonthPicker{z-index:1000!important;}
+</style>
+
 </head>
 
 <body class="text-slate-800">
@@ -5090,6 +5209,51 @@ document.addEventListener('click', function(e){
   document.addEventListener("click", function(){
     setTimeout(refreshPickers, 0);
   }, true);
+})();
+</script>
+
+
+<script id="fincontrol-credit-mobile-modal-fix">
+(function(){
+  function closeMonthPickers(){
+    document.getElementById("monthPicker")?.classList.add("hidden");
+    document.getElementById("mobileDashboardMonthPicker")?.classList.add("hidden");
+  }
+
+  function resetModalScroll(id){
+    const modal=document.getElementById(id);
+    const panel=modal?.firstElementChild;
+    if(panel) panel.scrollTop=0;
+    if(modal) modal.scrollTop=0;
+  }
+
+  /* Ao abrir qualquer modal, os seletores de mês são fechados e o
+     formulário volta ao topo. Isso evita o calendário flutuando sobre a fatura
+     e evita que o modal reabra na posição de rolagem anterior. */
+  function wrap(name,id){
+    if(typeof window[name]!=="function") return;
+    const original=window[name];
+    if(original.__fcMobileWrapped) return;
+    const wrapped=function(){
+      closeMonthPickers();
+      const result=original.apply(this,arguments);
+      requestAnimationFrame(function(){resetModalScroll(id);});
+      return result;
+    };
+    wrapped.__fcMobileWrapped=true;
+    window[name]=wrapped;
+  }
+
+  function apply(){
+    wrap("openTransactionModal","transactionModal");
+    wrap("openCreditInvoice","creditInvoiceModal");
+    wrap("payTransaction","paymentModal");
+  }
+
+  if(document.readyState==="loading")
+    document.addEventListener("DOMContentLoaded",apply,{once:true});
+  else
+    apply();
 })();
 </script>
 
