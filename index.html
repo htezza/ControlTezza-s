@@ -1045,6 +1045,154 @@ body{padding-bottom:92px!important}
 }
 </style>
 
+
+<style>
+@media(max-width:639px){
+
+  /* ============================================================
+     CALENDÁRIOS — CAMADA SUPERIOR
+     ============================================================ */
+
+  #mobileDashboardMonthNav,
+  #visibleMonthNavigation{
+    position:relative!important;
+    z-index:99999!important;
+  }
+
+  #mobileDashboardMonthPicker,
+  #monthPicker{
+    z-index:100000!important;
+    isolation:isolate!important;
+  }
+
+  /* Impede que wrappers das páginas cortem os calendários. */
+  #page-dashboard,
+  #page-dashboard > .flex,
+  #page-lancamentos,
+  #page-lancamentos > .flex,
+  #visibleMonthNavigation{
+    overflow:visible!important;
+  }
+
+  /* O picker do Dashboard usa camada própria. */
+  #mobileDashboardMonthPicker{
+    position:fixed!important;
+    z-index:100000!important;
+  }
+
+  /* O picker de Lançamentos também sai da árvore de clipping. */
+  #monthPicker{
+    position:fixed!important;
+    z-index:100000!important;
+    left:auto!important;
+    right:auto!important;
+    top:auto!important;
+  }
+
+  /* ============================================================
+     CONTAS E COMPROMISSOS — MESMO PADRÃO DA LISTA DE LANÇAMENTOS
+     ============================================================ */
+
+  #page-compromissos .grid.grid-cols-2{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin-bottom:12px!important;
+  }
+
+  #page-compromissos .grid.grid-cols-2 > .card{
+    min-width:0!important;
+    min-height:82px!important;
+    padding:13px 14px!important;
+    border-radius:12px!important;
+    overflow:hidden!important;
+  }
+
+  #page-compromissos .grid.grid-cols-2 > .card p:first-child{
+    font-size:11px!important;
+    line-height:1.25!important;
+  }
+
+  #page-compromissos .grid.grid-cols-2 > .card .privacy-value{
+    font-size:13px!important;
+    line-height:1.25!important;
+    margin-top:4px!important;
+    width:100%!important;
+    min-width:0!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+  }
+
+  #page-compromissos > .card{
+    border-radius:12px!important;
+    overflow:hidden!important;
+    box-shadow:0 2px 12px rgba(15,23,42,.035)!important;
+  }
+
+  #page-compromissos > .card > div:first-child{
+    padding:10px 14px!important;
+  }
+
+  #page-compromissos > .card > div:first-child h3{
+    font-size:11px!important;
+    line-height:1.25!important;
+  }
+
+  #page-compromissos #commitmentsList{
+    width:100%!important;
+  }
+
+  #page-compromissos #commitmentsList > div{
+    font-size:13px!important;
+    line-height:1.3!important;
+  }
+
+  /* Cabeçalho mensal da lista */
+  #page-compromissos #commitmentsList > div:has(.font-semibold):not(:has(button)){
+    min-width:0!important;
+  }
+
+  /* Linha individual: mesma altura, espaçamento e escala da lista
+     mobile de Lançamentos. */
+  #page-compromissos #commitmentsList > div.grid{
+    display:grid!important;
+    grid-template-columns:32px minmax(0,1fr) auto!important;
+    column-gap:10px!important;
+    row-gap:2px!important;
+    padding:13px 14px!important;
+    min-height:82px!important;
+    align-items:center!important;
+    border-bottom:1px solid #f1f5f9!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid > div{
+    min-width:0!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid .font-semibold{
+    font-size:13px!important;
+    line-height:1.25!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid .text-\[11px\]{
+    font-size:11px!important;
+    line-height:1.25!important;
+    margin-top:3px!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid .privacy-value{
+    font-size:13px!important;
+    line-height:1.25!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid button{
+    width:32px!important;
+    height:32px!important;
+    border-radius:8px!important;
+  }
+}
+</style>
+
 </head>
 
 <body class="text-slate-800">
@@ -1387,13 +1535,7 @@ body{padding-bottom:92px!important}
 </section>
 
 <section id="page-compromissos" class="page">
-
-  <div class="mb-4">
-    <h2 class="text-lg font-bold">Contas e compromissos</h2>
-    <p class="text-sm text-slate-500">Acompanhe o que ainda precisa ser pago ou recebido.</p>
-  </div>
-
-  <div class="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
+<div class="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
 
  <div class="card min-w-0 p-2.5 sm:p-4 overflow-hidden">
   <p class="text-[10px] sm:text-sm text-slate-500 truncate">Pendentes</p>
@@ -1404,13 +1546,7 @@ body{padding-bottom:92px!important}
   <p class="text-[10px] sm:text-sm text-slate-500 truncate">Atrasados</p>
   <p id="commitOverdue" class="privacy-value text-[clamp(9px,2.6vw,13px)] sm:text-xl font-bold mt-1 text-rose-600 leading-tight whitespace-nowrap truncate block w-full">R$ 0,00</p>
  </div>
-
- <div class="card min-w-0 p-2.5 sm:p-4 overflow-hidden">
-  <p class="text-[10px] sm:text-sm text-slate-500 truncate">Próximos 3 dias</p>
-  <p id="commitUpcoming" class="privacy-value text-[clamp(9px,2.6vw,13px)] sm:text-xl font-bold mt-1 text-orange-600 leading-tight whitespace-nowrap truncate block w-full">R$ 0,00</p>
- </div>
-
- </div>
+</div>
 
  <div class="card overflow-hidden">
    <div class="p-4 sm:p-5 border-b border-slate-100">
@@ -4355,8 +4491,7 @@ function renderCommitments(){
    )
   );
 
- $("commitUpcoming").textContent=
-  money(
+ if($("commitUpcoming")) $("commitUpcoming").textContent=money(
    up.reduce(
     (s,t)=>s+Number(t.amount),
     0
@@ -5590,6 +5725,80 @@ document.addEventListener('click', function(e){
 
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});
   else bind();
+})();
+</script>
+
+
+<script>
+(function(){
+  function positionFixedPicker(picker, anchor, align){
+    if(!picker || !anchor || picker.classList.contains("hidden")) return;
+
+    requestAnimationFrame(function(){
+      const r = anchor.getBoundingClientRect();
+      const gap = 8;
+
+      picker.style.position = "fixed";
+      picker.style.zIndex = "100000";
+      picker.style.top = (r.bottom + gap) + "px";
+
+      const pw = picker.offsetWidth || 280;
+      const vw = window.innerWidth;
+
+      if(align === "center"){
+        let left = r.left + (r.width - pw) / 2;
+        left = Math.max(8, Math.min(left, vw - pw - 8));
+        picker.style.left = left + "px";
+        picker.style.right = "auto";
+        picker.style.transform = "none";
+      }else{
+        let left = r.right - pw;
+        left = Math.max(8, Math.min(left, vw - pw - 8));
+        picker.style.left = left + "px";
+        picker.style.right = "auto";
+      }
+    });
+  }
+
+  function refreshPickers(){
+    if(window.matchMedia("(max-width:639px)").matches){
+      positionFixedPicker(
+        document.getElementById("mobileDashboardMonthPicker"),
+        document.getElementById("mobileDashboardMonthNav"),
+        "center"
+      );
+      positionFixedPicker(
+        document.getElementById("monthPicker"),
+        document.getElementById("visibleFilterMonth"),
+        "right"
+      );
+    }
+  }
+
+  // Dashboard: preserva a função original e apenas corrige a camada/posição.
+  if(typeof window.toggleDashboardMonthPicker === "function"){
+    const originalDashboardToggle = window.toggleDashboardMonthPicker;
+    window.toggleDashboardMonthPicker = function(){
+      originalDashboardToggle.apply(this, arguments);
+      refreshPickers();
+    };
+  }
+
+  // Lançamentos: preserva toda a lógica existente e apenas corrige a camada/posição.
+  if(typeof window.toggleMonthPicker === "function"){
+    const originalMonthToggle = window.toggleMonthPicker;
+    window.toggleMonthPicker = function(){
+      originalMonthToggle.apply(this, arguments);
+      refreshPickers();
+    };
+  }
+
+  window.addEventListener("resize", refreshPickers, {passive:true});
+  window.addEventListener("scroll", refreshPickers, {passive:true});
+
+  document.addEventListener("click", function(){
+    setTimeout(refreshPickers, 0);
+  }, true);
 })();
 </script>
 
