@@ -1323,42 +1323,44 @@ body{padding-bottom:92px!important}
     box-sizing:border-box!important;
   }
 
-  /* Cada compra usa uma coluna, com o botão de remover ao lado da categoria. */
-  #creditCardInvoiceEditor .credit-invoice-item-grid{
-    grid-template-columns:minmax(0,1fr) 42px!important;
-    gap:8px!important;
-    align-items:end!important;
-  }
-  #creditCardInvoiceEditor .credit-invoice-item-grid > :first-child{
-    grid-column:1 / -1!important;
-    grid-row:auto!important;
+  /* Editor da compra: uma coluna no celular e largura sempre limitada ao quadro. */
+  #creditCardInvoiceEditor .credit-invoice-entry,
+  #creditCardInvoiceEditor .credit-invoice-entry > *,
+  #creditCardInvoiceEditor .credit-invoice-entry .grid,
+  #creditCardInvoiceEditor .credit-invoice-entry .grid > div{
     min-width:0!important;
-  }
-  #creditCardInvoiceEditor .credit-invoice-item-grid > :nth-child(2){
-    grid-column:1!important;
-    grid-row:auto!important;
-    min-width:0!important;
-  }
-  #creditCardInvoiceEditor .credit-invoice-item-grid > :nth-child(3){
-    grid-column:1 / -1!important;
-    grid-row:auto!important;
-    min-width:0!important;
-  }
-  #creditCardInvoiceEditor .credit-invoice-item-grid > :last-child{
-    grid-column:2!important;
-    grid-row:auto!important;
-    width:42px!important;
-    min-width:42px!important;
-    max-width:42px!important;
-    height:40px!important;
-    align-self:end!important;
-    justify-self:stretch!important;
+    max-width:100%!important;
+    width:100%;
     box-sizing:border-box!important;
+  }
+  #creditCardInvoiceEditor #creditCardItemDate,
+  #creditCardInvoiceEditor #creditCardItemAmount,
+  #creditCardInvoiceEditor #creditCardItemCategory,
+  #creditCardInvoiceEditor #creditCardItemDescription{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #creditCardInvoiceEditor #creditCardItemDate{
+    inline-size:100%!important;
+    max-inline-size:100%!important;
+    -webkit-appearance:none!important;
+    appearance:none!important;
+    padding-right:8px!important;
   }
 
   #creditCardInvoiceEditor .credit-invoice-item{
     padding:12px!important;
     overflow:hidden!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  #creditCardInvoiceEditor .credit-invoice-item > div{
+    min-width:0!important;
   }
 
   #creditCardInvoiceEditor .credit-invoice-total{
@@ -1381,6 +1383,55 @@ body{padding-bottom:92px!important}
 .modal{z-index:200000!important;}
 #monthPicker,
 #mobileDashboardMonthPicker{z-index:1000!important;}
+
+/* =========================================================
+   FINCONTROL — AJUSTE FINAL DO EDITOR DE FATURA NO MOBILE
+   ========================================================= */
+@media(max-width:639px){
+  #transactionModal{
+    z-index:300!important;
+  }
+  #transactionModal > div{
+    width:calc(100vw - 20px)!important;
+    max-width:calc(100vw - 20px)!important;
+    min-width:0!important;
+    overflow-x:hidden!important;
+  }
+  #creditCardInvoiceEditor{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  #creditCardInvoiceEditor .credit-invoice-entry{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+  #creditCardInvoiceEditor #creditCardItemDate{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    display:block!important;
+    overflow:hidden!important;
+  }
+  #creditCardInvoiceEditor input,
+  #creditCardInvoiceEditor select{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #creditCardItems{
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+}
 </style>
 
 </head>
@@ -1918,9 +1969,62 @@ body{padding-bottom:92px!important}
 </div>
 
 <div id="creditCardInvoiceEditor" class="hidden border border-blue-200 bg-blue-50/40 rounded-xl p-4 space-y-4">
-<div class="flex items-start justify-between gap-3"><div><div class="font-semibold text-sm text-slate-800 flex items-center gap-2">Lançamentos da fatura <span class="credit-invoice-badge">Cartão de crédito</span></div><div class="text-xs text-slate-500 mt-1">Cadastre cada compra com sua própria categoria. O valor da fatura será calculado automaticamente.</div></div><button type="button" onclick="addCreditCardItem()" class="btn btn-secondary shrink-0">+ Adicionar lançamento</button></div>
-<div id="creditCardItems" class="credit-invoice-items"></div>
-<div class="credit-invoice-total flex items-center justify-between gap-3"><span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total da fatura</span><span id="creditCardItemsTotal" class="text-lg font-bold text-slate-900">R$ 0,00</span></div>
+  <div class="min-w-0">
+    <div class="font-semibold text-sm text-slate-800 flex items-center gap-2 flex-wrap">
+      <span>Lançamentos da fatura</span>
+      <span class="credit-invoice-badge">Cartão de crédito</span>
+    </div>
+    <div class="text-xs text-slate-500 mt-1">Cadastre uma compra por vez. Clique em <strong>Salvar lançamento</strong> para confirmar cada item; eles aparecerão na lista abaixo. Ao terminar, salve a fatura.</div>
+  </div>
+
+  <div class="credit-invoice-entry border border-blue-200 bg-white rounded-xl p-3 space-y-3 min-w-0">
+    <div class="flex items-center justify-between gap-2">
+      <div>
+        <div id="creditCardItemFormTitle" class="font-semibold text-sm text-slate-800">Novo lançamento da fatura</div>
+        <div class="text-[11px] text-slate-400">Preencha os dados desta compra e salve para adicioná-la à lista.</div>
+      </div>
+      <button type="button" id="creditCardItemCancelEdit" onclick="cancelCreditCardItemEdit()" class="hidden btn btn-secondary !min-h-[36px] !h-[36px] !px-3 text-xs shrink-0">Cancelar edição</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 min-w-0">
+      <div class="md:col-span-2 min-w-0">
+        <label class="text-xs font-semibold text-slate-600">Descrição da compra *</label>
+        <input id="creditCardItemDescription" class="input mt-1 w-full" placeholder="Ex.: Supermercado" autocomplete="off">
+      </div>
+
+      <div class="min-w-0">
+        <label class="text-xs font-semibold text-slate-600">Categoria *</label>
+        <select id="creditCardItemCategory" class="input mt-1 w-full"></select>
+      </div>
+
+      <div class="min-w-0">
+        <label class="text-xs font-semibold text-slate-600">Valor *</label>
+        <input id="creditCardItemAmount" class="input mt-1 w-full" type="number" min="0.01" step="0.01" placeholder="0,00">
+      </div>
+
+      <div class="md:col-span-2 min-w-0 w-full">
+        <label class="text-xs font-semibold text-slate-600">Data da compra *</label>
+        <input id="creditCardItemDate" class="input mt-1 w-full" type="date">
+      </div>
+    </div>
+
+    <button type="button" id="creditCardItemSaveButton" onclick="saveCreditCardItem()" class="btn btn-primary w-full">
+      ✓ Salvar lançamento
+    </button>
+  </div>
+
+  <div class="min-w-0">
+    <div class="flex items-center justify-between gap-3 mb-2">
+      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide">Lançamentos confirmados</div>
+      <div id="creditCardItemsCount" class="text-[11px] text-slate-400">0 lançamentos</div>
+    </div>
+    <div id="creditCardItems" class="credit-invoice-items"></div>
+  </div>
+
+  <div class="credit-invoice-total flex items-center justify-between gap-3">
+    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total da fatura</span>
+    <span id="creditCardItemsTotal" class="text-lg font-bold text-slate-900">R$ 0,00</span>
+  </div>
 </div>
 
 <div>
@@ -3499,15 +3603,191 @@ function clearFilters(){
 }
 
 let creditCardItems=[];
-function isCreditCardInvoiceForm(){return $("transactionPaymentMethod")?.value==="Cartão de crédito";}
-function categoryOptionsHTML(selected=""){return '<option value="">Selecione...</option>'+state.categories.filter(c=>c.type==="expense").map(c=>`<option value="${esc(c.id)}" ${c.id===selected?"selected":""}>${esc(c.name)}</option>`).join("");}
-function addCreditCardItem(item={}){creditCardItems.push({id:item.id||uid("cc"),description:item.description||"",categoryId:item.categoryId||"",amount:Number(item.amount)||0,date:item.date||$("transactionDate").value||todayISO(),paid:!!item.paid});renderCreditCardItems();}
-function removeCreditCardItem(i){creditCardItems.splice(i,1);renderCreditCardItems();}
-function updateCreditCardItem(i,f,v){if(!creditCardItems[i])return;creditCardItems[i][f]=f==="amount"?Number(v)||0:v;updateCreditCardTotal();}
-function renderCreditCardItems(){const c=$("creditCardItems");if(!c)return;c.innerHTML=creditCardItems.length?creditCardItems.map((x,i)=>`<div class="credit-invoice-item"><div class="credit-invoice-item-grid"><div><label class="text-[11px] font-semibold text-slate-600">Descrição da compra *</label><input class="input mt-1" value="${esc(x.description)}" placeholder="Ex.: Supermercado" oninput="updateCreditCardItem(${i},'description',this.value)"></div><div><label class="text-[11px] font-semibold text-slate-600">Categoria *</label><select class="input mt-1" onchange="updateCreditCardItem(${i},'categoryId',this.value)">${categoryOptionsHTML(x.categoryId)}</select></div><div><label class="text-[11px] font-semibold text-slate-600">Valor *</label><input class="input mt-1" type="number" min="0.01" step="0.01" value="${Number(x.amount)||0}" oninput="updateCreditCardItem(${i},'amount',this.value)"></div><button type="button" onclick="removeCreditCardItem(${i})" class="w-9 h-10 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 font-bold" title="Remover lançamento">×</button></div><div class="mt-2"><label class="text-[11px] font-semibold text-slate-600">Data da compra *</label><input class="input mt-1" type="date" value="${esc(x.date)}" onchange="updateCreditCardItem(${i},'date',this.value)"></div></div>`).join(""):`<div class="border border-dashed border-slate-300 rounded-xl p-6 text-center text-sm text-slate-400">Nenhum lançamento adicionado. Clique em <strong>+ Adicionar lançamento</strong> para começar.</div>`;updateCreditCardTotal();}
+let creditCardEditingIndex=-1;
+
+function resetCreditCardItemForm(){
+ creditCardEditingIndex=-1;
+ if($('creditCardItemDescription'))$('creditCardItemDescription').value='';
+ if($('creditCardItemCategory'))$('creditCardItemCategory').value=state.categories.find(c=>c.type==='expense')?.id||'';
+ if($('creditCardItemAmount'))$('creditCardItemAmount').value='';
+ if($('creditCardItemDate'))$('creditCardItemDate').value=$('transactionDate')?.value||todayISO();
+ if($('creditCardItemFormTitle'))$('creditCardItemFormTitle').textContent='Novo lançamento da fatura';
+ if($('creditCardItemSaveButton'))$('creditCardItemSaveButton').innerHTML='✓ Salvar lançamento';
+ $('creditCardItemCancelEdit')?.classList.add('hidden');
+}
+
+function focusCreditCardItemForm(){
+ resetCreditCardItemForm();
+ $('creditCardItemDescription')?.focus();
+}
+
+function addCreditCardItem(item={}){
+ // Mantido para compatibilidade com versões anteriores: agora apenas abre
+ // o formulário de um lançamento por vez, sem criar item vazio na lista.
+ if(item&&item.id){
+  creditCardItems.push({id:item.id||uid('cc'),description:item.description||'',categoryId:item.categoryId||'',amount:Number(item.amount)||0,date:item.date||$('transactionDate').value||todayISO(),paid:!!item.paid,createdAt:item.createdAt||new Date().toISOString()});
+  renderCreditCardItems();
+  return;
+ }
+ focusCreditCardItemForm();
+}
+
+function saveCreditCardItem(){
+ const description=$('creditCardItemDescription')?.value.trim()||'';
+ const categoryId=$('creditCardItemCategory')?.value||'';
+ const amount=Number($('creditCardItemAmount')?.value);
+ const date=$('creditCardItemDate')?.value||'';
+ if(!description||!categoryId||!date||!Number.isFinite(amount)||amount<=0){
+  showToast('Preencha descrição, categoria, valor e data da compra.','error');
+  return;
+ }
+ const item={
+  id:creditCardEditingIndex>=0&&creditCardItems[creditCardEditingIndex]?.id?creditCardItems[creditCardEditingIndex].id:uid('cc'),
+  description,categoryId,amount,date,
+  paid:$('transactionPaid')?.checked===true,
+  createdAt:creditCardEditingIndex>=0&&creditCardItems[creditCardEditingIndex]?.createdAt?creditCardItems[creditCardEditingIndex].createdAt:new Date().toISOString()
+ };
+ if(creditCardEditingIndex>=0){
+  creditCardItems[creditCardEditingIndex]={...creditCardItems[creditCardEditingIndex],...item};
+  showToast('Lançamento da fatura atualizado.');
+ }else{
+  creditCardItems.push(item);
+  showToast('Lançamento adicionado à fatura.');
+ }
+ renderCreditCardItems();
+ resetCreditCardItemForm();
+ $('creditCardItemDescription')?.focus();
+}
+
+function editCreditCardItem(i){
+ const item=creditCardItems[i];
+ if(!item)return;
+ creditCardEditingIndex=i;
+ $('creditCardItemDescription').value=item.description||'';
+ populateCreditCardItemCategorySelect(item.categoryId||'');
+ $('creditCardItemAmount').value=Number(item.amount)||'';
+ $('creditCardItemDate').value=item.date||todayISO();
+ $('creditCardItemFormTitle').textContent=`Editando lançamento ${i+1}`;
+ $('creditCardItemSaveButton').innerHTML='✓ Atualizar lançamento';
+ $('creditCardItemCancelEdit').classList.remove('hidden');
+ $('creditCardItemDescription').focus();
+ $('creditCardItemDescription').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelCreditCardItemEdit(){
+ resetCreditCardItemForm();
+}
+
+function removeCreditCardItem(i){
+ if(!creditCardItems[i])return;
+ if(!confirm(`Remover o lançamento "${creditCardItems[i].description||'sem descrição'}" da fatura?`))return;
+ creditCardItems.splice(i,1);
+ if(creditCardEditingIndex===i)resetCreditCardItemForm();
+ else if(creditCardEditingIndex>i)creditCardEditingIndex--;
+ renderCreditCardItems();
+}
+
+function populateCreditCardItemCategorySelect(selected=''){
+ const select=$('creditCardItemCategory');
+ if(!select)return;
+ const cats=state.categories.filter(c=>c.type==='expense');
+ select.innerHTML='<option value="">Selecione...</option>'+cats.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('');
+ select.value=selected&&cats.some(c=>c.id===selected)?selected:(cats[0]?.id||'');
+}
+
+function renderCreditCardItems(){
+ const c=$('creditCardItems');
+ if(!c)return;
+ const count=$('creditCardItemsCount');
+ if(count)count.textContent=`${creditCardItems.length} lançamento${creditCardItems.length===1?'':'s'}`;
+ if(!creditCardItems.length){
+  c.innerHTML='<div class="border border-dashed border-slate-300 rounded-xl p-5 text-center text-sm text-slate-400">Nenhum lançamento confirmado ainda. Preencha a compra acima e clique em <strong>Salvar lançamento</strong>.</div>';
+ }else{
+  c.innerHTML=creditCardItems.map((x,i)=>`
+   <div class="credit-invoice-item">
+    <div class="flex items-start gap-3 min-w-0">
+     <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">${i+1}</div>
+     <div class="min-w-0 flex-1">
+      <div class="font-semibold text-sm text-slate-800 break-words">${esc(x.description)}</div>
+      <div class="text-xs text-slate-400 mt-1 break-words">${esc(categoryName(x.categoryId))} · ${formatDate(x.date)}</div>
+     </div>
+     <div class="text-right shrink-0">
+      <div class="font-bold text-sm text-rose-600">- ${money(x.amount)}</div>
+     </div>
+    </div>
+    <div class="flex justify-end gap-2 mt-3 pt-3 border-t border-slate-200">
+     <button type="button" onclick="editCreditCardItem(${i})" class="btn btn-secondary !min-h-[36px] !h-[36px] !px-3 text-xs">✎ Editar</button>
+     <button type="button" onclick="removeCreditCardItem(${i})" class="btn btn-danger !min-h-[36px] !h-[36px] !px-3 text-xs">× Excluir</button>
+    </div>
+   </div>`).join('');
+ }
+ updateCreditCardTotal();
+}
+
 function updateCreditCardTotal(){const total=creditCardItems.reduce((s,x)=>s+(Number(x.amount)||0),0);if($("creditCardItemsTotal"))$("creditCardItemsTotal").textContent=money(total);if($("transactionAmount")){$("transactionAmount").value=total?total.toFixed(2):"";$("transactionAmount").readOnly=isCreditCardInvoiceForm();}}
-function toggleCreditCardMode(){const active=isCreditCardInvoiceForm();$("creditCardInvoiceEditor")?.classList.toggle("hidden",!active);$("transactionCategory")?.closest("div")?.parentElement?.classList.toggle("hidden",active);$("transactionCategoryRequired")?.classList.toggle("hidden",active);$("installmentEnabled")?.closest(".border")?.classList.toggle("hidden",active);$("recurringEnabled")?.closest(".border")?.classList.toggle("hidden",active);if(active){$("transactionType").value="expense";setTransactionType("expense");if(!creditCardItems.length)addCreditCardItem({date:$("transactionDate").value||todayISO()});renderCreditCardItems();}else updateCreditCardTotal();}
-function openTransactionModal(id=null){$("transactionForm").reset();creditCardItems=[];$("transactionId").value=id||"";$("transactionDate").value=todayISO();$("transactionPaid").checked=true;$("installmentEnabled").checked=false;$("recurringEnabled").checked=false;$("transactionPaymentMethod").value="";$("creditCardInvoiceEditor").classList.add("hidden");$("installmentFields").classList.add("hidden");$("recurrenceFields").classList.add("hidden");populateCategorySelects();setTransactionType("income");if(id){const t=state.transactions.find(x=>x.id===id);if(!t)return;$("transactionModalTitle").textContent=t.isCreditCardInvoice?"Editar fatura do cartão":"Editar lançamento";$("transactionDescription").value=t.description||"";$("transactionAmount").value=t.amount||"";$("transactionDate").value=t.date||todayISO();$("transactionCategory").value=t.categoryId||"";$("transactionInstitution").value=t.institution||"";$("transactionResponsible").value=t.responsible||"";$("transactionNotes").value=t.notes||"";$("transactionPaid").checked=!!t.paid;$("transactionPaymentMethod").value=t.paymentMethod||"";if(t.isCreditCardInvoice){$("transactionPaymentMethod").value="Cartão de crédito";creditCardItems=Array.isArray(t.subTransactions)?t.subTransactions.map(x=>({...x,amount:Number(x.amount)||0})):[];}setTransactionType(t.type);}else $("transactionModalTitle").textContent="Novo lançamento";toggleCreditCardMode();$("transactionModal").classList.add("open");}
+function toggleCreditCardMode(){
+ const active=isCreditCardInvoiceForm();
+ $('creditCardInvoiceEditor')?.classList.toggle('hidden',!active);
+ $('transactionCategory')?.closest('div')?.parentElement?.classList.toggle('hidden',active);
+ $('transactionCategoryRequired')?.classList.toggle('hidden',active);
+ $('installmentEnabled')?.closest('.border')?.classList.toggle('hidden',active);
+ $('recurringEnabled')?.closest('.border')?.classList.toggle('hidden',active);
+ if(active){
+  $('transactionType').value='expense';
+  setTransactionType('expense');
+  populateCreditCardItemCategorySelect($('creditCardItemCategory')?.value||'');
+  if(!$('creditCardItemDate')?.value)$('creditCardItemDate').value=$('transactionDate').value||todayISO();
+  renderCreditCardItems();
+  updateCreditCardTotal();
+ }else{
+  resetCreditCardItemForm();
+  updateCreditCardTotal();
+ }
+}
+
+function openTransactionModal(id=null){
+ $('transactionForm').reset();
+ creditCardItems=[];
+ creditCardEditingIndex=-1;
+ $('transactionId').value=id||'';
+ $('transactionDate').value=todayISO();
+ $('transactionPaid').checked=true;
+ $('installmentEnabled').checked=false;
+ $('recurringEnabled').checked=false;
+ $('transactionPaymentMethod').value='';
+ $('creditCardInvoiceEditor').classList.add('hidden');
+ $('installmentFields').classList.add('hidden');
+ $('recurrenceFields').classList.add('hidden');
+ populateCategorySelects();
+ populateCreditCardItemCategorySelect();
+ setTransactionType('income');
+ if(id){
+  const t=state.transactions.find(x=>x.id===id);
+  if(!t)return;
+  $('transactionModalTitle').textContent=t.isCreditCardInvoice?'Editar fatura do cartão':'Editar lançamento';
+  $('transactionDescription').value=t.description||'';
+  $('transactionAmount').value=t.amount||'';
+  $('transactionDate').value=t.date||todayISO();
+  $('transactionCategory').value=t.categoryId||'';
+  $('transactionInstitution').value=t.institution||'';
+  $('transactionResponsible').value=t.responsible||'';
+  $('transactionNotes').value=t.notes||'';
+  $('transactionPaid').checked=!!t.paid;
+  $('transactionPaymentMethod').value=t.paymentMethod||'';
+  if(t.isCreditCardInvoice){
+   $('transactionPaymentMethod').value='Cartão de crédito';
+   creditCardItems=Array.isArray(t.subTransactions)?t.subTransactions.map(x=>({...x,amount:Number(x.amount)||0})):[];
+  }
+  setTransactionType(t.type);
+ }else{
+  $('transactionModalTitle').textContent='Novo lançamento';
+ }
+ toggleCreditCardMode();
+ $('transactionModal').classList.add('open');
+ const modalBody=$('transactionModal')?.querySelector(':scope > div');
+ if(modalBody)modalBody.scrollTop=0;
+ setTimeout(()=>{if(modalBody)modalBody.scrollTop=0;},0);
+}
 
 function closeTransactionModal(){
  $("transactionModal").classList.remove("open")
@@ -3521,7 +3801,7 @@ function toggleRecurrence(){const e=$("recurringEnabled").checked;$("recurrenceF
    SALVAR / EDITAR LANÇAMENTO
    ========================================================= */
 
-$("transactionForm").addEventListener("submit",e=>{e.preventDefault();const id=$("transactionId").value,type=$("transactionType").value,description=$("transactionDescription").value.trim(),amount=Number($("transactionAmount").value),date=$("transactionDate").value,categoryId=$("transactionCategory").value,institution=$("transactionInstitution").value.trim(),responsible=$("transactionResponsible").value.trim(),notes=$("transactionNotes").value.trim(),paid=$("transactionPaid").checked,paymentMethod=$("transactionPaymentMethod").value;const invoice=paymentMethod==="Cartão de crédito";if(!description||!date||(invoice?creditCardItems.length===0:amount<=0)||(!invoice&&!categoryId)){showToast("Preencha os campos obrigatórios.","error");return;}if(invoice){const invalid=creditCardItems.some(x=>!String(x.description||"").trim()||!x.categoryId||!x.date||!(Number(x.amount)>0));if(invalid){showToast("Preencha descrição, categoria, valor e data de todas as compras da fatura.","error");return;}const total=creditCardItems.reduce((s,x)=>s+Number(x.amount||0),0),items=creditCardItems.map(x=>({...x,type:"expense",paid,createdAt:x.createdAt||new Date().toISOString()})),data={type:"expense",description,amount:total,date,categoryId:null,institution,responsible,notes,paid,paymentMethod:"Cartão de crédito",isCreditCardInvoice:true,subTransactions:items};if(id){const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...data};}else state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});saveState();closeTransactionModal();refreshAll();showToast("Fatura salva com sucesso.");return;}if(amount<=0||!categoryId){showToast("Preencha os campos obrigatórios.","error");return;}if(id){const current=state.transactions.find(t=>t.id===id);if(!current)return;const updatedData={type,description,amount,categoryId,institution,responsible,notes,paid,paymentMethod};if(current.recurrenceGroup){const choice=prompt("Este lançamento faz parte de uma recorrência.\n\nDigite:\n\n1 - Alterar somente este lançamento\n2 - Alterar este e os próximos\n3 - Alterar toda a recorrência\n0 - Cancelar");if(choice===null||choice==="0")return;if(!["1","2","3"].includes(choice)){showToast("Opção inválida.","error");return;}const group=current.recurrenceGroup;if(choice==="1"){const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...updatedData,date};}else if(choice==="2")state.transactions=state.transactions.map(t=>t.recurrenceGroup===group&&t.date>=current.date?{...t,...updatedData}:t);else state.transactions=state.transactions.map(t=>t.recurrenceGroup===group?{...t,...updatedData}:t);}else{const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...updatedData,date};}saveState();closeTransactionModal();refreshAll();showToast("Lançamento atualizado.");return;}const base={type,description,amount,date,categoryId,institution,responsible,notes,paid,paymentMethod};if($("installmentEnabled").checked)createInstallments(base);else if($("recurringEnabled").checked)createRecurrence(base);else state.transactions.push({id:uid("tx"),...base,createdAt:new Date().toISOString()});saveState();closeTransactionModal();refreshAll();showToast("Lançamento salvo com sucesso.");});
+$("transactionForm").addEventListener("submit",e=>{e.preventDefault();const id=$("transactionId").value,type=$("transactionType").value,description=$("transactionDescription").value.trim(),amount=Number($("transactionAmount").value),date=$("transactionDate").value,categoryId=$("transactionCategory").value,institution=$("transactionInstitution").value.trim(),responsible=$("transactionResponsible").value.trim(),notes=$("transactionNotes").value.trim(),paid=$("transactionPaid").checked,paymentMethod=$("transactionPaymentMethod").value;const invoice=paymentMethod==="Cartão de crédito";if(!description||!date||(invoice?creditCardItems.length===0:amount<=0)||(!invoice&&!categoryId)){showToast("Preencha os campos obrigatórios.","error");return;}if(invoice){const invalid=creditCardItems.some(x=>!String(x.description||"").trim()||!x.categoryId||!x.date||!(Number(x.amount)>0));if(invalid){showToast("Preencha descrição, categoria, valor e data de todas as compras da fatura.","error");return;}const total=creditCardItems.reduce((s,x)=>s+Number(x.amount||0),0),items=creditCardItems.map(x=>({...x,type:"expense",paid,paidAt:paid?new Date().toISOString():undefined,createdAt:x.createdAt||new Date().toISOString()})),data={type:"expense",description,amount:total,date,categoryId:null,institution,responsible,notes,paid,paymentMethod:"Cartão de crédito",isCreditCardInvoice:true,subTransactions:items};if(id){const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...data};}else state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});saveState();closeTransactionModal();refreshAll();showToast("Fatura salva com sucesso.");return;}if(amount<=0||!categoryId){showToast("Preencha os campos obrigatórios.","error");return;}if(id){const current=state.transactions.find(t=>t.id===id);if(!current)return;const updatedData={type,description,amount,categoryId,institution,responsible,notes,paid,paymentMethod};if(current.recurrenceGroup){const choice=prompt("Este lançamento faz parte de uma recorrência.\n\nDigite:\n\n1 - Alterar somente este lançamento\n2 - Alterar este e os próximos\n3 - Alterar toda a recorrência\n0 - Cancelar");if(choice===null||choice==="0")return;if(!["1","2","3"].includes(choice)){showToast("Opção inválida.","error");return;}const group=current.recurrenceGroup;if(choice==="1"){const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...updatedData,date};}else if(choice==="2")state.transactions=state.transactions.map(t=>t.recurrenceGroup===group&&t.date>=current.date?{...t,...updatedData}:t);else state.transactions=state.transactions.map(t=>t.recurrenceGroup===group?{...t,...updatedData}:t);}else{const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...updatedData,date};}saveState();closeTransactionModal();refreshAll();showToast("Lançamento atualizado.");return;}const base={type,description,amount,date,categoryId,institution,responsible,notes,paid,paymentMethod};if($("installmentEnabled").checked)createInstallments(base);else if($("recurringEnabled").checked)createRecurrence(base);else state.transactions.push({id:uid("tx"),...base,createdAt:new Date().toISOString()});saveState();closeTransactionModal();refreshAll();showToast("Lançamento salvo com sucesso.");});
 
 function createInstallments(d){
 
