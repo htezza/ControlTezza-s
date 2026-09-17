@@ -1335,129 +1335,121 @@ body{padding-bottom:92px!important}
   background:rgba(248,250,252,.60)!important;
 }
 
-/* Linha de Contas e Compromissos no mesmo padrão de leitura de Lançamentos */
+/* Linha de Contas e Compromissos — mesmo ícone visual da aba Lançamentos */
 #page-compromissos #commitmentsList .fc-commit-row{
   position:relative!important;
   grid-template-columns:42px minmax(0,1fr) auto!important;
 }
 
 #page-compromissos #commitmentsList .fc-transaction-icon{
-  width:42px!important;
-  height:42px!important;
-  border-radius:14px!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  font-size:20px!important;
-  font-weight:700!important;
-  border:1px solid rgba(255,255,255,.82)!important;
-  -webkit-backdrop-filter:blur(14px) saturate(180%)!important;
-  backdrop-filter:blur(14px) saturate(180%)!important;
-  box-shadow:
-    0 3px 10px rgba(15,23,42,.07),
-    inset 0 1px 0 rgba(255,255,255,.92)!important;
+  display:none!important;
 }
 
-#page-compromissos #commitmentsList .fc-transaction-icon.is-income{
-  color:#059669!important;
-  background:rgba(236,253,245,.62)!important;
-  border-color:rgba(167,243,208,.72)!important;
-}
-
-#page-compromissos #commitmentsList .fc-transaction-icon.is-expense{
-  color:#e11d48!important;
-  background:rgba(255,241,242,.62)!important;
-  border-color:rgba(254,205,211,.78)!important;
-}
-
-#page-compromissos #commitmentsList .fc-commit-date{
-  font-size:11px!important;
-  line-height:1.2!important;
-  color:#94a3b8!important;
-  white-space:nowrap!important;
-}
-
-#page-compromissos #commitmentsList .fc-commit-description{
-  font-size:15px!important;
-  line-height:1.25!important;
-  font-weight:700!important;
-  color:#1e293b!important;
-}
-
-#page-compromissos #commitmentsList .fc-commit-meta{
-  margin-top:2px!important;
-  font-size:11px!important;
-  line-height:1.2!important;
-  color:#64748b!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
-
-#page-compromissos #commitmentsList .fc-commit-actions{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  gap:5px!important;
-  flex-shrink:0!important;
-}
-
-#page-compromissos #commitmentsList .fc-commit-amount{
-  font-size:15px!important;
-  font-weight:800!important;
-  line-height:1.2!important;
-  white-space:nowrap!important;
-  text-align:right!important;
-  margin-right:3px!important;
-}
-
+/* O ícone principal é igual ao usado em Lançamentos no celular:
+   círculo azul, sem efeito liquid glass. */
 @media(max-width:639px){
   #page-compromissos #commitmentsList .fc-commit-row{
     grid-template-columns:42px minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto auto!important;
     column-gap:10px!important;
     row-gap:2px!important;
     padding:13px 12px!important;
     min-height:94px!important;
+    box-sizing:border-box!important;
+  }
+
+  #page-compromissos #commitmentsList .fc-commit-row::before{
+    content:'⇄';
+    grid-column:1!important;
+    grid-row:1 / span 3!important;
+    width:42px!important;
+    height:42px!important;
+    margin-top:2px!important;
+    border-radius:50%!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    background:#eff6ff!important;
+    color:#2563eb!important;
+    font-size:19px!important;
+    font-weight:700!important;
+    box-sizing:border-box!important;
   }
 
   #page-compromissos #commitmentsList .fc-transaction-icon{
-    width:42px!important;
-    height:42px!important;
-    border-radius:14px!important;
+    display:none!important;
   }
 
   #page-compromissos #commitmentsList .fc-commit-date{
+    grid-column:2!important;
+    grid-row:1!important;
     font-size:11px!important;
+    line-height:1.2!important;
+    color:#94a3b8!important;
+    white-space:nowrap!important;
   }
 
   #page-compromissos #commitmentsList .fc-commit-description{
+    grid-column:2!important;
+    grid-row:2!important;
+    min-width:0!important;
     font-size:15px!important;
+    line-height:1.25!important;
+    font-weight:700!important;
+    color:#1e293b!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
   }
 
   #page-compromissos #commitmentsList .fc-commit-meta{
-    font-size:10px!important;
+    grid-column:2!important;
+    grid-row:3!important;
+    min-width:0!important;
+    margin-top:0!important;
+    font-size:11px!important;
+    line-height:1.2!important;
+    color:#64748b!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
     max-width:100%!important;
   }
 
   #page-compromissos #commitmentsList .fc-commit-actions{
-    flex-wrap:wrap!important;
-    max-width:150px!important;
-    gap:4px!important;
+    grid-column:3!important;
+    grid-row:1 / span 3!important;
+    align-self:end!important;
+    justify-self:end!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-end!important;
+    flex-wrap:nowrap!important;
+    gap:5px!important;
+    max-width:none!important;
+    min-width:0!important;
+    flex-shrink:0!important;
   }
 
   #page-compromissos #commitmentsList .fc-commit-amount{
-    width:100%!important;
-    margin-right:0!important;
     font-size:15px!important;
+    font-weight:800!important;
+    line-height:1.2!important;
+    white-space:nowrap!important;
+    text-align:right!important;
+    margin-right:0!important;
   }
 
-  #page-lancamentos table tbody tr:not(:has(td[colspan])) > td:nth-child(9) button,
-  #page-compromissos #commitmentsList button[title]{
+  /* O liquid glass fica SOMENTE nos botões de ação. */
+  #page-compromissos #commitmentsList .fc-glass-action{
     width:34px!important;
     height:34px!important;
     min-width:34px!important;
     min-height:34px!important;
-    border-radius:11px!important;
+    padding:0!important;
+    border-radius:10px!important;
+    box-sizing:border-box!important;
+    flex-shrink:0!important;
   }
 }
 </style>
@@ -4809,10 +4801,6 @@ function renderCommitments(){
 
     return monthHeader+`
     <div class="fc-commit-row px-3 sm:px-5 py-3 sm:py-4 grid grid-cols-[42px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 hover:bg-slate-50">
-
-     <div class="fc-transaction-icon ${income?"is-income":"is-expense"}">
-      ${income?"↑":"↓"}
-     </div>
 
      <div class="min-w-0">
 
