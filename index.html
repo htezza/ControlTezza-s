@@ -1053,7 +1053,6 @@ body{padding-bottom:92px!important}
  <div class="flex gap-2">
   <select id="dashboardMonth" class="input !w-auto" onchange="renderDashboard()"></select>
   <select id="dashboardYear" class="input !w-auto" onchange="renderDashboard()"></select>
-</div>
 
 <div id="mobileDashboardMonthNav" aria-label="Navegação do mês no dashboard">
   <button type="button" class="mobile-dashboard-month-arrow" onclick="changeDashboardMonthMobile(-1)" aria-label="Mês anterior" title="Mês anterior">
@@ -1063,6 +1062,9 @@ body{padding-bottom:92px!important}
   <button type="button" class="mobile-dashboard-month-arrow" onclick="changeDashboardMonthMobile(1)" aria-label="Próximo mês" title="Próximo mês">
     <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
   </button>
+</div>
+ 
+  </div>
 </div>
  
   </div>
@@ -2378,10 +2380,7 @@ function populateDates(){
   ys.appendChild(o);
  }
 
- ys.value=d.getFullYear();
-
- /* Atualiza a navegação visual do mês no celular após popular os selects. */
- setTimeout(updateMobileDashboardMonth,0);
+ ys.value=d.getFullYear()
 }
 
 function populateContactLists(){
@@ -2880,20 +2879,9 @@ function goToDashboardTransactions(mode){
 
 function renderDashboard(){
 
- let sel=$("dashboardMonth")?.value||"";
- const yearEl=$("dashboardYear");
+ const sel=$("dashboardMonth").value;
 
- /* Compatibilidade: se o seletor de mês estiver com valor numérico
-    (1 a 12), transforma para YYYY-MM usando o ano selecionado. */
- if(/^\d{1,2}$/.test(String(sel))){
-  const month=Number(sel);
-  const year=Number(yearEl?.value)||new Date().getFullYear();
-  if(month>=1&&month<=12){
-   sel=`${year}-${String(month).padStart(2,"0")}`;
-  }
- }
-
- if(!/^\d{4}-\d{2}$/.test(sel))return;
+ if(!sel)return;
 
  const tx=
   state.transactions.filter(
@@ -5363,12 +5351,6 @@ async function init(){
  if(cloudLoaded){
   stopBackupWatcher();
   localStorage.setItem("fincontrol_cloud_authoritative","1");
-
-  // Os dados da nuvem são carregados depois do primeiro refreshAll().
-  // Portanto, é necessário renderizar novamente o Dashboard aqui.
-  // Sem isso, os cards ficam em zero até alguma ação do usuário
-  // disparar renderDashboard().
-  refreshAll();
  }else{
   const restored=await restorePersistedBackup();
   if(restored) refreshAll();
@@ -5397,83 +5379,100 @@ document.addEventListener('click', function(e){
 });
 </script>
 
+
 <script>
-function updateMobileDashboardMonth(){
- const m=$("dashboardMonth"), y=$("dashboardYear"), label=$("mobileDashboardMonthLabel");
- if(!m||!y||!label||!m.value)return;
+(function(){
+  function updateMobileDashboardMonth(){
+    const m=document.getElementById("dashboardMonth");
+    const label=document.getElementById("mobileDashboardMonthLabel");
+    if(!m||!label||!m.value)return;
 
- let value=String(m.value);
- let d;
+    const value=String(m.value);
+    if(!/^\d{4}-\d{2}$/.test(value))return;
 
- if(/^\d{4}-\d{2}$/.test(value)){
-  d=new Date(value+"-01T00:00:00");
- }else{
-  const month=Number(value);
-  const year=Number(y.value)||new Date().getFullYear();
-  if(!month||month<1||month>12)return;
-  d=new Date(year,month-1,1);
- }
+    const parts=value.split("-");
+    const year=Number(parts[0]);
+    const month=Number(parts[1]);
+    if(!year||month<1||month>12)return;
 
- if(Number.isNaN(d.getTime()))return;
+    const d=new Date(year,month-1,1);
+    if(Number.isNaN(d.getTime()))return;
 
- label.textContent=d.toLocaleDateString("pt-BR",{month:"long",year:"numeric"}).replace(/^./,c=>c.toUpperCase());
-}
-function changeDashboardMonthMobile(delta){
- const m=$("dashboardMonth"), y=$("dashboardYear");
- if(!m||!y)return;
+    label.textContent=d.toLocaleDateString(
+      "pt-BR",
+      {month:"long",year:"numeric"}
+    ).replace(/^./,c=>c.toUpperCase());
+  }
 
- let value=String(m.value||"");
- let year, month;
+  window.changeDashboardMonthMobile=function(delta){
+    const m=document.getElementById("dashboardMonth");
+    const y=document.getElementById("dashboardYear");
+    if(!m)return;
 
- if(/^\d{4}-\d{2}$/.test(value)){
-  const parts=value.split("-");
-  year=Number(parts[0]);
-  month=Number(parts[1]);
- }else{
-  month=Number(value);
-  year=Number(y.value)||new Date().getFullYear();
- }
+    const value=String(m.value||"");
+    if(!/^\d{4}-\d{2}$/.test(value))return;
 
- if(!year||!month)return;
+    const parts=value.split("-");
+    const year=Number(parts[0]);
+    const month=Number(parts[1]);
+    if(!year||month<1||month>12)return;
 
- const d=new Date(year,month-1+delta,1);
- if(Number.isNaN(d.getTime()))return;
+    const d=new Date(year,month-1+delta,1);
+    if(Number.isNaN(d.getTime()))return;
 
- year=d.getFullYear();
- month=d.getMonth()+1;
+    const nextValue=
+      `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
 
- const normalized=`${year}-${String(month).padStart(2,"0")}`;
+    let option=Array.from(m.options).find(o=>o.value===nextValue);
+    if(!option){
+      option=document.createElement("option");
+      option.value=nextValue;
+      option.textContent=d.toLocaleDateString(
+        "pt-BR",
+        {month:"long"}
+      ).replace(/^./,c=>c.toUpperCase());
+      m.appendChild(option);
+    }
 
- /* O select do Dashboard usa YYYY-MM como valor. */
- let option=[...m.options].find(o=>o.value===normalized);
+    m.value=nextValue;
+    if(y)y.value=String(d.getFullYear());
 
- if(!option){
-  option=document.createElement("option");
-  option.value=normalized;
-  option.textContent=d.toLocaleDateString("pt-BR",{month:"long"}).replace(/^./,c=>c.toUpperCase());
-  m.appendChild(option);
- }
+    // O cálculo continua sendo feito pela função original.
+    renderDashboard();
+    updateMobileDashboardMonth();
+  };
 
- m.value=normalized;
- y.value=String(year);
+  window.openDashboardMonthMobile=function(){
+    const y=document.getElementById("dashboardYear");
+    if(!y)return;
 
- renderDashboard();
- updateMobileDashboardMonth();
-}
-function openDashboardMonthMobile(){
- const m=$("dashboardMonth"), y=$("dashboardYear");
- if(!m||!y)return;
- /* Exibe primeiro o seletor de ano, permitindo trocar o ano; depois o mês.
-    Em navegadores com showPicker o controle nativo abre diretamente. */
- try{ y.focus(); if(typeof y.showPicker==="function") y.showPicker(); else y.click(); }
- catch(e){ y.click(); }
-}
-document.addEventListener("DOMContentLoaded",()=>{
- const m=$("dashboardMonth"),y=$("dashboardYear");
- if(m)m.addEventListener("change",updateMobileDashboardMonth);
- if(y)y.addEventListener("change",updateMobileDashboardMonth);
- setTimeout(updateMobileDashboardMonth,100);
-});
+    try{
+      y.focus();
+      if(typeof y.showPicker==="function")y.showPicker();
+      else y.click();
+    }catch(e){
+      try{y.click();}catch(_){}
+    }
+  };
+
+  function bind(){
+    const m=document.getElementById("dashboardMonth");
+    const y=document.getElementById("dashboardYear");
+
+    if(m)m.addEventListener("change",updateMobileDashboardMonth);
+    if(y)y.addEventListener("change",updateMobileDashboardMonth);
+
+    // Somente sincroniza o texto. Não força nenhum recálculo inicial.
+    updateMobileDashboardMonth();
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",bind,{once:true});
+  }else{
+    bind();
+  }
+})();
 </script>
+
 </body>
 </html>
