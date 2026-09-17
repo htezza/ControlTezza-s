@@ -928,6 +928,7 @@ header{
 .credit-invoice-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800}
 @media(max-width:639px){.credit-invoice-item-grid{grid-template-columns:1fr 1fr;gap:8px}.credit-invoice-item-grid>:first-child{grid-column:1/-1}.credit-invoice-item-grid>:last-child{grid-column:2;grid-row:2;justify-self:end}#creditInvoiceModal>div{max-width:100%!important}}
 .credit-invoice-purchase-date{text-align:center!important}
+#creditCardDraftDate{text-align:center!important}
 #toast{left:0!important;right:0!important;display:flex!important;justify-content:center!important;pointer-events:none!important}
 #toastMessage{text-align:center!important;max-width:calc(100vw - 24px)!important}
 </style>
@@ -3632,9 +3633,9 @@ function isCreditCardInvoiceRecurrenceEnabled(){
  return isCreditCardInvoiceForm() && !!$("recurringEnabled")?.checked;
 }
 
-function createCreditCardInvoiceRecurrence(data){
- const count=Math.max(2,Math.min(120,Number($("recurrenceCount")?.value)||12));
- const frequency=$("recurrenceFrequency")?.value==="yearly"?"yearly":"monthly";
+function createCreditCardInvoiceRecurrence(data,count,frequency){
+ count=Math.max(2,Math.min(120,Number(count)||12));
+ frequency=frequency==="yearly"?"yearly":"monthly";
  const group=uid("recorrencia-fatura");
  const createdAt=new Date().toISOString();
 
@@ -3812,10 +3813,17 @@ $("transactionForm").addEventListener("submit",e=>{
     const i=state.transactions.findIndex(t=>t.id===id);
     if(i>=0)state.transactions[i]={...state.transactions[i],...data,date};
    }
-  }else if(isCreditCardInvoiceRecurrenceEnabled()){
-   createCreditCardInvoiceRecurrence(data);
   }else{
-   state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});
+   const repeatInvoice=$("recurringEnabled")?.checked===true;
+   if(repeatInvoice){
+    createCreditCardInvoiceRecurrence(
+     data,
+     $("recurrenceCount")?.value,
+     $("recurrenceFrequency")?.value
+    );
+   }else{
+    state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});
+   }
   }
 
   saveState();
