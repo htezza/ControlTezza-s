@@ -5363,6 +5363,12 @@ async function init(){
  if(cloudLoaded){
   stopBackupWatcher();
   localStorage.setItem("fincontrol_cloud_authoritative","1");
+
+  // Os dados da nuvem são carregados depois do primeiro refreshAll().
+  // Portanto, é necessário renderizar novamente o Dashboard aqui.
+  // Sem isso, os cards ficam em zero até alguma ação do usuário
+  // disparar renderDashboard().
+  refreshAll();
  }else{
   const restored=await restorePersistedBackup();
   if(restored) refreshAll();
