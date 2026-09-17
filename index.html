@@ -1369,6 +1369,117 @@ body{padding-bottom:92px!important}
 }
 </style>
 
+
+<style>
+@media(max-width:639px){
+
+  /* ============================================================
+     CONTAS E COMPROMISSOS — MESMO PADRÃO DOS CARDS DO DASHBOARD
+     ============================================================ */
+
+  #page-compromissos > .grid.grid-cols-2{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:12px!important;
+    margin-bottom:16px!important;
+  }
+
+  #page-compromissos > .grid.grid-cols-2 > .card{
+    position:relative!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:16px 16px 17px 20px!important;
+    border-radius:16px!important;
+    overflow:hidden!important;
+    background:#fff!important;
+    box-shadow:0 1px 3px rgba(15,23,42,.06), 0 0 0 1px rgba(148,163,184,.20)!important;
+  }
+
+  /* Barra lateral exatamente no conceito visual dos cards do Dashboard. */
+  #page-compromissos > .grid.grid-cols-2 > .card:nth-child(1)::before,
+  #page-compromissos > .grid.grid-cols-2 > .card:nth-child(2)::before{
+    content:""!important;
+    position:absolute!important;
+    left:0!important;
+    top:0!important;
+    bottom:0!important;
+    width:5px!important;
+    border-radius:16px 0 0 16px!important;
+  }
+
+  #page-compromissos > .grid.grid-cols-2 > .card:nth-child(1)::before{
+    background:#10b981!important;
+  }
+
+  #page-compromissos > .grid.grid-cols-2 > .card:nth-child(2)::before{
+    background:#f43f5e!important;
+  }
+
+  /* Título: mesma escala do Dashboard */
+  #page-compromissos > .grid.grid-cols-2 > .card p:first-child{
+    margin:0!important;
+    font-size:16px!important;
+    line-height:1.3!important;
+    font-weight:700!important;
+    color:#64748b!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  /* Valor: mesma escala visual dos valores principais do Dashboard */
+  #page-compromissos > .grid.grid-cols-2 > .card .privacy-value{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    margin-top:7px!important;
+    font-size:clamp(20px,5.5vw,30px)!important;
+    line-height:1.12!important;
+    letter-spacing:-.6px!important;
+    font-weight:700!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  /* Mantém o card de compromissos abaixo com o mesmo raio visual. */
+  #page-compromissos > .card{
+    border-radius:16px!important;
+  }
+
+  /* ============================================================
+     LISTA DE COMPROMISSOS — HIERARQUIA CONSISTENTE NO MOBILE
+     ============================================================ */
+
+  #page-compromissos > .card > div:first-child{
+    padding:14px 16px!important;
+  }
+
+  #page-compromissos > .card > div:first-child h3{
+    font-size:14px!important;
+    line-height:1.3!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid{
+    grid-template-columns:32px minmax(0,1fr) auto!important;
+    column-gap:10px!important;
+    min-height:72px!important;
+    padding:12px 14px!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid .font-semibold{
+    font-size:13px!important;
+    line-height:1.3!important;
+  }
+
+  #page-compromissos #commitmentsList > div.grid .privacy-value{
+    font-size:13px!important;
+    line-height:1.3!important;
+  }
+}
+</style>
+
 </head>
 
 <body class="text-slate-800">
