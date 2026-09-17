@@ -1397,6 +1397,26 @@ body{padding-bottom:92px!important}
 }
 </style>
 
+
+<style id="fincontrol-mobile-invoice-date-fix">
+@media (max-width: 639px){
+  #creditCardInvoiceEditor .credit-invoice-item > div.mt-2{
+    min-width:0!important;
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #creditCardInvoiceEditor .credit-invoice-item > div.mt-2 .input,
+  #creditCardInvoiceEditor .credit-invoice-item input[type="date"]{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    display:block!important;
+  }
+}
+</style>
+
 </head>
 
 <body class="text-slate-800">
@@ -5284,6 +5304,25 @@ document.addEventListener('click', function(e){
     document.addEventListener("DOMContentLoaded",apply,{once:true});
   else
     apply();
+})();
+</script>
+
+
+<script>
+(function(){
+  const mobileOnly = () => window.matchMedia('(max-width: 639px)').matches;
+  document.addEventListener('invalid', function(e){
+    if(!mobileOnly()) return;
+    const modal = document.getElementById('transactionModal');
+    if(!modal || !modal.classList.contains('open')) return;
+    // Native validation popovers can be painted behind transformed/modal layers.
+    // Temporarily neutralize the modal stacking context while the browser opens it.
+    modal.style.zIndex = '2147483646';
+    modal.style.transform = 'translateZ(0)';
+    requestAnimationFrame(() => {
+      modal.style.zIndex = '2147483646';
+    });
+  }, true);
 })();
 </script>
 
