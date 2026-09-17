@@ -924,6 +924,28 @@ header{
 body{padding-bottom:92px!important}
 }
 </style>
+<style>
+#mobileDashboardMonthNav{display:none}
+@media(max-width:639px){
+#page-dashboard > .flex:first-child{min-height:42px!important;margin-bottom:12px!important;padding:0!important;border-left:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;display:flex!important;align-items:center!important;justify-content:center!important}
+#page-dashboard > .flex:first-child > div:first-child{display:none!important}
+#page-dashboard > .flex:first-child > .flex{width:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important}
+#page-dashboard #dashboardMonth,#page-dashboard #dashboardYear{display:none!important}
+#mobileDashboardMonthNav{width:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important}
+#mobileDashboardMonthNav .mobile-dashboard-month-arrow{width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;border:1px solid #dbe3ec!important;border-radius:11px!important;background:#fff!important;color:#64748b!important;display:flex!important;align-items:center!important;justify-content:center!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important}
+#mobileDashboardMonthNav .mobile-dashboard-month-label{min-width:145px!important;height:38px!important;padding:0 10px!important;border:1px solid #dbe3ec!important;border-radius:11px!important;background:#fff!important;color:#1e293b!important;font-size:14px!important;font-weight:700!important;display:flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;box-shadow:0 2px 7px rgba(15,23,42,.05)!important}
+#mobileDashboardMonthNav .mobile-dashboard-month-label:active,#mobileDashboardMonthNav .mobile-dashboard-month-arrow:active{transform:scale(.96)!important}
+
+#page-lancamentos > .flex:first-child{width:100%!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;padding:8px 8px 8px 10px!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box!important}
+#page-lancamentos > .flex:first-child > div:first-child{min-width:0!important;flex:0 0 auto!important}
+#page-lancamentos > .flex:first-child > div:first-child p{display:none!important}
+#page-lancamentos > .flex:first-child > .flex{min-width:0!important;flex:1 1 auto!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important}
+#page-lancamentos #visibleMonthNavigation{min-width:0!important;width:auto!important;max-width:none!important;flex:1 1 auto!important;height:40px!important;padding:4px!important;gap:2px!important;border-radius:11px!important;box-sizing:border-box!important}
+#page-lancamentos #visibleFilterMonth{min-width:0!important;width:auto!important;max-width:none!important;flex:1 1 auto!important;font-size:11px!important;font-weight:700!important;line-height:30px!important;padding:0 2px!important}
+#page-lancamentos #visibleMonthNavigation > .month-nav{width:30px!important;min-width:30px!important;height:30px!important;flex:0 0 30px!important}
+#page-lancamentos #transactionFilterButton{width:40px!important;min-width:40px!important;height:40px!important;flex:0 0 40px!important;margin-left:auto!important;border-radius:11px!important}
+}
+</style>
 </head>
 
 <body class="text-slate-800">
@@ -1031,6 +1053,16 @@ body{padding-bottom:92px!important}
  <div class="flex gap-2">
   <select id="dashboardMonth" class="input !w-auto" onchange="renderDashboard()"></select>
   <select id="dashboardYear" class="input !w-auto" onchange="renderDashboard()"></select>
+</div>
+
+<div id="mobileDashboardMonthNav" aria-label="Navegação do mês no dashboard">
+  <button type="button" class="mobile-dashboard-month-arrow" onclick="changeDashboardMonthMobile(-1)" aria-label="Mês anterior" title="Mês anterior">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+  </button>
+  <button type="button" id="mobileDashboardMonthLabel" class="mobile-dashboard-month-label" onclick="openDashboardMonthMobile()" title="Selecionar outro mês/ano">Setembro de 2026</button>
+  <button type="button" class="mobile-dashboard-month-arrow" onclick="changeDashboardMonthMobile(1)" aria-label="Próximo mês" title="Próximo mês">
+    <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
 </div>
  
   </div>
@@ -5345,5 +5377,41 @@ document.addEventListener('click', function(e){
 });
 </script>
 
+<script>
+function updateMobileDashboardMonth(){
+ const m=$("dashboardMonth"), y=$("dashboardYear"), label=$("mobileDashboardMonthLabel");
+ if(!m||!y||!label||!m.value||!y.value)return;
+ const d=new Date(Number(y.value),Number(m.value)-1,1);
+ label.textContent=d.toLocaleDateString("pt-BR",{month:"long",year:"numeric"}).replace(/^./,c=>c.toUpperCase());
+}
+function changeDashboardMonthMobile(delta){
+ const m=$("dashboardMonth"), y=$("dashboardYear");
+ if(!m||!y)return;
+ let month=Number(m.value), year=Number(y.value);
+ if(!month||!year)return;
+ month+=delta;
+ if(month<1){month=12;year--}
+ if(month>12){month=1;year++}
+ const mo=[...m.options].find(o=>Number(o.value)===month);
+ const yo=[...y.options].find(o=>Number(o.value)===year);
+ if(!mo||!yo)return;
+ m.value=String(month); y.value=String(year);
+ renderDashboard(); updateMobileDashboardMonth();
+}
+function openDashboardMonthMobile(){
+ const m=$("dashboardMonth"), y=$("dashboardYear");
+ if(!m||!y)return;
+ /* Exibe primeiro o seletor de ano, permitindo trocar o ano; depois o mês.
+    Em navegadores com showPicker o controle nativo abre diretamente. */
+ try{ y.focus(); if(typeof y.showPicker==="function") y.showPicker(); else y.click(); }
+ catch(e){ y.click(); }
+}
+document.addEventListener("DOMContentLoaded",()=>{
+ const m=$("dashboardMonth"),y=$("dashboardYear");
+ if(m)m.addEventListener("change",updateMobileDashboardMonth);
+ if(y)y.addEventListener("change",updateMobileDashboardMonth);
+ setTimeout(updateMobileDashboardMonth,100);
+});
+</script>
 </body>
 </html>
