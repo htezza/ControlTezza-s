@@ -3634,16 +3634,26 @@ function isCreditCardInvoiceRecurrenceEnabled(){
 }
 
 function createCreditCardInvoiceRecurrence(data,count,frequency){
- count=Math.max(2,Math.min(120,Number(count)||12));
- frequency=frequency==="yearly"?"yearly":"monthly";
+ const total=Math.max(2,Math.min(120,parseInt(count,10)||12));
+ const freq=frequency==="yearly"?"yearly":"monthly";
  const group=uid("recorrencia-fatura");
  const createdAt=new Date().toISOString();
+ const baseItems=Array.isArray(data.subTransactions)?data.subTransactions.map(x=>({...x})):[];
 
- for(let i=0;i<count;i++){
-  const invoiceDate=frequency==="yearly"?addYears(data.date,i):addMonths(data.date,i);
-  const items=shiftCreditInvoiceItems(data.subTransactions,i,frequency);
+ const recurringInvoices=[];
+ for(let i=0;i<total;i++){
+  const invoiceDate=freq==="yearly"
+   ?addYears(data.date,i)
+   :addMonths(data.date,i);
 
-  state.transactions.push({
+  const items=baseItems.map(item=>({
+   ...item,
+   date:freq==="yearly"
+    ?addYears(item.date,i)
+    :addMonths(item.date,i)
+  }));
+
+  recurringInvoices.push({
    id:uid("tx"),
    ...data,
    date:invoiceDate,
@@ -3651,12 +3661,17 @@ function createCreditCardInvoiceRecurrence(data,count,frequency){
    subTransactions:items,
    recurrenceGroup:group,
    recurrenceNumber:i+1,
-   recurrenceTotal:count,
-   recurrenceFrequency:frequency,
+   recurrenceTotal:total,
+   recurrenceFrequency:freq,
    recurrenceType:"creditCardInvoice",
    createdAt
   });
  }
+
+ // A fatura original e todas as futuras entram no mesmo estado
+ // antes da gravação, garantindo que todas sejam persistidas.
+ state.transactions.push(...recurringInvoices);
+ return recurringInvoices.length;
 }
 
 function openTransactionModal(id=null){
@@ -3814,13 +3829,10 @@ $("transactionForm").addEventListener("submit",e=>{
     if(i>=0)state.transactions[i]={...state.transactions[i],...data,date};
    }
   }else{
-   const repeatInvoice=$("recurringEnabled")?.checked===true;
-   if(repeatInvoice){
-    createCreditCardInvoiceRecurrence(
-     data,
-     $("recurrenceCount")?.value,
-     $("recurrenceFrequency")?.value
-    );
+   if($("recurringEnabled")?.checked===true){
+    const recurrenceCount=$("recurrenceCount")?.value;
+    const recurrenceFrequency=$("recurrenceFrequency")?.value;
+    createCreditCardInvoiceRecurrence(data,recurrenceCount,recurrenceFrequency);
    }else{
     state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});
    }
