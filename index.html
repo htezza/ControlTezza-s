@@ -1487,6 +1487,51 @@ body{padding-bottom:92px!important}
     z-index:2147483647!important;
   }
 }
+
+/* =========================================================
+   DASHBOARD — EVOLUÇÃO DAS CATEGORIAS
+   Tabela comparativa atual x mês anterior.
+   ========================================================= */
+@media(max-width:639px){
+  #categoryEvolutionCard{
+    padding:13px!important;
+  }
+  #categoryEvolutionCard table{
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+  #categoryEvolutionCard th:nth-child(1),
+  #categoryEvolutionCard td:nth-child(1){
+    width:38%!important;
+    text-align:left!important;
+  }
+  #categoryEvolutionCard th:nth-child(2),
+  #categoryEvolutionCard td:nth-child(2),
+  #categoryEvolutionCard th:nth-child(3),
+  #categoryEvolutionCard td:nth-child(3),
+  #categoryEvolutionCard th:nth-child(4),
+  #categoryEvolutionCard td:nth-child(4){
+    width:20.666%!important;
+  }
+  #categoryEvolutionCard th,
+  #categoryEvolutionCard td{
+    font-size:10px!important;
+  }
+  #categoryEvolutionCard td:first-child{
+    font-size:11px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #categoryEvolutionCard th{
+    padding-top:7px!important;
+    padding-bottom:7px!important;
+  }
+  #categoryEvolutionCard td{
+    padding-top:10px!important;
+    padding-bottom:10px!important;
+  }
+}
 </style>
 
 </head>
@@ -1680,6 +1725,28 @@ body{padding-bottom:92px!important}
   </div>
 </div>
  
+  </div>
+
+  <div id="categoryEvolutionCard" class="card p-4 mb-4">
+    <div class="mb-3">
+      <h3 class="font-bold">Evolução das categorias</h3>
+      <p id="categoryEvolutionSubtitle" class="text-xs text-slate-400">Mês selecionado × mês anterior</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-100 text-left text-xs text-slate-400">
+            <th class="py-2 pr-3 font-semibold">Categoria</th>
+            <th class="py-2 px-2 font-semibold text-right">Atual</th>
+            <th class="py-2 px-2 font-semibold text-right">Anterior</th>
+            <th class="py-2 pl-2 font-semibold text-right">Variação</th>
+          </tr>
+        </thead>
+        <tbody id="categoryEvolutionBody">
+          <tr><td colspan="4" class="py-6 text-center text-slate-400">Nenhuma despesa cadastrada.</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
 </section>
@@ -3643,7 +3710,7 @@ function renderDashboard(){
  setDashboardComparison("cardExpenseComparison",exp,previousExp);
  setDashboardComparison("cardResultComparison",result,previousResult);
  $("cardResult").classList.toggle("text-emerald-600",result>=0);$("cardResult").classList.toggle("text-rose-600",result<0);
- renderAlerts();renderCashFlowChart(sel);renderCategoryChart(tx);refreshPrivacy();
+ renderAlerts();renderCashFlowChart(sel);renderCategoryChart(tx);renderCategoryEvolution(tx,previousTx,sel,previousMonth);refreshPrivacy();
 }
 
 function renderAlerts(){
@@ -3708,6 +3775,65 @@ function renderCategoryChart(tx){
  const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+Number(t.amount);});
  let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[1];}
  categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{position:"bottom",labels:{boxWidth:14,boxHeight:10,padding:8,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
+}
+
+function renderCategoryEvolution(currentTx,previousTx,currentMonth,previousMonth){
+ const body=$("categoryEvolutionBody");
+ const subtitle=$("categoryEvolutionSubtitle");
+ if(!body)return;
+
+ const current={};
+ const previous={};
+ currentTx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{
+  const n=categoryName(t.categoryId);
+  current[n]=(current[n]||0)+Number(t.amount);
+ });
+ previousTx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{
+  const n=categoryName(t.categoryId);
+  previous[n]=(previous[n]||0)+Number(t.amount);
+ });
+
+ const categories=[...new Set([...Object.keys(current),...Object.keys(previous)])]
+  .sort((a,b)=>(current[b]||0)-(current[a]||0));
+
+ const monthLabel=month=>{
+  const d=new Date(month+"-01T00:00:00");
+  return d.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+ };
+ if(subtitle)subtitle.textContent=`${monthLabel(currentMonth)} × ${monthLabel(previousMonth)}`;
+
+ if(!categories.length){
+  body.innerHTML='<tr><td colspan="4" class="py-6 text-center text-slate-400">Nenhuma despesa paga nos meses comparados.</td></tr>';
+  return;
+ }
+
+ body.innerHTML=categories.map(name=>{
+  const cur=current[name]||0;
+  const prev=previous[name]||0;
+  let variationText="—";
+  let variationClass="text-slate-400";
+
+  if(prev===0){
+   if(cur>0){
+    variationText="Novo";
+    variationClass="text-emerald-600";
+   }else{
+    variationText="0,0%";
+   }
+  }else{
+   const variation=((cur-prev)/Math.abs(prev))*100;
+   const arrow=variation>0?"↑":variation<0?"↓":"→";
+   variationText=`${arrow} ${Math.abs(variation).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})}%`;
+   variationClass=variation>0?"text-rose-600":variation<0?"text-emerald-600":"text-slate-400";
+  }
+
+  return `<tr class="border-b border-slate-50 last:border-0">
+    <td class="py-3 pr-3 font-semibold text-slate-700">${esc(name)}</td>
+    <td class="privacy-value py-3 px-2 text-right font-semibold text-slate-700 whitespace-nowrap">${money(cur)}</td>
+    <td class="privacy-value py-3 px-2 text-right text-slate-500 whitespace-nowrap">${money(prev)}</td>
+    <td class="privacy-value py-3 pl-2 text-right font-bold whitespace-nowrap ${variationClass}">${variationText}</td>
+  </tr>`;
+ }).join("");
 }
 
 function renderRecentTransactions(){
