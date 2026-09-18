@@ -1534,6 +1534,13 @@ body{padding-bottom:92px!important}
 }
 </style>
 
+<style>
+@media(max-width:639px){
+  #page-categorias .card.mb-5{margin-bottom:12px!important}
+  #automaticRulesList>div{min-height:58px!important}
+  #automaticRulesList button{width:34px!important;height:34px!important;border-radius:9px!important}
+}
+</style>
 </head>
 
 <body class="text-slate-800">
@@ -1930,11 +1937,25 @@ body{padding-bottom:92px!important}
       <h2 class="text-lg font-bold">Categorias</h2>
       <p class="text-sm text-slate-500">Organize seus gastos e receitas.</p>
     </div>
-    <button onclick="openCategoryModal()" class="btn btn-primary"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"</svg> Nova categoria</button>
+    <button onclick="openCategoryModal()" class="btn btn-primary"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Nova categoria</button>
+  </div>
+
+  <div class="card overflow-hidden mb-5">
+    <div id="categoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6"></div>
   </div>
 
   <div class="card overflow-hidden">
-    <div id="categoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6"></div>
+    <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+        <h3 class="font-bold">Categorias automáticas</h3>
+        <p class="text-xs text-slate-400 mt-1">Classifique automaticamente lançamentos importados pela descrição.</p>
+      </div>
+      <button onclick="openAutomaticRuleModal()" class="btn btn-secondary">
+        <svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Nova regra
+      </button>
+    </div>
+    <div id="automaticRulesList" class="divide-y divide-slate-100"></div>
   </div>
 
 </section>
@@ -2381,6 +2402,35 @@ Confirmar baixa
 </div>
 </div>
 
+<!-- Modal regra automática -->
+<div id="automaticRuleModal" class="modal fixed inset-0 z-[100] items-center justify-center bg-slate-950/50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+    <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <div>
+        <h2 id="automaticRuleModalTitle" class="text-lg font-bold">Nova regra automática</h2>
+        <p class="text-xs text-slate-400">A regra procura o texto em qualquer parte da descrição.</p>
+      </div>
+      <button onclick="closeAutomaticRuleModal()" class="w-9 h-9 rounded-lg hover:bg-slate-100"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </div>
+    <form id="automaticRuleForm" class="p-5 space-y-4">
+      <input id="automaticRuleId" type="hidden">
+      <div>
+        <label class="text-xs font-semibold text-slate-600">Descrição contém</label>
+        <input id="automaticRuleDescription" required class="input mt-1" placeholder="Ex.: AIRBNB">
+        <div class="text-[11px] text-slate-400 mt-1">Não precisa informar a descrição inteira. Ex.: <strong>AIRBNB</strong> encontra “HMSXQASCA2 AIRBNB HMSXQASCA2”.</div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-600">Categoria</label>
+        <select id="automaticRuleCategory" required class="input mt-1"></select>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" onclick="closeAutomaticRuleModal()" class="btn btn-secondary">Cancelar</button>
+        <button class="btn btn-primary">Salvar regra</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal configurações -->
 
 <div id="settingsModal" class="modal fixed inset-0 z-[100] items-center justify-center bg-slate-950/50 p-4">
@@ -2451,6 +2501,40 @@ Gerencie instituições e responsáveis utilizados nos lançamentos.
 
 const STORAGE_KEY="fincontrol_home_v2";
 
+const DEFAULT_AUTOMATIC_CATEGORY_RULES={
+  "TAXA DE ANUIDADE":"IMPOSTOS",
+  "EC MELIMAI":"ASSINATURAS",
+  "APPLE COM/BILL":"ASSINATURAS",
+  "MAYFA SUPERMERCADO":"MERCADO",
+  "EBN SPOTIFY":"ASSINATURAS",
+  "SR ACAIZEIRO RB":"ALIMENTAÇÃO",
+  "NOSPETTO RESTAURANTE":"ALIMENTAÇÃO",
+  "JIM COM BM RESTAURA":"ALIMENTAÇÃO",
+  "PADARIA ROYAL":"MERCADO",
+  "NETFLIX COM":"ASSINATURAS",
+  "AUTO ELETRICA E MEC":"TRANSPORTE",
+  "ORGANIZZE TE ORGANI":"ASSINATURAS",
+  "AIRBNB":"LAZER",
+  "MELIMAIS":"ASSINATURAS",
+  "TEZZA MATERIAIS ELET":"MORADIA",
+  "CHIQUINHO SORVETES":"LAZER",
+  "GOOGLE":"ASSINATURAS",
+  "MOTIVA PANTANAL":"TRANSPORTE",
+  "POSTO TCHE":"TRANSPORTE",
+  "VITAL FARMA":"SAÚDE",
+  "CONVENIENCIA PAULIST":"LAZER",
+  "SUPERMERCADO C VALE":"MERCADO",
+  "SUPER PIRES":"MERCADO",
+  "DROGARIA AVENIDA":"SAÚDE",
+  "POSTO UNIAO":"TRANSPORTE",
+  "RECANTO DOS ESPETOS":"ALIMENTAÇÃO",
+  "SANDRA LOPES DA SILV":"ALIMENTAÇÃO",
+  "JANAINACORREA":"ALIMENTAÇÃO",
+  "CARAMELO ARTIGOS IN":"ROUPAS",
+  "PINCEL MAKEUP":"ROUPAS",
+  "BOOKING":"LAZER"
+};
+
 let state={
  transactions:[],
  categories:[
@@ -2473,10 +2557,44 @@ let state={
   {id:"cat-pets",name:"Pets",type:"expense",system:true},
   {id:"cat-other-expense",name:"Outras saídas",type:"expense",system:true}
  ],
- settings:{name:"",currency:"BRL"},
+ settings:{name:"",currency:"BRL",automaticCategoryRules:{...DEFAULT_AUTOMATIC_CATEGORY_RULES}},
  institutions:[],
  responsibles:[],
  privacy:false
+};
+
+const normalizeDescription=value=>String(value||"")
+ .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g," ")
+ .replace(/\s+/g," ")
+ .trim();
+
+const getAutomaticCategoryRules=()=>{
+ const rules=state.settings?.automaticCategoryRules;
+ return rules&&typeof rules==="object"&&!Array.isArray(rules)
+  ?rules
+  :DEFAULT_AUTOMATIC_CATEGORY_RULES;
+};
+
+const normalizeRuleText=value=>normalizeDescription(value)
+ .normalize("NFD")
+ .replace(/[\u0300-\u036f]/g,"")
+ .toUpperCase();
+
+const findAutomaticCategoryId=description=>{
+ const targetDescription=normalizeRuleText(description);
+ if(!targetDescription)return "";
+ const rules=getAutomaticCategoryRules();
+ const entries=Object.entries(rules)
+  .map(([rule,category])=>[normalizeRuleText(rule),category])
+  .filter(([rule,category])=>rule&&category)
+  .sort((a,b)=>b[0].length-a[0].length);
+ const match=entries.find(([rule])=>targetDescription.includes(rule));
+ if(!match)return "";
+ const categoryNameTarget=normalizeRuleText(match[1]);
+ const category=state.categories.find(c=>
+  c.type==="expense" && normalizeRuleText(c.name)===categoryNameTarget
+ );
+ return category?.id||"";
 };
 
 let cashFlowChart=null,categoryChart=null,backupHandle=null,backupTimer=null,backupWatchTimer=null,backupLastSignature="",backupLastSyncAt=null;
@@ -4061,83 +4179,6 @@ function parseCreditCardCSVText(text){
   return "";
  };
 
- const normalizeDescription=value=>String(value||"")
-  .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g," ")
-  .replace(/\s+/g," ")
-  .trim();
-
- // Regras automáticas de classificação para lançamentos importados.
- // A descrição é normalizada antes da comparação para eliminar espaços duplicados,
- // tabs, espaços não separáveis e outros caracteres equivalentes a espaço.
- const automaticCategoryRules={
-  "TAXA DE ANUIDADE":"IMPOSTOS",
-  "EC MELIMAI":"ASSINATURAS",
-  "APPLE COM/BILL":"ASSINATURAS",
-  "MAYFA SUPERMERCADO":"MERCADO",
-  "EBN SPOTIFY":"ASSINATURAS",
-  "SR ACAIZEIRO RB":"ALIMENTAÇÃO",
-  "NOSPETTO RESTAURANTE":"ALIMENTAÇÃO",
-  "JIM COM BM RESTAURA":"ALIMENTAÇÃO",
-  "PADARIA ROYAL":"MERCADO",
-  "NETFLIX COM":"ASSINATURAS",
-  "AUTO ELETRICA E MEC":"TRANSPORTE",
-  "ORGANIZZE TE ORGANI":"ASSINATURAS",
-  "AIRBNB":"LAZER",
-   "MELIMAIS":"ASSINATURAS",
-   "TEZZA MATERIAIS ELET":"MORADIA",
-   "CHIQUINHO SORVETES":"LAZER",
-   "Google":"ASSINATURAS",
-   "Motiva Pantanal":"TRANSPORTE",
-    "POSTO TCHE":"TRANSPORTE",
-    "VITAL FARMA":"SAÚDE",
-    "CONVENIENCIA PAULIST":"LAZER",
-    "SUPERMERCADO C VALE":"MERCADO",
-    "SUPER PIRES":"MERCADO",
-    "DROGARIA AVENIDA":"SAÚDE",
-    "POSTO UNIAO":"TRANSPORTE",
-    "RECANTO DOS ESPETOS":"ALIMENTAÇÃO",
-    "SANDRA LOPES DA SILV":"ALIMENTAÇÃO",
-    "JanainaCorrea":"ALIMENTAÇÃO",
-    "CARAMELO ARTIGOS IN":"ROUPAS",
-    "PINCEL MAKEUP":"ROUPAS",
-  "BOOKING":"LAZER"
- };
-
-
- const normalizedRules={};
- Object.entries(automaticCategoryRules).forEach(([description,category])=>{
-  normalizedRules[normalizeDescription(description).toUpperCase()]=category;
- });
-
- const findAutomaticCategoryId=description=>{
-  const normalizedDescription=normalizeDescription(description).toUpperCase();
-
-  // Primeiro tenta a correspondência exata.
-  let target=normalizedRules[normalizedDescription];
-
-  // Se não houver correspondência exata, procura a regra em qualquer
-  // posição da descrição, por exemplo:
-  // "AIRBNB HMSXQASCA2" -> "LAZER"
-  // "HMSXQASCA2 AIRBNB HMSXQASCA2" -> "LAZER"
-  if(!target){
-   const containsRule=Object.keys(normalizedRules).find(rule=>{
-    const normalizedRule=normalizeDescription(rule).toUpperCase();
-    return normalizedRule && normalizedDescription.includes(normalizedRule);
-   });
-
-   if(containsRule)target=normalizedRules[containsRule];
-  }
-
-  if(!target)return "";
-
-  const category=state.categories.find(c=>
-   c.type==="expense" &&
-   normalizeDescription(c.name).toUpperCase()===normalizeDescription(target).toUpperCase()
-  );
-
-  return category?.id||"";
- };
-
  const items=[];let ignored=0,invalid=0;
  for(let i=headerLineIndex+1;i<lines.length;i++){
   const cols=parseLine(lines[i]);
@@ -5188,6 +5229,76 @@ function renderCommitments(){
  refreshPrivacy()
 }
 
+function renderAutomaticRules(){
+ const c=$("automaticRulesList");
+ if(!c)return;
+ const rules=getAutomaticCategoryRules();
+ const entries=Object.entries(rules).sort((a,b)=>a[0].localeCompare(b[0],"pt-BR",{sensitivity:"base"}));
+ c.innerHTML=entries.length?entries.map(([description,category])=>`
+  <div class="px-4 sm:px-5 py-3 flex items-center gap-3 min-w-0">
+   <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">${uiIcon("down",15)}</div>
+   <div class="min-w-0 flex-1">
+    <div class="font-semibold text-sm text-slate-800 truncate">${esc(description)}</div>
+    <div class="text-[11px] text-slate-400 mt-0.5">Descrição contém <span class="font-semibold text-slate-500">${esc(description)}</span> → <span class="font-semibold text-slate-600">${esc(category)}</span></div>
+   </div>
+   <div class="flex items-center gap-1 shrink-0">
+    <button onclick="editAutomaticRule(this.dataset.rule)" data-rule="${esc(description)}" class="w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 flex items-center justify-center" title="Editar regra">✎</button>
+    <button onclick="deleteAutomaticRule(this.dataset.rule)" data-rule="${esc(description)}" class="w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 flex items-center justify-center" title="Excluir regra">×</button>
+   </div>
+  </div>`).join(""):`<div class="p-8 text-center text-slate-400 text-sm">Nenhuma regra automática cadastrada.</div>`;
+}
+
+function populateAutomaticRuleCategories(selected=""){
+ const select=$("automaticRuleCategory");
+ if(!select)return;
+ select.innerHTML=state.categories.filter(c=>c.type==="expense").map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("");
+ if(selected)select.value=selected;
+}
+
+function openAutomaticRuleModal(description=""){
+ const rules=getAutomaticCategoryRules();
+ const editing=description&&Object.prototype.hasOwnProperty.call(rules,description);
+ $("automaticRuleForm").reset();
+ $("automaticRuleId").value=editing?description:"";
+ $("automaticRuleDescription").value=editing?description:"";
+ populateAutomaticRuleCategories(editing?rules[description]:"");
+ $("automaticRuleModalTitle").textContent=editing?"Editar regra automática":"Nova regra automática";
+ $("automaticRuleModal").classList.add("open");
+ setTimeout(()=>$('automaticRuleDescription')?.focus(),50);
+}
+
+function closeAutomaticRuleModal(){ $("automaticRuleModal")?.classList.remove("open"); }
+function editAutomaticRule(description){ openAutomaticRuleModal(description); }
+
+function deleteAutomaticRule(description){
+ const rules={...getAutomaticCategoryRules()};
+ if(!Object.prototype.hasOwnProperty.call(rules,description))return;
+ if(!confirm(`Excluir a regra automática "${description}"?`))return;
+ delete rules[description];
+ state.settings.automaticCategoryRules=rules;
+ saveState();
+ renderAutomaticRules();
+ showToast("Regra automática excluída.");
+}
+
+$("automaticRuleForm")?.addEventListener("submit",e=>{
+ e.preventDefault();
+ const oldDescription=$("automaticRuleId").value;
+ const description=normalizeDescription($("automaticRuleDescription").value);
+ const category=normalizeDescription($("automaticRuleCategory").value);
+ if(!description||!category)return;
+ const rules={...getAutomaticCategoryRules()};
+ const duplicate=Object.keys(rules).find(key=>normalizeRuleText(key)===normalizeRuleText(description)&&key!==oldDescription);
+ if(duplicate){showToast("Já existe uma regra para essa descrição.","error");return;}
+ if(oldDescription&&oldDescription!==description)delete rules[oldDescription];
+ rules[description]=category;
+ state.settings.automaticCategoryRules=rules;
+ saveState();
+ closeAutomaticRuleModal();
+ renderAutomaticRules();
+ showToast(oldDescription?"Regra automática atualizada.":"Regra automática cadastrada.");
+});
+
 function renderCategories(){
 
  const c=$("categoriesGrid");
@@ -5243,6 +5354,7 @@ function renderCategories(){
 
   }).join("");
 
+ renderAutomaticRules();
 }
 
 function quickAddCategory(){
