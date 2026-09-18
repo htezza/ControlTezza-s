@@ -677,26 +677,6 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
   }
 }
 
-/* =========================================================
-   DASHBOARD MOBILE — LEGENDA COMPLETA DO GRÁFICO DE CATEGORIAS
-   Aumenta somente a área do gráfico de pizza no celular para
-   que todas as categorias da legenda fiquem visíveis.
-   Desktop permanece inalterado.
-   ========================================================= */
-@media(max-width:639px){
-  #page-dashboard .grid.grid-cols-1.xl\\:grid-cols-5 > .xl\\:col-span-2 .chart-container{
-    height:390px!important;
-    min-height:390px!important;
-    overflow:visible!important;
-  }
-
-  #page-dashboard #categoryChart{
-    width:100%!important;
-    height:100%!important;
-  }
-}
-
-
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 
@@ -951,6 +931,22 @@ header{
 #creditCardDraftDate{text-align:center!important}
 #toast{left:0!important;right:0!important;display:flex!important;justify-content:center!important;pointer-events:none!important}
 #toastMessage{text-align:center!important;max-width:calc(100vw - 24px)!important}
+@media(max-width:639px){
+  #page-dashboard .grid.grid-cols-1.xl\\:grid-cols-5 > .xl\\:col-span-2{
+    overflow:visible!important;
+  }
+
+  #page-dashboard .grid.grid-cols-1.xl\\:grid-cols-5 > .xl\\:col-span-2 .chart-container{
+    height:430px!important;
+    min-height:430px!important;
+    overflow:visible!important;
+  }
+
+  #page-dashboard #categoryChart{
+    width:100%!important;
+    height:100%!important;
+  }
+}
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
