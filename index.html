@@ -3878,16 +3878,50 @@ function parseCreditCardCSVText(text){
   return "";
  };
 
+ const normalizeDescription=value=>String(value||"")
+  .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g," ")
+  .replace(/\s+/g," ")
+  .trim();
+
+ // Regras automáticas de classificação para lançamentos importados.
+ // A descrição é normalizada antes da comparação para eliminar espaços duplicados,
+ // tabs, espaços não separáveis e outros caracteres equivalentes a espaço.
+ const automaticCategoryRules={
+  "TAXA DE ANUIDADE":"IMPOSTOS",
+  "EC MELIMAI":"ASSINATURAS",
+  "APPLE COM/BILL":"ASSINATURAS",
+  "MAYFA SUPERMERCADO":"MERCADO",
+  "EBN SPOTIFY":"MERCADO",
+  "SR ACAIZEIRO RB":"ALIMENTAÇÃO",
+  "NOSPETTO RESTAURANTE":"ALIMENTAÇÃO",
+  "JIM COM BM RESTAURA":"ALIMENTAÇÃO",
+  "PADARIA ROYAL":"MERCADO",
+  "NETFLIX COM":"ASSINATURAS",
+  "AUTO ELETRICA E MEC":"TRANSPORTE"
+ };
+
+ const normalizedRules={};
+ Object.entries(automaticCategoryRules).forEach(([description,category])=>{
+  normalizedRules[normalizeDescription(description).toUpperCase()]=category;
+ });
+
+ const findAutomaticCategoryId=description=>{
+  const target=normalizedRules[normalizeDescription(description).toUpperCase()];
+  if(!target)return "";
+  const category=state.categories.find(c=>c.type==="expense" && normalizeDescription(c.name).toUpperCase()===normalizeDescription(target).toUpperCase());
+  return category?.id||"";
+ };
+
  const items=[];let ignored=0,invalid=0;
  for(let i=headerLineIndex+1;i<lines.length;i++){
   const cols=parseLine(lines[i]);
-  const description=String(cols[descIdx]||"").trim();
+  const description=normalizeDescription(cols[descIdx]);
   if(!description)continue;
-  if(description.toLowerCase().replace(/\s+/g," ")==="pag fat deb cc"){ignored++;continue;}
+  if(normalizeDescription(description).toLowerCase()==="pag fat deb cc"){ignored++;continue;}
   const date=parseDate(cols[dateIdx]);
   const amount=parseBRNumber(cols[valueIdx]);
   if(!date||!Number.isFinite(amount)||amount<=0){invalid++;continue;}
-  items.push({id:uid("cc"),description,categoryId:"",amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
+  items.push({id:uid("cc"),description,categoryId:findAutomaticCategoryId(description),amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
  }
  return {items,ignored,invalid};
 }
