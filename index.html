@@ -2046,7 +2046,7 @@ body{padding-bottom:92px!important}
 
 </div>
 
-<div class="border border-slate-200 rounded-xl p-4">
+<div id="recurrenceCard" class="border border-slate-200 rounded-xl p-4">
 
 <div class="flex items-center justify-between">
 <div>
@@ -3867,13 +3867,18 @@ function openTransactionModal(id=null){
    $("transactionPaymentMethod").value="Cartão de crédito";
    creditCardItems=Array.isArray(t.subTransactions)?t.subTransactions.map(x=>({...x,amount:Number(x.amount)||0})):[]; 
    if(t.recurrenceGroup){
-    $("recurringEnabled").checked=true;
-    $("recurrenceFrequency").value=t.recurrenceFrequency||"monthly";
-    $("recurrenceFields").classList.remove("hidden");
+    // Fatura já recorrente: não mostrar os controles de criação novamente.
+    // A escolha de quais faturas alterar será feita ao salvar.
+    $("recurringEnabled").checked=false;
+    $("recurrenceFields").classList.add("hidden");
+    $("recurrenceCard").classList.add("hidden");
    }
   }
   setTransactionType(t.type);
- }else $("transactionModalTitle").textContent="Novo lançamento";
+ }else {
+  $("transactionModalTitle").textContent="Novo lançamento";
+  $("recurrenceCard").classList.remove("hidden");
+ }
  toggleCreditCardMode();
  $("transactionFormSubmit").textContent=isCreditCardInvoiceForm()?"Salvar fatura":"Salvar lançamento";
  if(isCreditCardInvoiceForm())resetCreditCardItemDraft();
