@@ -550,7 +550,7 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
 #visibleMonthNavigation{min-height:40px}
 /* O navegador exclusivo do Dashboard para celular não deve aparecer no desktop.
    Ele continua sendo exibido apenas pela regra @media(max-width:639px). */
-#mobileDashboardMonthNav{display:none!important}
+@media(min-width:640px){#mobileDashboardMonthNav{display:none!important}}
 @media(max-width:639px){
   /* Navegação do mês: dimensionada para caber inteira em telas estreitas */
   #visibleMonthNavigation{
