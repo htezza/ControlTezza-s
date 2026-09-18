@@ -3897,8 +3897,18 @@ function parseCreditCardCSVText(text){
   "JIM COM BM RESTAURA":"ALIMENTAÇÃO",
   "PADARIA ROYAL":"MERCADO",
   "NETFLIX COM":"ASSINATURAS",
-  "AUTO ELETRICA E MEC":"TRANSPORTE"
+  "AUTO ELETRICA E MEC":"TRANSPORTE",
+  "ORGANIZZE TE ORGANI":"ASSINATURAS",
+  "AIRBNB ":"LAZER",
+  "BOOKING":"LAZER"
  };
+
+const automaticCategoryStartsWith = {
+  "AIRBNB ": "VIAGENS",
+  "UBER ": "TRANSPORTE",
+  "99APP ": "TRANSPORTE",
+  "IFOOD ": "ALIMENTAÇÃO"
+};
 
  const normalizedRules={};
  Object.entries(automaticCategoryRules).forEach(([description,category])=>{
