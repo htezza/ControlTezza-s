@@ -3903,12 +3903,6 @@ function parseCreditCardCSVText(text){
   "BOOKING":"LAZER"
  };
 
-const automaticCategoryStartsWith = {
-  "AIRBNB ": "VIAGENS",
-  "UBER ": "TRANSPORTE",
-  "99APP ": "TRANSPORTE",
-  "IFOOD ": "ALIMENTAÇÃO"
-};
 
  const normalizedRules={};
  Object.entries(automaticCategoryRules).forEach(([description,category])=>{
