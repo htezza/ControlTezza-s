@@ -3539,8 +3539,19 @@ function goToDashboardTransactions(mode){
 function getAnalyticsTransactions(){
  const result=[];
  state.transactions.forEach(t=>{
-  if(t?.isCreditCardInvoice)(Array.isArray(t.subTransactions)?t.subTransactions:[]).forEach(c=>result.push({...c,type:"expense",creditCardInvoiceId:t.id,creditCardInvoice:true}));
-  else result.push(t);
+  if(t?.isCreditCardInvoice){
+   // Para gráficos/indicadores, o mês considerado é o da FATURA
+   // (data de vencimento), mas a categoria vem do lançamento interno.
+   // A data real da compra continua preservada somente no lançamento interno.
+   (Array.isArray(t.subTransactions)?t.subTransactions:[]).forEach(c=>result.push({
+    ...c,
+    type:"expense",
+    date:t.date,
+    categoryId:c.categoryId,
+    creditCardInvoiceId:t.id,
+    creditCardInvoice:true
+   }));
+  }else result.push(t);
  });
  return result;
 }
@@ -3725,9 +3736,12 @@ function toggleCreditCardMode(){
 }
 
 function shiftCreditInvoiceItems(items,steps,frequency){
+ // A data do lançamento interno é a data REAL da compra e não deve ser
+ // deslocada junto com o vencimento da fatura. O que muda na recorrência
+ // é somente a data da fatura (transaction.date).
  return (Array.isArray(items)?items:[]).map(x=>({
   ...x,
-  date:frequency==="yearly"?addYears(x.date,steps):addMonths(x.date,steps)
+  date:x.date
  }));
 }
 
