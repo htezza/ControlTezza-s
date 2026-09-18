@@ -3815,6 +3815,8 @@ function parseCreditCardCSVText(text){
  const lines=clean.split(/\r?\n/).filter(line=>line.trim()!=="");
  if(!lines.length)throw new Error("O arquivo está vazio.");
 
+ // O CSV do Sicredi possui informações da fatura antes da tabela de lançamentos.
+ // Por isso, procuramos a linha que realmente contém Data, Descrição e Valor.
  const parseLine=line=>{
   const out=[];let cur="";let quoted=false;
   for(let i=0;i<line.length;i++){
@@ -3823,41 +3825,65 @@ function parseCreditCardCSVText(text){
     if(quoted&&line[i+1]==='"'){cur+='"';i++;}
     else quoted=!quoted;
    }else if(ch===';'&&!quoted){out.push(cur.trim());cur="";}
-   else if(ch===','&&!quoted&&line.split(',').length>=3&&line.indexOf(';')<0){out.push(cur.trim());cur="";}
+   else if(ch===','&&!quoted&&line.indexOf(';')<0){out.push(cur.trim());cur="";}
    else cur+=ch;
   }
   out.push(cur.trim());
   return out;
  };
 
- const headers=parseLine(lines[0]).map(x=>x.replace(/^"|"$/g,"").trim().toLowerCase());
+ const normalizeHeader=value=>String(value||"")
+  .replace(/^\uFEFF/,"")
+  .replace(/\s+/g," ")
+  .trim()
+  .toLowerCase();
+
+ let headerLineIndex=-1;
+ let headers=[];
+ for(let i=0;i<lines.length;i++){
+  const candidate=parseLine(lines[i]).map(normalizeHeader);
+  const hasDate=candidate.some(h=>h==="data"||h==="data da compra");
+  const hasDesc=candidate.some(h=>h==="descrição"||h==="descricao"||h==="descrição da compra"||h==="descricao da compra");
+  const hasValue=candidate.some(h=>h==="valor"||h==="valor da compra"||h==="valor (r$)");
+  if(hasDate&&hasDesc&&hasValue){
+   headerLineIndex=i;
+   headers=candidate;
+   break;
+  }
+ }
+
+ if(headerLineIndex<0)throw new Error("Não foi encontrada a tabela de lançamentos. O arquivo deve conter as colunas Data, Descrição e Valor.");
+
  const findHeader=(names)=>{
   for(const n of names){const i=headers.findIndex(h=>h===n);if(i>=0)return i;}
   return -1;
  };
- const dateIdx=findHeader(["data"]),descIdx=findHeader(["descrição","descricao"]),valueIdx=findHeader(["valor"]);
+ const dateIdx=findHeader(["data","data da compra"]);
+ const descIdx=findHeader(["descrição","descricao","descrição da compra","descricao da compra"]);
+ const valueIdx=findHeader(["valor","valor da compra","valor (r$)"]);
  if(dateIdx<0||descIdx<0||valueIdx<0)throw new Error("O CSV precisa possuir as colunas Data, Descrição e Valor.");
 
  const parseBRNumber=value=>{
-  let v=String(value||"").trim().replace(/\s/g,"").replace(/^R\$/i,"");
+  let v=String(value||"").trim().replace(/\s/g,"").replace(/^r\$/i,"");
   if(!v)return NaN;
-  v=v.replace(/\./g,"").replace(/,/g,".");
+  // Aceita R$ 1.234,56, 1.234,56 e também 1234.56.
+  if(v.includes(","))v=v.replace(/\./g,"").replace(/,/g,".");
   return Number(v);
  };
  const parseDate=value=>{
   const v=String(value||"").trim();
-  const m=v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  const m=v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
   if(m)return `${m[3]}-${String(m[2]).padStart(2,"0")}-${String(m[1]).padStart(2,"0")}`;
   if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
   return "";
  };
 
  const items=[];let ignored=0,invalid=0;
- for(let i=1;i<lines.length;i++){
+ for(let i=headerLineIndex+1;i<lines.length;i++){
   const cols=parseLine(lines[i]);
   const description=String(cols[descIdx]||"").trim();
   if(!description)continue;
-  if(description.toLowerCase()==="pag fat deb cc"){ignored++;continue;}
+  if(description.toLowerCase().replace(/\s+/g," ")==="pag fat deb cc"){ignored++;continue;}
   const date=parseDate(cols[dateIdx]);
   const amount=parseBRNumber(cols[valueIdx]);
   if(!date||!Number.isFinite(amount)||amount<=0){invalid++;continue;}
