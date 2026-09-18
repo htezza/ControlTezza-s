@@ -1555,6 +1555,12 @@ body{padding-bottom:92px!important}
   #automaticRulesList button{width:34px!important;height:34px!important;border-radius:9px!important}
 }
 </style>
+
+<style>
+@media(max-width:639px){
+  #mobileHeaderLogo{display:flex!important;width:34px!important;height:34px!important;border-radius:9px!important;box-shadow:0 2px 8px rgba(15,23,42,.10)!important}
+}
+</style>
 </head>
 
 <body class="text-slate-800">
@@ -1630,6 +1636,9 @@ body{padding-bottom:92px!important}
   <div class="h-full px-4 sm:px-5 lg:px-6 flex items-center justify-between">
     <div class="flex items-center gap-3">
       <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div id="mobileHeaderLogo" class="hidden lg:hidden w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-slate-100 shrink-0">
+        <img src="logo.png" alt="FinControl" class="w-full h-full object-cover">
+      </div>
       <div>
         <h1 id="pageTitle" class="text-lg font-bold text-slate-900">Dashboard</h1>
         <p id="pageSubtitle" class="hidden sm:block text-xs text-slate-400">Visão geral das finanças da casa</p>
@@ -3119,6 +3128,14 @@ function showPage(p){
   )
  );
 
+ document.querySelectorAll("#mobileBottomNav .mobile-nav-item[data-page]")
+ .forEach(x=>
+  x.classList.toggle(
+   "active",
+   x.dataset.page===p
+  )
+ );
+
  if(titles[p]){
   $("pageTitle").textContent=titles[p][0];
   $("pageSubtitle").textContent=titles[p][1];
@@ -3715,6 +3732,12 @@ function selectFilterMonth(value){
    ========================================================= */
 
 function goToDashboardTransactions(mode){
+
+ if(mode==="alerts"){
+  transactionQuickFilter="";
+  showPage("compromissos");
+  return;
+ }
 
  const month=$("dashboardMonth")?.value||monthISO();
  transactionQuickFilter=mode;
@@ -5066,104 +5089,59 @@ function renderCommitments(){
    t=>!t.paid
   );
 
- const overdue=
-  open.filter(
-   t=>t.date<todayISO()
-  );
+ const todayISOValue=todayISO();
+ const todayDate=new Date(todayISOValue+"T00:00:00");
+ const lim=new Date(todayDate);
+ lim.setDate(lim.getDate()+3);
+ const limitISO=`${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,"0")}-${String(lim.getDate()).padStart(2,"0")}`;
 
- const today=
-  new Date(todayISO()+"T00:00:00");
-
- const lim=
-  new Date(today);
-
- lim.setDate(
-  lim.getDate()+3
- );
-
- const up=
-  open.filter(t=>{
-
-   const d=
-    new Date(
-     t.date+"T00:00:00"
-    );
-
-   return d>=today&&d<=lim;
-
-  });
+ const overdue=open.filter(t=>t.date<todayISOValue);
+ const today=open.filter(t=>t.date===todayISOValue);
+ const next3=open.filter(t=>t.date>todayISOValue&&t.date<=limitISO);
 
  $("commitPending").textContent=
   money(
    open
-    .filter(
-     t=>t.date>=todayISO()
-    )
-    .reduce(
-     (s,t)=>s+Number(t.amount),
-     0
-    )
+    .filter(t=>t.date>=todayISOValue)
+    .reduce((s,t)=>s+Number(t.amount),0)
   );
 
  $("commitOverdue").textContent=
-  money(
-   overdue.reduce(
-    (s,t)=>s+Number(t.amount),
-    0
-   )
-  );
+  money(overdue.reduce((s,t)=>s+Number(t.amount),0));
 
  if($("commitUpcoming")) $("commitUpcoming").textContent=money(
-   up.reduce(
-    (s,t)=>s+Number(t.amount),
-    0
-   )
-  );
+  [...today,...next3].reduce((s,t)=>s+Number(t.amount),0)
+ );
 
  const c=$("commitmentsList");
 
- overdue.sort(
-  (a,b)=>a.date.localeCompare(b.date)
- );
+ function sortByDate(list){
+  return [...list].sort((a,b)=>a.date.localeCompare(b.date));
+ }
 
- if(!overdue.length){
+ function renderGroup(title,list,kind,emptyText){
+  const items=sortByDate(list);
+  const total=items.reduce((s,t)=>s+Number(t.amount),0);
 
-  c.innerHTML=
-   `<div class="p-10 text-center text-slate-400">
-     Nenhum compromisso atrasado.
-    </div>`;
+  const headerClass=
+   kind==="overdue"
+    ?"bg-rose-50 border-rose-100 text-rose-700"
+    :kind==="today"
+     ?"bg-amber-50 border-amber-100 text-amber-700"
+     :"bg-blue-50 border-blue-100 text-blue-700";
 
- }else{
+  const icon=
+   kind==="overdue"
+    ?"!"
+    :kind==="today"
+     ?"•"
+     :"→";
 
-  let lastMonth="";
-
-  c.innerHTML=
-   overdue.map(t=>{
-
-    const monthKey=t.date.slice(0,7);
-
-    const monthLabel=
-     new Date(t.date+"T00:00:00")
-      .toLocaleDateString(
-       "pt-BR",
-       {
-        month:"long",
-        year:"numeric"
-       }
-      );
-
-    const monthHeader=
-     monthKey!==lastMonth
-      ?`<div class="px-5 py-2.5 bg-slate-50 border-t border-b border-slate-200 text-[11px] font-bold uppercase tracking-wide text-slate-500">${monthLabel}</div>`
-      :"";
-
-    lastMonth=monthKey;
-
-    return monthHeader+`
+  const rows=items.map(t=>`
     <div class="px-3 sm:px-5 py-3 sm:py-4 grid grid-cols-[32px_minmax(0,1fr)_auto] items-center gap-3 sm:gap-4 hover:bg-slate-50">
 
-     <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm shrink-0">
-      !
+     <div class="w-8 h-8 rounded-lg ${kind==="overdue"?"bg-rose-50 text-rose-600":kind==="today"?"bg-amber-50 text-amber-600":"bg-blue-50 text-blue-600"} flex items-center justify-center font-bold text-sm shrink-0">
+      ${icon}
      </div>
 
      <div class="min-w-0">
@@ -5200,15 +5178,24 @@ function renderCommitments(){
 
      </div>
 
-    </div>`;
+    </div>`).join("");
 
-   }).join("");
-
+  return `
+   <div class="border-b border-slate-100 last:border-b-0">
+    <div class="px-4 sm:px-5 py-2.5 border-t border-b ${headerClass} flex items-center justify-between gap-3">
+     <div class="text-[11px] sm:text-xs font-bold uppercase tracking-wide">${title}</div>
+     <div class="privacy-value text-[11px] sm:text-xs font-bold whitespace-nowrap">${money(total)}</div>
+    </div>
+    ${items.length?rows:`<div class="px-4 sm:px-5 py-5 text-center text-xs text-slate-400">${emptyText}</div>`}
+   </div>`;
  }
 
+ c.innerHTML=
+  renderGroup("Atrasados",overdue,"overdue","Nenhum compromisso atrasado.")+
+  renderGroup("Vencendo hoje",today,"today","Nenhum compromisso vencendo hoje.")+
+  renderGroup("Próximos 3 dias",next3,"next","Nenhum compromisso vencendo nos próximos 3 dias.");
 
-
- refreshPrivacy()
+ refreshPrivacy();
 }
 
 function renderAutomaticRules(){
