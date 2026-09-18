@@ -3764,7 +3764,9 @@ function createCreditCardInvoiceRecurrence(data,count,frequency){
   const invoiceDate=freq==="yearly"?addYears(baseDate,i):addMonths(baseDate,i);
   const items=baseItems.map(item=>({
    ...item,
-   date:freq==="yearly"?addYears(item.date||baseDate,i):addMonths(item.date||baseDate,i),
+   // A data interna representa a data REAL da compra.
+   // Na recorrência, somente a data de vencimento da fatura (invoiceDate) muda.
+   date:item.date||baseDate,
    paid:i===0?!!data.paid:false
   }));
 
