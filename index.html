@@ -3897,9 +3897,18 @@ function parseCreditCardCSVText(text){
   "JIM COM BM RESTAURA":"ALIMENTAÇÃO",
   "PADARIA ROYAL":"MERCADO",
   "NETFLIX COM":"ASSINATURAS",
-  "AUTO ELETRICA E MEC":"TRANSPORTE"
-  "ORGANIZZE TE ORGANI":"ASSINATURAS"
+  "AUTO ELETRICA E MEC":"TRANSPORTE",
+  "ORGANIZZE TE ORGANI":"ASSINATURAS",
+  "AIRBNB ":"LAZER",
+  "BOOKING":"LAZER"
  };
+
+const automaticCategoryStartsWith = {
+  "AIRBNB ": "VIAGENS",
+  "UBER ": "TRANSPORTE",
+  "99APP ": "TRANSPORTE",
+  "IFOOD ": "ALIMENTAÇÃO"
+};
 
  const normalizedRules={};
  Object.entries(automaticCategoryRules).forEach(([description,category])=>{
@@ -4112,7 +4121,7 @@ function ensureCreditCardInvoiceRecurrences(){
  let changed=false;
  groups.forEach(list=>{
   const template=[...list].sort((a,b)=>(Number(a.recurrenceNumber)||999999)-(Number(b.recurrenceNumber)||999999))[0];
-  const total=Math.min(120,Math.max(1,Number(template.recurrenceTotal)||0));
+  const total=Math.max(2,Math.min(120,Number(template.recurrenceTotal)||0));
   if(!total)return;
   const frequency=template.recurrenceFrequency==='yearly'?'yearly':'monthly';
   const byNumber=new Map(list.map(t=>[Number(t.recurrenceNumber),t]));
@@ -4671,32 +4680,12 @@ function confirmDeleteAction(action){
 
  }else if(action==="future"){
 
-  // Exclui a fatura selecionada e todas as posteriores.
-  // Depois reduz a quantidade total da recorrência para o último item
-  // que permaneceu. Assim, ao recarregar a página, a rotina de reparação
-  // não entende que as faturas excluídas estão "faltando".
-  const selectedNumber=Math.max(1,Number(t.recurrenceNumber)||1);
-  const remainingTotal=selectedNumber-1;
-
   state.transactions=
    state.transactions.filter(
     x=>
      !(x.recurrenceGroup===group&&
        x.date>=t.date)
    );
-
-  if(remainingTotal>0){
-   state.transactions=state.transactions.map(x=>
-    x.recurrenceGroup===group
-     ? {...x,recurrenceTotal:remainingTotal}
-     : x
-   );
-  }else{
-   // A exclusão começou pela primeira fatura: não sobra recorrência.
-   state.transactions=state.transactions.filter(
-    x=>x.recurrenceGroup!==group
-   );
-  }
 
  }else if(action==="past"){
 
