@@ -4104,52 +4104,30 @@ function createCreditCardInvoiceRecurrence(data,count,frequency){
 function ensureCreditCardInvoiceRecurrences(){
  const groups=new Map();
  state.transactions.forEach(t=>{
-  if(t&&t.isCreditCardInvoice&&t.recurrenceGroup){
+  if(t&&t.isCreditCardInvoice&&t.recurrenceGroup) {
    if(!groups.has(t.recurrenceGroup))groups.set(t.recurrenceGroup,[]);
    groups.get(t.recurrenceGroup).push(t);
   }
  });
-
  let changed=false;
-
  groups.forEach(list=>{
-  const template=[...list].sort(
-   (a,b)=>(Number(a.recurrenceNumber)||999999)-
-          (Number(b.recurrenceNumber)||999999)
-  )[0];
-
-  // Uma recorrência encerrada manualmente pelo usuário não deve ser
-  // reconstruída após recarregar a página.
-  if(list.some(x=>x.recurrenceStopped===true))return;
-
-  const total=Math.min(120,Math.max(0,Number(template.recurrenceTotal)||0));
+  const template=[...list].sort((a,b)=>(Number(a.recurrenceNumber)||999999)-(Number(b.recurrenceNumber)||999999))[0];
+  const total=Math.min(120,Math.max(1,Number(template.recurrenceTotal)||0));
   if(!total)return;
-
   const frequency=template.recurrenceFrequency==='yearly'?'yearly':'monthly';
-  const byNumber=new Map(
-   list.map(t=>[Number(t.recurrenceNumber),t])
-  );
+  const byNumber=new Map(list.map(t=>[Number(t.recurrenceNumber),t]));
   const baseNumber=Number(template.recurrenceNumber)||1;
   const baseDate=template.date;
   const baseItems=Array.isArray(template.subTransactions)?template.subTransactions:[];
-
   for(let n=1;n<=total;n++){
    if(byNumber.has(n))continue;
-
    const steps=n-baseNumber;
-   const invoiceDate=
-    frequency==='yearly'
-     ?addYears(baseDate,steps)
-     :addMonths(baseDate,steps);
-
-   // A data interna é a data REAL da compra.
-   // Somente a data da fatura é alterada na recorrência.
+   const invoiceDate=frequency==='yearly'?addYears(baseDate,steps):addMonths(baseDate,steps);
    const items=baseItems.map(item=>({
     ...item,
-    date:item.date||baseDate,
+    date:frequency==='yearly'?addYears(item.date||baseDate,steps):addMonths(item.date||baseDate,steps),
     paid:n===1?!!template.paid:false
    }));
-
    state.transactions.push({
     ...template,
     id:uid('tx'),
@@ -4162,11 +4140,9 @@ function ensureCreditCardInvoiceRecurrences(){
     recurrenceType:'creditCardInvoice',
     createdAt:new Date().toISOString()
    });
-
    changed=true;
   }
  });
-
  return changed;
 }
 
@@ -4695,9 +4671,13 @@ function confirmDeleteAction(action){
 
  }else if(action==="future"){
 
-  const cutNumber=Math.max(1,Number(t.recurrenceNumber)||1);
+  // Exclui a fatura selecionada e todas as posteriores.
+  // Depois reduz a quantidade total da recorrência para o último item
+  // que permaneceu. Assim, ao recarregar a página, a rotina de reparação
+  // não entende que as faturas excluídas estão "faltando".
+  const selectedNumber=Math.max(1,Number(t.recurrenceNumber)||1);
+  const remainingTotal=selectedNumber-1;
 
-  // Remove a fatura selecionada e todas as seguintes.
   state.transactions=
    state.transactions.filter(
     x=>
@@ -4705,19 +4685,17 @@ function confirmDeleteAction(action){
        x.date>=t.date)
    );
 
-  // Marca a recorrência como encerrada para que a rotina de reparação
-  // não recrie as faturas apagadas depois de atualizar a página.
-  const lastNumber=cutNumber-1;
-  if(lastNumber>0){
+  if(remainingTotal>0){
    state.transactions=state.transactions.map(x=>
-    x.recurrenceGroup===group&&
-    Number(x.recurrenceNumber)===lastNumber
-     ? {...x,recurrenceTotal:lastNumber,recurrenceStopped:true}
+    x.recurrenceGroup===group
+     ? {...x,recurrenceTotal:remainingTotal}
      : x
    );
   }else{
-   // Se a primeira fatura também foi excluída, não sobra recorrência.
-   state.transactions=state.transactions.filter(x=>x.recurrenceGroup!==group);
+   // A exclusão começou pela primeira fatura: não sobra recorrência.
+   state.transactions=state.transactions.filter(
+    x=>x.recurrenceGroup!==group
+   );
   }
 
  }else if(action==="past"){
