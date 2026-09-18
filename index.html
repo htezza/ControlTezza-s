@@ -3910,9 +3910,31 @@ function parseCreditCardCSVText(text){
  });
 
  const findAutomaticCategoryId=description=>{
-  const target=normalizedRules[normalizeDescription(description).toUpperCase()];
+  const normalizedDescription=normalizeDescription(description).toUpperCase();
+
+  // Primeiro tenta a correspondência exata.
+  let target=normalizedRules[normalizedDescription];
+
+  // Se não houver correspondência exata, procura a regra em qualquer
+  // posição da descrição, por exemplo:
+  // "AIRBNB HMSXQASCA2" -> "LAZER"
+  // "HMSXQASCA2 AIRBNB HMSXQASCA2" -> "LAZER"
+  if(!target){
+   const containsRule=Object.keys(normalizedRules).find(rule=>{
+    const normalizedRule=normalizeDescription(rule).toUpperCase();
+    return normalizedRule && normalizedDescription.includes(normalizedRule);
+   });
+
+   if(containsRule)target=normalizedRules[containsRule];
+  }
+
   if(!target)return "";
-  const category=state.categories.find(c=>c.type==="expense" && normalizeDescription(c.name).toUpperCase()===normalizeDescription(target).toUpperCase());
+
+  const category=state.categories.find(c=>
+   c.type==="expense" &&
+   normalizeDescription(c.name).toUpperCase()===normalizeDescription(target).toUpperCase()
+  );
+
   return category?.id||"";
  };
 
