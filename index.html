@@ -1631,13 +1631,15 @@ body{padding-bottom:92px!important}
  <div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver lançamentos que compõem as entradas do mês" onclick="goToDashboardTransactions('income')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('income')}">
   <p class="text-xs sm:text-sm text-slate-500">Entradas do mês</p>
   <h3 id="cardIncome" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-emerald-600">R$ 0,00</h3>
-  <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Receitas recebidas</div>
+  <div id="cardIncomeComparison" class="privacy-value mt-1 text-[10px] sm:text-xs text-slate-400">— vs. mês anterior</div>
+  <div class="mt-1 text-[10px] sm:text-xs text-slate-400">Receitas recebidas</div>
 </div>
 
 <div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver lançamentos que compõem as saídas do mês" onclick="goToDashboardTransactions('expense')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('expense')}">
   <p class="text-xs sm:text-sm text-slate-500">Saídas do mês</p>
   <h3 id="cardExpense" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-rose-600">R$ 0,00</h3>
-  <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Gastos pagos</div>
+  <div id="cardExpenseComparison" class="privacy-value mt-1 text-[10px] sm:text-xs text-slate-400">— vs. mês anterior</div>
+  <div class="mt-1 text-[10px] sm:text-xs text-slate-400">Gastos pagos</div>
 </div>
 
 <div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver despesas previstas do mês" onclick="goToDashboardTransactions('expected')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('expected')}">
@@ -1649,7 +1651,8 @@ body{padding-bottom:92px!important}
 <div class="card p-3 sm:p-4">
   <p class="text-xs sm:text-sm text-slate-500">Resultado líquido</p>
   <h3 id="cardResult" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5">R$ 0,00</h3>
-  <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Entradas − saídas pagas</div>
+  <div id="cardResultComparison" class="privacy-value mt-1 text-[10px] sm:text-xs text-slate-400">— vs. mês anterior</div>
+  <div class="mt-1 text-[10px] sm:text-xs text-slate-400">Entradas − saídas pagas</div>
 </div>
  
   </div>
@@ -3601,14 +3604,44 @@ function getAnalyticsTransactions(){
  return result;
 }
 function getTransactionMonthItems(month){return getAnalyticsTransactions().filter(t=>(t.date||"").slice(0,7)===month);}
+
+function getPreviousMonth(month){
+ const [year,monthNumber]=month.split("-").map(Number);
+ const d=new Date(year,monthNumber-2,1);
+ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+
+function setDashboardComparison(id,current,previous){
+ const el=$(id);
+ if(!el)return;
+ if(previous===0){
+  el.textContent=current===0?"0,0% vs. mês anterior":"Sem base no mês anterior";
+  return;
+ }
+ const variation=((current-previous)/Math.abs(previous))*100;
+ const arrow=variation>0?"↑":variation<0?"↓":"→";
+ el.textContent=`${arrow} ${Math.abs(variation).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})}% vs. mês anterior`;
+}
+
 function renderDashboard(){
  const sel=$("dashboardMonth").value;if(!sel)return;
  const tx=getTransactionMonthItems(sel);
+ const previousMonth=getPreviousMonth(sel);
+ const previousTx=getTransactionMonthItems(previousMonth);
  const inc=tx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
  const exp=tx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
  const expected=tx.filter(t=>t.type==="expense"&&!t.paid).reduce((s,t)=>s+Number(t.amount),0);
  const result=inc-exp;
- $("cardIncome").textContent=money(inc);$("cardExpense").textContent=money(exp);$("cardExpected").textContent=money(expected);$("cardResult").textContent=money(result);
+ const previousInc=previousTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const previousExp=previousTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const previousResult=previousInc-previousExp;
+ $("cardIncome").textContent=money(inc);
+ $("cardExpense").textContent=money(exp);
+ $("cardExpected").textContent=money(expected);
+ $("cardResult").textContent=money(result);
+ setDashboardComparison("cardIncomeComparison",inc,previousInc);
+ setDashboardComparison("cardExpenseComparison",exp,previousExp);
+ setDashboardComparison("cardResultComparison",result,previousResult);
  $("cardResult").classList.toggle("text-emerald-600",result>=0);$("cardResult").classList.toggle("text-rose-600",result<0);
  renderAlerts();renderCashFlowChart(sel);renderCategoryChart(tx);refreshPrivacy();
 }
