@@ -984,9 +984,6 @@ body{padding-bottom:92px!important}
 </style>
 
 <style>
-#page-dashboard #dashboardMonth,
-#page-dashboard #dashboardYear{display:none!important}
-
 @media(max-width:639px){
   #page-dashboard > .flex:first-child h2,
   #page-dashboard > .flex:first-child h2 + p,
@@ -1000,8 +997,6 @@ body{padding-bottom:92px!important}
   #page-dashboard > .flex:first-child > div:nth-child(2){
     display:flex!important;width:100%!important;justify-content:center!important
   }
-  #page-dashboard #dashboardMonth,
-  #page-dashboard #dashboardYear{display:none!important}
   #dashboardMonthNavigation{display:none!important}
 
   .fc-mobile-monthbar{
@@ -1674,8 +1669,6 @@ body{padding-bottom:92px!important}
     </div>
 
  <div class="flex gap-2">
-  <select id="dashboardMonth" class="input !w-auto" onchange="renderDashboard()" style="display:none!important"></select>
-  <select id="dashboardYear" class="input !w-auto" onchange="renderDashboard()" style="display:none!important"></select>
     <!-- Navegação de mês do Dashboard no desktop: mesmas classes visuais de Lançamentos -->
     <div id="dashboardMonthNavigation" class="relative flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
       <button type="button" onclick="changeDashboardMonth(-1)" class="month-nav" title="Mês anterior" aria-label="Mês anterior">
@@ -2642,6 +2635,7 @@ let cashFlowChart=null,categoryChart=null,backupHandle=null,backupTimer=null,bac
 
 // Filtro rápido usado pelos atalhos do Dashboard. Não é salvo nos dados.
 let transactionQuickFilter="";
+let dashboardSelectedMonth=monthISO();
 
 const BACKUP_DB_NAME="fincontrol_backup_db";
 const BACKUP_DB_VERSION=1;
@@ -3269,59 +3263,7 @@ function refreshPrivacy(){
 }
 
 function populateDates(){
-
- const ms=$("dashboardMonth"),
- ys=$("dashboardYear"),
- d=new Date();
-
- ms.innerHTML="";
-
- for(let i=0;i<12;i++){
-
-  const x=new Date(
-   d.getFullYear(),
-   i,
-   1
-  );
-
-  const v=
-   `${x.getFullYear()}-${String(i+1).padStart(2,"0")}`;
-
-  const o=document.createElement("option");
-
-  o.value=v;
-
-  o.textContent=
-   x.toLocaleDateString(
-    "pt-BR",
-    {month:"long"}
-   ).replace(
-    /^./,
-    c=>c.toUpperCase()
-   );
-
-  ms.appendChild(o);
- }
-
- ms.value=monthISO();
-
- ys.innerHTML="";
-
- for(
-  let y=d.getFullYear()-5;
-  y<=d.getFullYear()+5;
-  y++
- ){
-
-  const o=document.createElement("option");
-
-  o.value=y;
-  o.textContent=y;
-
-  ys.appendChild(o);
- }
-
- ys.value=d.getFullYear()
+ dashboardSelectedMonth=monthISO();
 }
 
 function populateContactLists(){
@@ -3791,7 +3733,7 @@ function goToDashboardTransactions(mode){
   return;
  }
 
- const month=$("dashboardMonth")?.value||monthISO();
+ const month=dashboardSelectedMonth||monthISO();
  transactionQuickFilter=mode;
 
  $("filterCategory").value="";
@@ -3864,7 +3806,7 @@ function setDashboardComparison(id,current,previous){
 }
 
 function renderDashboard(){
- const sel=$("dashboardMonth").value;if(!sel)return;
+ const sel=dashboardSelectedMonth||monthISO();if(!sel)return;
  const tx=getTransactionMonthItems(sel);
  const previousMonth=getPreviousMonth(sel);
  const previousTx=getTransactionMonthItems(previousMonth);
@@ -6390,19 +6332,7 @@ document.addEventListener('click', function(e){
   const months=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
   function currentDashboardMonth(){
-    const el=document.getElementById("dashboardMonth");
-    return el?String(el.value||""):"";
-  }
-
-  function ensureMonth(value){
-    const el=document.getElementById("dashboardMonth");
-    if(!el || !/^\d{4}-\d{2}$/.test(value))return;
-    if(!Array.from(el.options).some(o=>o.value===value)){
-      const option=document.createElement("option");
-      option.value=value;
-      option.textContent=months[Number(value.slice(5,7))-1]||value;
-      el.appendChild(option);
-    }
+    return dashboardSelectedMonth||monthISO();
   }
 
   function monthLabel(value){
@@ -6448,12 +6378,8 @@ document.addEventListener('click', function(e){
   }
 
   function setDashboardMonth(value){
-    const monthEl=document.getElementById("dashboardMonth");
-    const yearEl=document.getElementById("dashboardYear");
-    if(!monthEl || !/^\d{4}-\d{2}$/.test(value))return;
-    ensureMonth(value);
-    monthEl.value=value;
-    if(yearEl)yearEl.value=value.slice(0,4);
+    if(!/^\d{4}-\d{2}$/.test(value))return;
+    dashboardSelectedMonth=value;
     closePickers();
     updateLabels();
     renderDashboard();
@@ -6502,8 +6428,6 @@ document.addEventListener('click', function(e){
   window.selectDashboardMonthMobile=window.selectDashboardMonth;
 
   function bind(){
-    const month=document.getElementById("dashboardMonth");
-    if(month)month.addEventListener("change",updateLabels);
     updateLabels();
   }
 
