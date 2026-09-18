@@ -3935,8 +3935,8 @@ $("transactionForm").addEventListener("submit",e=>{
 
    if(current.recurrenceGroup){
     const choice=prompt(
-     "Esta fatura faz parte de uma recorrência.\n\n"+
-     "Digite:\n\n"+
+     "Esta fatura de cartão de crédito faz parte de uma recorrência.\n\n"+
+     "Deseja aplicar a alteração também às demais faturas da recorrência?\n\n"+
      "1 - Alterar somente esta fatura\n"+
      "2 - Alterar esta e as próximas\n"+
      "3 - Alterar toda a recorrência\n"+
@@ -4222,8 +4222,6 @@ function deleteTransaction(id){
 
  if(!t)return;
 
- if(t.isCreditCardInvoice){if(!confirm(`Excluir a fatura "${t.description}" e os ${Array.isArray(t.subTransactions)?t.subTransactions.length:0} lançamentos de compras?\n\nEsta ação não pode ser desfeita.`))return;state.transactions=state.transactions.filter(x=>x.id!==id);saveState();refreshAll();showToast("Fatura excluída.");return;}
-
  if(t.recurrenceGroup){
 
   pendingDeleteTransactionId=id;
@@ -4233,8 +4231,11 @@ function deleteTransaction(id){
     x=>x.recurrenceGroup===t.recurrenceGroup
    ).length;
 
+  const isInvoice=!!t.isCreditCardInvoice;
   $("deleteTransactionInfo").textContent=
-   `"${t.description}" faz parte de uma recorrência com ${count} lançamento(s).`;
+   isInvoice
+    ? `"${t.description}" é uma fatura de cartão de crédito e faz parte de uma recorrência com ${count} fatura(s).`
+    : `"${t.description}" faz parte de uma recorrência com ${count} lançamento(s).`;
 
   $("deleteTransactionModal")
    .classList
@@ -4242,6 +4243,8 @@ function deleteTransaction(id){
 
   return;
  }
+
+ if(t.isCreditCardInvoice){if(!confirm(`Excluir a fatura "${t.description}" e os ${Array.isArray(t.subTransactions)?t.subTransactions.length:0} lançamentos de compras?\n\nEsta ação não pode ser desfeita.`))return;state.transactions=state.transactions.filter(x=>x.id!==id);saveState();refreshAll();showToast("Fatura excluída.");return;}
 
  if(t.installmentGroup){
 
