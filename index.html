@@ -3774,6 +3774,51 @@ function createCreditCardInvoiceRecurrence(data,count,frequency){
  return invoices.length;
 }
 
+function ensureCreditCardInvoiceRecurrences(){
+ const groups=new Map();
+ state.transactions.forEach(t=>{
+  if(t&&t.isCreditCardInvoice&&t.recurrenceGroup) {
+   if(!groups.has(t.recurrenceGroup))groups.set(t.recurrenceGroup,[]);
+   groups.get(t.recurrenceGroup).push(t);
+  }
+ });
+ let changed=false;
+ groups.forEach(list=>{
+  const template=[...list].sort((a,b)=>(Number(a.recurrenceNumber)||999999)-(Number(b.recurrenceNumber)||999999))[0];
+  const total=Math.max(2,Math.min(120,Number(template.recurrenceTotal)||0));
+  if(!total)return;
+  const frequency=template.recurrenceFrequency==='yearly'?'yearly':'monthly';
+  const byNumber=new Map(list.map(t=>[Number(t.recurrenceNumber),t]));
+  const baseNumber=Number(template.recurrenceNumber)||1;
+  const baseDate=template.date;
+  const baseItems=Array.isArray(template.subTransactions)?template.subTransactions:[];
+  for(let n=1;n<=total;n++){
+   if(byNumber.has(n))continue;
+   const steps=n-baseNumber;
+   const invoiceDate=frequency==='yearly'?addYears(baseDate,steps):addMonths(baseDate,steps);
+   const items=baseItems.map(item=>({
+    ...item,
+    date:frequency==='yearly'?addYears(item.date||baseDate,steps):addMonths(item.date||baseDate,steps),
+    paid:n===1?!!template.paid:false
+   }));
+   state.transactions.push({
+    ...template,
+    id:uid('tx'),
+    date:invoiceDate,
+    paid:n===1?!!template.paid:false,
+    subTransactions:items,
+    recurrenceNumber:n,
+    recurrenceTotal:total,
+    recurrenceFrequency:frequency,
+    recurrenceType:'creditCardInvoice',
+    createdAt:new Date().toISOString()
+   });
+   changed=true;
+  }
+ });
+ return changed;
+}
+
 function openTransactionModal(id=null){
  $("transactionForm").reset();
  creditCardItems=[];
@@ -5473,6 +5518,12 @@ async function init(){
  initSupabase();
  loadState();
  migrateCreditCardInvoices();
+ const repairedLocalRecurrences=ensureCreditCardInvoiceRecurrences();
+ if(repairedLocalRecurrences){
+  try{
+   localStorage.setItem(STORAGE_KEY,JSON.stringify({transactions:state.transactions,categories:state.categories,settings:state.settings,institutions:state.institutions,responsibles:state.responsibles}));
+  }catch(e){console.warn("Não foi possível salvar as recorrências locais reparadas:",e);}
+ }
  populateCategorySelects();
  populateContactLists();
  populateDates();
@@ -5493,7 +5544,14 @@ async function init(){
  if(cloudLoaded){
   stopBackupWatcher();
   localStorage.setItem("fincontrol_cloud_authoritative","1");
- }else{
+  const repairedCloudRecurrences=ensureCreditCardInvoiceRecurrences();
+  if(repairedCloudRecurrences){
+   saveState();
+   refreshAll();
+  }
+ }else if(!cloudEnabled){
+  // O backup em arquivo só pode substituir os dados locais quando a nuvem
+  // não está disponível. Com Supabase ativo, o localStorage é preservado.
   const restored=await restorePersistedBackup();
   if(restored) refreshAll();
  }
