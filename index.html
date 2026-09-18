@@ -2000,7 +2000,28 @@ body{padding-bottom:92px!important}
 </div>
 
 <div id="creditCardInvoiceEditor" class="hidden border border-blue-200 bg-blue-50/40 rounded-xl p-4 space-y-4">
-<div class="flex items-start justify-between gap-3"><div><div class="font-semibold text-sm text-slate-800 flex items-center gap-2">Lançamentos da fatura <span class="credit-invoice-badge">Cartão de crédito</span></div></div></div>
+<div class="flex items-start justify-between gap-3">
+<div>
+<div class="font-semibold text-sm text-slate-800 flex items-center gap-2">Lançamentos da fatura <span class="credit-invoice-badge">Cartão de crédito</span></div>
+<div class="text-[11px] text-slate-500 mt-1">Você pode importar o CSV da fatura ou continuar adicionando as compras manualmente.</div>
+</div>
+</div>
+
+<div class="border border-dashed border-blue-300 bg-white rounded-xl p-3">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+<div class="min-w-0">
+<div class="font-semibold text-sm text-slate-700">Importar lançamentos do cartão</div>
+<div class="text-[11px] text-slate-400 mt-1">CSV padrão: Data, Descrição e Valor. As demais colunas serão ignoradas e “Pag Fat Deb Cc” não será importado.</div>
+</div>
+<div class="shrink-0">
+<label for="creditCardCsvFile" class="btn btn-secondary cursor-pointer inline-flex items-center justify-center gap-2">
+<span>Importar CSV</span>
+</label>
+<input id="creditCardCsvFile" type="file" accept=".csv,text/csv" class="hidden" onchange="importCreditCardCSV(event)">
+</div>
+</div>
+<div id="creditCardImportStatus" class="hidden mt-3 text-xs rounded-lg px-3 py-2"></div>
+</div>
 <div id="creditCardItemDraft" class="credit-invoice-draft border border-blue-200 bg-white rounded-xl p-3 space-y-3">
 <div class="font-semibold text-xs text-slate-600 uppercase tracking-wide" id="creditCardDraftTitle">Novo lançamento da fatura</div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2014,7 +2035,7 @@ body{padding-bottom:92px!important}
 <button type="button" id="creditCardDraftSave" onclick="saveCreditCardItemDraft()" class="btn btn-primary">Salvar lançamento</button>
 </div>
 </div>
-<div><div class="flex items-center justify-between gap-2 mb-2"><div class="font-semibold text-sm text-slate-700">Lançamentos adicionados</div><span id="creditCardItemsCount" class="text-[11px] text-slate-400">0 itens</span></div><div id="creditCardItems" class="credit-invoice-items"></div></div>
+<div><div class="flex items-center justify-between gap-2 mb-2"><div class="font-semibold text-sm text-slate-700">Lançamentos adicionados</div><span id="creditCardItemsCount" class="text-[11px] text-slate-400">0 itens</span></div><div id="creditCardItems" class="credit-invoice-items"></div><div id="creditCardClassificationStatus" class="text-[11px] text-slate-400 mt-2">Adicione manualmente ou importe os lançamentos da fatura.</div></div>
 <div class="credit-invoice-total flex items-center justify-between gap-3"><span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total da fatura</span><span id="creditCardItemsTotal" class="text-lg font-bold text-slate-900">R$ 0,00</span></div>
 </div>
 
@@ -3708,15 +3729,243 @@ function clearFilters(){
 
 let creditCardItems=[];
 let creditCardItemEditingIndex=-1;
+
 function isCreditCardInvoiceForm(){return $("transactionPaymentMethod")?.value==="Cartão de crédito";}
-function categoryOptionsHTML(selected=""){return '<option value="">Selecione...</option>'+state.categories.filter(c=>c.type==="expense").map(c=>`<option value="${esc(c.id)}" ${c.id===selected?"selected":""}>${esc(c.name)}</option>`).join("");}
-function resetCreditCardItemDraft(){creditCardItemEditingIndex=-1;const d=$("creditCardDraftDescription"),c=$("creditCardDraftCategory"),a=$("creditCardDraftAmount"),dt=$("creditCardDraftDate"),b=$("creditCardDraftSave"),cancel=$("creditCardDraftCancel"),title=$("creditCardDraftTitle");if(!d)return;d.value="";c.innerHTML=categoryOptionsHTML("");a.value="";dt.value=$("transactionDate")?.value||todayISO();title.textContent="Novo lançamento da fatura";b.textContent="Salvar lançamento";cancel.classList.add("hidden");}
-function addCreditCardItem(item={}){creditCardItems.push({id:item.id||uid("cc"),description:item.description||"",categoryId:item.categoryId||"",amount:Number(item.amount)||0,date:item.date||$("transactionDate").value||todayISO(),paid:!!item.paid,createdAt:item.createdAt||new Date().toISOString()});renderCreditCardItems();}
-function removeCreditCardItem(i){if(i<0||i>=creditCardItems.length)return;if(creditCardItemEditingIndex===i)resetCreditCardItemDraft();else if(creditCardItemEditingIndex>i)creditCardItemEditingIndex--;creditCardItems.splice(i,1);renderCreditCardItems();}
-function editCreditCardItem(i){const x=creditCardItems[i];if(!x)return;creditCardItemEditingIndex=i;$("creditCardDraftDescription").value=x.description||"";$("creditCardDraftCategory").innerHTML=categoryOptionsHTML(x.categoryId||"");$("creditCardDraftAmount").value=Number(x.amount)||"";$("creditCardDraftDate").value=x.date||todayISO();$("creditCardDraftTitle").textContent=`Editando lançamento ${i+1}`;$("creditCardDraftSave").textContent="Atualizar lançamento";$("creditCardDraftCancel").classList.remove("hidden");$("creditCardDraftDescription").focus();}
+
+function categoryOptionsHTML(selected=""){
+ return '<option value="">Selecione...</option>'+state.categories.filter(c=>c.type==="expense").map(c=>`<option value="${esc(c.id)}" ${c.id===selected?"selected":""}>${esc(c.name)}</option>`).join("");
+}
+
+function resetCreditCardItemDraft(){
+ creditCardItemEditingIndex=-1;
+ const d=$("creditCardDraftDescription"),c=$("creditCardDraftCategory"),a=$("creditCardDraftAmount"),dt=$("creditCardDraftDate"),b=$("creditCardDraftSave"),cancel=$("creditCardDraftCancel"),title=$("creditCardDraftTitle");
+ if(!d)return;
+ d.value="";
+ c.innerHTML=categoryOptionsHTML("");
+ a.value="";
+ dt.value=$("transactionDate")?.value||todayISO();
+ title.textContent="Novo lançamento da fatura";
+ b.textContent="Salvar lançamento";
+ cancel.classList.add("hidden");
+ updateCreditCardSaveState();
+}
+
+function addCreditCardItem(item={}){
+ creditCardItems.push({
+  id:item.id||uid("cc"),
+  description:item.description||"",
+  categoryId:item.categoryId||"",
+  amount:Number(item.amount)||0,
+  date:item.date||$("transactionDate").value||todayISO(),
+  paid:!!item.paid,
+  imported:!!item.imported,
+  createdAt:item.createdAt||new Date().toISOString()
+ });
+ renderCreditCardItems();
+}
+
+function removeCreditCardItem(i){
+ if(i<0||i>=creditCardItems.length)return;
+ if(creditCardItemEditingIndex===i)resetCreditCardItemDraft();
+ else if(creditCardItemEditingIndex>i)creditCardItemEditingIndex--;
+ creditCardItems.splice(i,1);
+ renderCreditCardItems();
+}
+
+function editCreditCardItem(i){
+ const x=creditCardItems[i];
+ if(!x)return;
+ creditCardItemEditingIndex=i;
+ $("creditCardDraftDescription").value=x.description||"";
+ $("creditCardDraftCategory").innerHTML=categoryOptionsHTML(x.categoryId||"");
+ $("creditCardDraftAmount").value=Number(x.amount)||"";
+ $("creditCardDraftDate").value=x.date||todayISO();
+ $("creditCardDraftTitle").textContent=`Editando lançamento ${i+1}`;
+ $("creditCardDraftSave").textContent="Atualizar lançamento";
+ $("creditCardDraftCancel").classList.remove("hidden");
+ $("creditCardDraftDescription").focus();
+ updateCreditCardSaveState();
+}
+
 function cancelCreditCardItemEdit(){resetCreditCardItemDraft();}
-function saveCreditCardItemDraft(){const description=$("creditCardDraftDescription").value.trim(),categoryId=$("creditCardDraftCategory").value,amount=Number($("creditCardDraftAmount").value),date=$("creditCardDraftDate").value;if(!description||!categoryId||!(amount>0)||!date){showToast("Preencha descrição, categoria, valor e data da compra.","error");return;}const item={id:creditCardItemEditingIndex>=0?creditCardItems[creditCardItemEditingIndex].id:uid("cc"),description,categoryId,amount,date,paid:$("transactionPaid").checked,createdAt:creditCardItemEditingIndex>=0?(creditCardItems[creditCardItemEditingIndex].createdAt||new Date().toISOString()):new Date().toISOString()};if(creditCardItemEditingIndex>=0)creditCardItems[creditCardItemEditingIndex]=item;else creditCardItems.push(item);const wasEditing=creditCardItemEditingIndex>=0;renderCreditCardItems();resetCreditCardItemDraft();showToast(wasEditing?"Lançamento atualizado na lista.":"Lançamento adicionado à fatura.");}
-function renderCreditCardItems(){const c=$("creditCardItems");if(!c)return;c.innerHTML=creditCardItems.length?creditCardItems.map((x,i)=>`<div class="credit-invoice-item"><div class="flex items-start gap-3"><div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">${i+1}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm text-slate-800 truncate">${esc(x.description)}</div><div class="credit-invoice-purchase-date text-[11px] text-slate-400 mt-1">${formatDate(x.date)} · ${esc(categoryName(x.categoryId))}</div></div><div class="text-right shrink-0"><div class="font-bold text-sm text-rose-600">- ${money(x.amount)}</div><div class="flex gap-1 mt-2 justify-end"><button type="button" onclick="editCreditCardItem(${i})" class="btn btn-secondary !min-h-8 !h-8 !px-2" title="Editar lançamento">${uiIcon("edit",14)}<span class="hidden sm:inline">Editar</span></button><button type="button" onclick="removeCreditCardItem(${i})" class="btn btn-danger !min-h-8 !h-8 !px-2" title="Remover lançamento">${uiIcon("trash",14)}</button></div></div></div></div>`).join(""):`<div class="border border-dashed border-slate-300 rounded-xl p-6 text-center text-sm text-slate-400">Nenhum lançamento adicionado ainda.</div>`;if($("creditCardItemsCount"))$("creditCardItemsCount").textContent=`${creditCardItems.length} ${creditCardItems.length===1?"item":"itens"}`;updateCreditCardTotal();}
+
+function saveCreditCardItemDraft(){
+ const description=$("creditCardDraftDescription").value.trim(),categoryId=$("creditCardDraftCategory").value,amount=Number($("creditCardDraftAmount").value),date=$("creditCardDraftDate").value;
+ if(!description||!categoryId||!(amount>0)||!date){
+  showToast("Preencha descrição, categoria, valor e data da compra.","error");
+  return;
+ }
+ const item={
+  id:creditCardItemEditingIndex>=0?creditCardItems[creditCardItemEditingIndex].id:uid("cc"),
+  description,categoryId,amount,date,
+  paid:$("transactionPaid").checked,
+  imported:creditCardItemEditingIndex>=0?!!creditCardItems[creditCardItemEditingIndex].imported:false,
+  createdAt:creditCardItemEditingIndex>=0?(creditCardItems[creditCardItemEditingIndex].createdAt||new Date().toISOString()):new Date().toISOString()
+ };
+ if(creditCardItemEditingIndex>=0)creditCardItems[creditCardItemEditingIndex]=item;
+ else creditCardItems.push(item);
+ const wasEditing=creditCardItemEditingIndex>=0;
+ renderCreditCardItems();
+ resetCreditCardItemDraft();
+ showToast(wasEditing?"Lançamento atualizado na lista.":"Lançamento adicionado à fatura.");
+}
+
+function parseCreditCardCSVText(text){
+ const clean=String(text||"").replace(/^\uFEFF/,"");
+ const lines=clean.split(/\r?\n/).filter(line=>line.trim()!=="");
+ if(!lines.length)throw new Error("O arquivo está vazio.");
+
+ const parseLine=line=>{
+  const out=[];let cur="";let quoted=false;
+  for(let i=0;i<line.length;i++){
+   const ch=line[i];
+   if(ch==='"'){
+    if(quoted&&line[i+1]==='"'){cur+='"';i++;}
+    else quoted=!quoted;
+   }else if(ch===';'&&!quoted){out.push(cur.trim());cur="";}
+   else if(ch===','&&!quoted&&line.split(',').length>=3&&line.indexOf(';')<0){out.push(cur.trim());cur="";}
+   else cur+=ch;
+  }
+  out.push(cur.trim());
+  return out;
+ };
+
+ const headers=parseLine(lines[0]).map(x=>x.replace(/^"|"$/g,"").trim().toLowerCase());
+ const findHeader=(names)=>{
+  for(const n of names){const i=headers.findIndex(h=>h===n);if(i>=0)return i;}
+  return -1;
+ };
+ const dateIdx=findHeader(["data"]),descIdx=findHeader(["descrição","descricao"]),valueIdx=findHeader(["valor"]);
+ if(dateIdx<0||descIdx<0||valueIdx<0)throw new Error("O CSV precisa possuir as colunas Data, Descrição e Valor.");
+
+ const parseBRNumber=value=>{
+  let v=String(value||"").trim().replace(/\s/g,"").replace(/^R\$/i,"");
+  if(!v)return NaN;
+  v=v.replace(/\./g,"").replace(/,/g,".");
+  return Number(v);
+ };
+ const parseDate=value=>{
+  const v=String(value||"").trim();
+  const m=v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(m)return `${m[3]}-${String(m[2]).padStart(2,"0")}-${String(m[1]).padStart(2,"0")}`;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
+  return "";
+ };
+
+ const items=[];let ignored=0,invalid=0;
+ for(let i=1;i<lines.length;i++){
+  const cols=parseLine(lines[i]);
+  const description=String(cols[descIdx]||"").trim();
+  if(!description)continue;
+  if(description.toLowerCase()==="pag fat deb cc"){ignored++;continue;}
+  const date=parseDate(cols[dateIdx]);
+  const amount=parseBRNumber(cols[valueIdx]);
+  if(!date||!Number.isFinite(amount)||amount<=0){invalid++;continue;}
+  items.push({id:uid("cc"),description,categoryId:"",amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
+ }
+ return {items,ignored,invalid};
+}
+
+function importCreditCardCSV(event){
+ const input=event?.target||$("creditCardCsvFile");
+ const file=input?.files?.[0];
+ if(!file)return;
+ if(!/\.csv$/i.test(file.name)){showToast("Selecione um arquivo CSV.","error");input.value="";return;}
+
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const result=parseCreditCardCSVText(reader.result);
+   if(!result.items.length){
+    showToast("Nenhum lançamento válido foi encontrado no CSV.","error");
+    updateCreditCardImportStatus("Nenhum lançamento válido encontrado.",true);
+    return;
+   }
+   if(creditCardItems.length){
+    const ok=confirm(`Já existem ${creditCardItems.length} lançamento(s) nesta fatura.\n\nDeseja adicionar os ${result.items.length} lançamento(s) importado(s) à lista atual?`);
+    if(!ok)return;
+   }
+   creditCardItems.push(...result.items);
+   renderCreditCardItems();
+   const pending=result.items.length;
+   updateCreditCardImportStatus(`${pending} lançamento(s) importado(s). ${result.ignored?`${result.ignored} registro(s) “Pag Fat Deb Cc” ignorado(s). `:""}${result.invalid?`${result.invalid} linha(s) inválida(s) ignorada(s).`:""}`,false);
+   showToast(`${pending} lançamento(s) importado(s).`);
+  }catch(err){
+   console.error(err);
+   updateCreditCardImportStatus(err.message||"Não foi possível ler o CSV.",true);
+   showToast(err.message||"Não foi possível ler o CSV.","error");
+  }finally{input.value="";}
+ };
+ reader.onerror=()=>{updateCreditCardImportStatus("Não foi possível ler o arquivo.",true);showToast("Não foi possível ler o arquivo.","error");input.value="";};
+ reader.readAsText(file,"UTF-8");
+}
+
+function updateCreditCardImportStatus(message,error=false){
+ const el=$("creditCardImportStatus");
+ if(!el)return;
+ el.textContent=message;
+ el.className=`mt-3 text-xs rounded-lg px-3 py-2 ${error?"bg-rose-50 text-rose-700":"bg-emerald-50 text-emerald-700"}`;
+}
+
+function getCreditCardUnclassifiedCount(){
+ return creditCardItems.filter(x=>!x.categoryId).length;
+}
+
+function updateCreditCardSaveState(){
+ const button=$("transactionFormSubmit");
+ if(!button||!isCreditCardInvoiceForm())return;
+ const pending=getCreditCardUnclassifiedCount();
+ const editing=creditCardItemEditingIndex>=0;
+ const blocked=pending>0||editing||creditCardItems.length===0;
+ button.disabled=blocked;
+ button.classList.toggle("opacity-50",blocked);
+ button.classList.toggle("cursor-not-allowed",blocked);
+ button.title=editing?"Finalize a edição do lançamento antes de salvar a fatura":pending?`Classifique ${pending} lançamento(s) antes de salvar a fatura`:(creditCardItems.length===0?"Adicione pelo menos um lançamento à fatura":"");
+ const status=$("creditCardClassificationStatus");
+ if(status){
+  if(!creditCardItems.length){
+   status.textContent="Adicione manualmente ou importe os lançamentos da fatura.";
+   status.className="text-[11px] text-slate-400";
+  }else if(pending){
+   status.textContent=`${pending} lançamento(s) aguardando classificação. Classifique todos para liberar “Salvar fatura”.`;
+   status.className="text-[11px] font-semibold text-amber-600";
+  }else if(editing){
+   status.textContent="Finalize a edição do lançamento antes de salvar a fatura.";
+   status.className="text-[11px] font-semibold text-blue-600";
+  }else{
+   status.textContent="Todos os lançamentos estão classificados. A fatura pode ser salva.";
+   status.className="text-[11px] font-semibold text-emerald-600";
+  }
+ }
+}
+
+function renderCreditCardItems(){
+ const c=$("creditCardItems");
+ if(!c)return;
+ c.innerHTML=creditCardItems.length?creditCardItems.map((x,i)=>{
+  const pending=!x.categoryId;
+  return `<div class="credit-invoice-item ${pending?"border border-amber-200 bg-amber-50/40":""}">
+   <div class="flex items-start gap-3">
+    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">${i+1}</div>
+    <div class="min-w-0 flex-1">
+     <div class="font-semibold text-sm text-slate-800 truncate">${esc(x.description)}</div>
+     <div class="credit-invoice-purchase-date text-[11px] text-slate-400 mt-1">${formatDate(x.date)} · ${pending?'<span class="text-amber-600 font-semibold">Classificação pendente</span>':esc(categoryName(x.categoryId))}${x.imported?' · <span class="text-blue-500">Importado</span>':''}</div>
+    </div>
+    <div class="text-right shrink-0">
+     <div class="font-bold text-sm text-rose-600">- ${money(x.amount)}</div>
+     <div class="flex gap-1 mt-2 justify-end">
+      <button type="button" onclick="editCreditCardItem(${i})" class="btn btn-secondary !min-h-8 !h-8 !px-2" title="Editar lançamento">${uiIcon("edit",14)}<span class="hidden sm:inline">Editar</span></button>
+      <button type="button" onclick="removeCreditCardItem(${i})" class="btn btn-danger !min-h-8 !h-8 !px-2" title="Remover lançamento">${uiIcon("trash",14)}</button>
+     </div>
+    </div>
+   </div>
+  </div>`;
+ }).join(""):`<div class="border border-dashed border-slate-300 rounded-xl p-6 text-center text-sm text-slate-400">Nenhum lançamento adicionado ainda.</div>`;
+ if($("creditCardItemsCount"))$("creditCardItemsCount").textContent=`${creditCardItems.length} ${creditCardItems.length===1?"item":"itens"}`;
+ updateCreditCardTotal();
+ updateCreditCardSaveState();
+}
+
 function updateCreditCardTotal(){const total=creditCardItems.reduce((s,x)=>s+(Number(x.amount)||0),0);if($("creditCardItemsTotal"))$("creditCardItemsTotal").textContent=money(total);if($("transactionAmount")){$("transactionAmount").value=total?total.toFixed(2):"";$("transactionAmount").readOnly=isCreditCardInvoiceForm();}}
 function toggleCreditCardMode(){
  const active=isCreditCardInvoiceForm();
@@ -3732,6 +3981,7 @@ function toggleCreditCardMode(){
   if(!$("creditCardDraftDate").value)$("creditCardDraftDate").value=$("transactionDate").value||todayISO();
   if(!$("creditCardDraftCategory").innerHTML)$("creditCardDraftCategory").innerHTML=categoryOptionsHTML("");
   renderCreditCardItems();
+  updateCreditCardSaveState();
  }else updateCreditCardTotal();
 }
 
@@ -3930,6 +4180,12 @@ $("transactionForm").addEventListener("submit",e=>{
   }
   if(creditCardItems.length===0){
    showToast("Adicione pelo menos um lançamento à fatura.","error");
+   return;
+  }
+  const unclassified=getCreditCardUnclassifiedCount();
+  if(unclassified>0){
+   showToast(`Classifique ${unclassified} lançamento(s) antes de salvar a fatura.`,"error");
+   updateCreditCardSaveState();
    return;
   }
 
