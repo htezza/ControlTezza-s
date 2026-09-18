@@ -1558,7 +1558,8 @@ body{padding-bottom:92px!important}
 
 <style>
 @media(max-width:639px){
-  #mobileHeaderLogo{display:flex!important;width:34px!important;height:34px!important;border-radius:9px!important;box-shadow:0 2px 8px rgba(15,23,42,.10)!important}
+  #mobileHeaderLogo{display:flex!important;width:36px!important;height:36px!important;border-radius:9px!important;box-shadow:0 2px 8px rgba(15,23,42,.10)!important;overflow:hidden!important;flex:none!important}
+  #mobileHeaderLogo img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;padding:3px!important}
 }
 </style>
 </head>
@@ -1637,7 +1638,7 @@ body{padding-bottom:92px!important}
     <div class="flex items-center gap-3">
       <button onclick="toggleSidebar()" class="lg:hidden w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
       <div id="mobileHeaderLogo" class="hidden lg:hidden w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-slate-100 shrink-0">
-        <img src="logo.png" alt="FinControl" class="w-full h-full object-cover">
+        <img src="logo.png" alt="FinControl" class="w-full h-full object-contain p-1">
       </div>
       <div>
         <h1 id="pageTitle" class="text-lg font-bold text-slate-900">Dashboard</h1>
@@ -2584,6 +2585,30 @@ const findAutomaticCategoryId=description=>{
   c.type==="expense" && normalizeRuleText(c.name)===categoryNameTarget
  );
  return category?.id||"";
+};
+
+// Aprende a categoria escolhida manualmente para a descrição informada.
+// Se já houver uma regra que corresponda à descrição, atualiza a regra mais específica;
+// caso contrário, cria uma nova regra usando a descrição normalizada.
+const learnAutomaticCategoryRule=(description,categoryId)=>{
+ const normalizedDescription=normalizeDescription(description);
+ if(!normalizedDescription||!categoryId)return false;
+ const category=state.categories.find(c=>c.id===categoryId&&c.type==="expense");
+ if(!category)return false;
+ const rules={...getAutomaticCategoryRules()};
+ const target=normalizeRuleText(normalizedDescription);
+ const matchingKey=Object.keys(rules)
+  .filter(key=>{
+   const normalizedRule=normalizeRuleText(key);
+   return normalizedRule&&target.includes(normalizedRule);
+  })
+  .sort((a,b)=>normalizeRuleText(b).length-normalizeRuleText(a).length)[0];
+ const key=matchingKey||normalizedDescription;
+ const previous=rules[key];
+ rules[key]=category.name;
+ const changed=previous!==category.name || !Object.prototype.hasOwnProperty.call(rules,key);
+ state.settings.automaticCategoryRules=rules;
+ return changed;
 };
 
 let cashFlowChart=null,categoryChart=null,backupHandle=null,backupTimer=null,backupWatchTimer=null,backupLastSignature="",backupLastSyncAt=null;
@@ -4702,6 +4727,7 @@ $("transactionForm").addEventListener("submit",e=>{
    }
   }
 
+  creditCardItems.forEach(item=>learnAutomaticCategoryRule(item.description,item.categoryId));
   saveState();
   closeTransactionModal();
   refreshAll();
@@ -4748,6 +4774,7 @@ $("transactionForm").addEventListener("submit",e=>{
    if(i>=0)state.transactions[i]={...state.transactions[i],...updatedData,date};
   }
 
+  learnAutomaticCategoryRule(description,categoryId);
   saveState();
   closeTransactionModal();
   refreshAll();
@@ -4760,6 +4787,7 @@ $("transactionForm").addEventListener("submit",e=>{
  else if($("recurringEnabled").checked)createRecurrence(base);
  else state.transactions.push({id:uid("tx"),...base,createdAt:new Date().toISOString()});
 
+ learnAutomaticCategoryRule(description,categoryId);
  saveState();
  closeTransactionModal();
  refreshAll();
