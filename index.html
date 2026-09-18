@@ -931,12 +931,14 @@ header{
 #creditCardDraftDate{text-align:center!important}
 #toast{left:0!important;right:0!important;display:flex!important;justify-content:center!important;pointer-events:none!important}
 #toastMessage{text-align:center!important;max-width:calc(100vw - 24px)!important}
+<style>
+/* Ajuste pontual — gráfico "Gastos por categoria" no celular */
 @media(max-width:639px){
-  #page-dashboard .grid.grid-cols-1.xl\\:grid-cols-5 > .xl\\:col-span-2{
+  #page-dashboard .grid.grid-cols-1.xl\:grid-cols-5 > .xl\:col-span-2{
     overflow:visible!important;
   }
 
-  #page-dashboard .grid.grid-cols-1.xl\\:grid-cols-5 > .xl\\:col-span-2 .chart-container{
+  #page-dashboard .grid.grid-cols-1.xl\:grid-cols-5 > .xl\:col-span-2 .chart-container{
     height:430px!important;
     min-height:430px!important;
     overflow:visible!important;
@@ -947,6 +949,7 @@ header{
     height:100%!important;
   }
 }
+</style>
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
