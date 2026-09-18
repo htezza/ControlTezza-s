@@ -931,25 +931,30 @@ header{
 #creditCardDraftDate{text-align:center!important}
 #toast{left:0!important;right:0!important;display:flex!important;justify-content:center!important;pointer-events:none!important}
 #toastMessage{text-align:center!important;max-width:calc(100vw - 24px)!important}
-<style>
-/* Ajuste pontual — gráfico "Gastos por categoria" no celular */
+/* Ajuste pontual — gráfico "Gastos por categoria" no celular.
+   Garante espaço real para o canvas e para toda a legenda do Chart.js.
+   Desktop permanece inalterado. */
 @media(max-width:639px){
-  #page-dashboard .grid.grid-cols-1.xl\:grid-cols-5 > .xl\:col-span-2{
+  #categoryChartCard{
     overflow:visible!important;
+    height:auto!important;
+    min-height:500px!important;
   }
-
-  #page-dashboard .grid.grid-cols-1.xl\:grid-cols-5 > .xl\:col-span-2 .chart-container{
-    height:430px!important;
-    min-height:430px!important;
-    overflow:visible!important;
-  }
-
-  #page-dashboard #categoryChart{
+  #categoryChartContainer{
+    position:relative!important;
     width:100%!important;
-    height:100%!important;
+    height:440px!important;
+    min-height:440px!important;
+    overflow:visible!important;
+  }
+  #categoryChartContainer canvas#categoryChart{
+    display:block!important;
+    width:100%!important;
+    height:440px!important;
+    max-width:100%!important;
   }
 }
-</style>
+
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -1662,12 +1667,12 @@ body{padding-bottom:92px!important}
       </div>
     </div>
 
- <div class="card p-4 xl:col-span-2">
+ <div id="categoryChartCard" class="card p-4 xl:col-span-2">
   <div class="mb-3">
     <h3 class="font-bold">Gastos por categoria</h3>
     <p class="text-xs text-slate-400">Mês selecionado</p>
   </div>
-  <div class="chart-container">
+  <div id="categoryChartContainer" class="chart-container">
     <canvas id="categoryChart"></canvas>
   </div>
 </div>
@@ -3669,7 +3674,7 @@ function renderCategoryChart(tx){
  if(categoryChart)categoryChart.destroy();
  const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+Number(t.amount);});
  let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[1];}
- categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
+ categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{position:"bottom",labels:{boxWidth:14,boxHeight:10,padding:8,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
 }
 
 function renderRecentTransactions(){
