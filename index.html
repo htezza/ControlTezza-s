@@ -2380,10 +2380,12 @@ const SUPABASE_PUBLISHABLE_KEY="sb_publishable_eeV3cZ6mKcyOWEQ5iJfBlw_LEOqstMt";
 const SUPABASE_TABLE="fincontrol_data";
 const SUPABASE_ROW_ID="main";
 const CLOUD_INIT_KEY="fincontrol_cloud_initialized";
+const CLOUD_DIRTY_KEY="fincontrol_local_dirty";
 const CLOUD_LAST_SYNC_KEY="fincontrol_cloud_last_sync";
 let supabaseClient=null,cloudEnabled=false,cloudLastSignature="",cloudLastSyncAt=null,cloudSyncTimer=null,cloudSyncQueue=Promise.resolve();
-// Impede que o watcher da nuvem substitua uma alteração local antes de ela ser enviada.
+// Protege alterações locais até que a mesma versão tenha sido confirmada na nuvem.
 let cloudLocalWritePending=false;
+let cloudLocalWriteSignature="";
 
 function initSupabase(){
  try{
@@ -2482,7 +2484,45 @@ async function applyCloudData(rowOrData){
  return {ok:true,normalized};
 }
 
-async function loadCloudOnOpen(){if(!cloudEnabled){renderCloudStatus("error","Supabase não disponível neste navegador.");return false;}renderCloudStatus("loading");try{const r=await getCloudRow();if(r.error){renderCloudStatus("error","Tabela não criada ou acesso bloqueado. Execute o SQL fornecido.");return false;}if(!r.data){renderCloudStatus("pending","Nenhum dado na nuvem ainda. Seus dados locais estão preservados.");return false;}const cloudData=r.data.data;const cloudN=Array.isArray(cloudData?.transactions)?cloudData.transactions.length:0;const localN=state.transactions.length;const initialized=localStorage.getItem(CLOUD_INIT_KEY)==="1";if(!initialized&&cloudN===0&&localN>0){renderCloudStatus("pending",`A nuvem está vazia e este computador possui ${localN} lançamento(s). Migre os dados locais primeiro.`);return false;}const applied=await applyCloudData(r);if(!applied.ok){renderCloudStatus("error",applied.reason||"Não foi possível aplicar os dados da nuvem.");return false;}renderCloudStatus("ready",`${cloudN} lançamento(s) no banco • carregado nesta máquina • ${cloudTimeText()}`);startCloudWatcher();return true;}catch(e){console.error("Supabase:",e);renderCloudStatus("offline","Os dados locais continuam disponíveis.");return false;}}
+async function loadCloudOnOpen(){
+ if(!cloudEnabled){renderCloudStatus("error","Supabase não disponível neste navegador.");return false;}
+ renderCloudStatus("loading");
+ try{
+  const r=await getCloudRow();
+  if(r.error){renderCloudStatus("error","Tabela não criada ou acesso bloqueado. Execute o SQL fornecido.");return false;}
+  if(!r.data){renderCloudStatus("pending","Nenhum dado na nuvem ainda. Seus dados locais estão preservados.");return false;}
+
+  const cloudData=r.data.data;
+  const cloudN=Array.isArray(cloudData?.transactions)?cloudData.transactions.length:0;
+  const localN=state.transactions.length;
+  const initialized=localStorage.getItem(CLOUD_INIT_KEY)==="1";
+  const dirty=localStorage.getItem(CLOUD_DIRTY_KEY)==="1";
+
+  // Se esta máquina possui uma alteração local ainda não confirmada na nuvem,
+  // ela é a fonte da verdade. Primeiro tenta enviá-la; nunca a substitui por
+  // uma versão antiga do Supabase durante a abertura.
+  if(dirty && localN>0){
+   cloudLocalWritePending=true;
+   cloudLocalWriteSignature=cloudSignature(cloudPayload());
+   try{
+    await saveCloudPayload(cloudPayload());
+    startCloudWatcher();
+    return true;
+   }catch(e){
+    console.warn("Alteração local pendente não foi enviada à nuvem:",e);
+    renderCloudStatus("offline","Dados locais preservados; a nuvem será atualizada quando estiver disponível.");
+    return false;
+   }
+  }
+
+  if(!initialized&&cloudN===0&&localN>0){renderCloudStatus("pending",`A nuvem está vazia e este computador possui ${localN} lançamento(s). Migre os dados locais primeiro.`);return false;}
+  const applied=await applyCloudData(r);
+  if(!applied.ok){renderCloudStatus("error",applied.reason||"Não foi possível aplicar os dados da nuvem.");return false;}
+  renderCloudStatus("ready",`${cloudN} lançamento(s) no banco • carregado nesta máquina • ${cloudTimeText()}`);
+  startCloudWatcher();
+  return true;
+ }catch(e){console.error("Supabase:",e);renderCloudStatus("offline","Os dados locais continuam disponíveis.");return false;}
+}
 async function saveCloudPayload(payload){
  if(!cloudEnabled)throw new Error("Supabase não inicializado");
  cloudSyncQueue=cloudSyncQueue.catch(()=>{}).then(async()=>{
@@ -2494,12 +2534,13 @@ async function saveCloudPayload(payload){
   cloudLastSignature=cloudSignature(data);
   setCloudSyncTime();
   localStorage.setItem(CLOUD_INIT_KEY,"1");
+  localStorage.removeItem(CLOUD_DIRTY_KEY);
   renderCloudStatus("ready",`${data.transactions.length} lançamento(s) na nuvem • ${cloudTimeText()}`);
  });
  return cloudSyncQueue;
 }
 function autoCloudSync(){
- if(!cloudEnabled||localStorage.getItem(CLOUD_INIT_KEY)!=="1")return;
+ if(!cloudEnabled)return;
  const payload=cloudPayload();
  clearTimeout(autoCloudSync.timer);
  autoCloudSync.timer=setTimeout(async()=>{
@@ -2509,14 +2550,19 @@ function autoCloudSync(){
    console.error("Sincronização Supabase:",e);
    renderCloudStatus("error","Os dados locais foram preservados; a nuvem não foi atualizada.");
   }finally{
-   // Só libera o watcher depois que a tentativa de gravação terminou.
-   cloudLocalWritePending=false;
+   // Se a gravação falhou, NÃO libera o watcher: os dados locais devem
+   // permanecer intactos e não podem ser substituídos pela versão antiga.
+   if(cloudLastSignature===cloudLocalWriteSignature){
+    cloudLocalWritePending=false;
+    cloudLocalWriteSignature="";
+   }
   }
  },250);
 }
 async function checkCloudChanges(){
+ if(!cloudEnabled)return;
  if(cloudLocalWritePending)return;
- if(!cloudEnabled||localStorage.getItem(CLOUD_INIT_KEY)!=="1")return;
+ if(localStorage.getItem(CLOUD_INIT_KEY)!=="1")return;
  try{
   const r=await getCloudRow();
   if(r.error||!r.data?.data)return;
@@ -2717,9 +2763,15 @@ function setSaveSaving(message="Salvando..."){
 function saveState(){
 
  try{
-  // Marca a alteração local antes de qualquer sincronização assíncrona.
-  // Assim o watcher não pode trazer uma versão antiga da nuvem por cima.
-  cloudLocalWritePending=cloudEnabled&&localStorage.getItem(CLOUD_INIT_KEY)==="1";
+  // Registra exatamente a versão local que acabou de ser salva.
+  // O watcher só poderá aceitar uma versão da nuvem depois que ela
+  // corresponder a esta alteração.
+  if(cloudEnabled){
+   cloudLocalWritePending=true;
+   cloudLocalWriteSignature=cloudSignature(cloudPayload());
+  }
+
+  localStorage.setItem(CLOUD_DIRTY_KEY,cloudEnabled?"1":"0");
 
   localStorage.setItem(
    STORAGE_KEY,
@@ -3686,21 +3738,23 @@ function isCreditCardInvoiceRecurrenceEnabled(){
 function createCreditCardInvoiceRecurrence(data,count,frequency){
  const total=Math.max(2,Math.min(120,parseInt(count,10)||12));
  const freq=frequency==="yearly"?"yearly":"monthly";
- const group=uid("recorrencia-fatura");
- const createdAt=new Date().toISOString();
- const baseDate=data.date;
- const baseItems=Array.isArray(data.subTransactions)?data.subTransactions.map(x=>({...x})):[];
-
+ const baseDate=String(data?.date||"");
  if(!/^\d{4}-\d{2}-\d{2}$/.test(baseDate))return 0;
 
- const recurringInvoices=Array.from({length:total},(_,i)=>{
+ const group=uid("recorrencia-fatura");
+ const createdAt=new Date().toISOString();
+ const baseItems=(Array.isArray(data.subTransactions)?data.subTransactions:[]).map(item=>({...item}));
+
+ const invoices=[];
+ for(let i=0;i<total;i++){
   const invoiceDate=freq==="yearly"?addYears(baseDate,i):addMonths(baseDate,i);
   const items=baseItems.map(item=>({
    ...item,
-   date:freq==="yearly"?addYears(item.date,i):addMonths(item.date,i),
-   paid:i===0?!!item.paid:false
+   date:freq==="yearly"?addYears(item.date||baseDate,i):addMonths(item.date||baseDate,i),
+   paid:i===0?!!data.paid:false
   }));
-  return {
+
+  invoices.push({
    id:uid("tx"),
    ...data,
    date:invoiceDate,
@@ -3712,12 +3766,12 @@ function createCreditCardInvoiceRecurrence(data,count,frequency){
    recurrenceFrequency:freq,
    recurrenceType:"creditCardInvoice",
    createdAt
-  };
- });
+  });
+ }
 
- // Todas as faturas, inclusive a original, entram no estado ANTES do saveState().
- state.transactions.push(...recurringInvoices);
- return recurringInvoices.length;
+ // A fatura original + todas as futuras são inseridas de uma vez.
+ state.transactions.push(...invoices);
+ return invoices.length;
 }
 
 function openTransactionModal(id=null){
@@ -3877,11 +3931,15 @@ $("transactionForm").addEventListener("submit",e=>{
   }else{
    const repeatInvoice=$("recurringEnabled")?.checked===true;
    if(repeatInvoice){
-    createCreditCardInvoiceRecurrence(
+    const createdCount=createCreditCardInvoiceRecurrence(
      data,
      $("recurrenceCount")?.value,
      $("recurrenceFrequency")?.value
     );
+    if(!createdCount){
+     showToast("Não foi possível criar a recorrência da fatura.","error");
+     return;
+    }
    }else{
     state.transactions.push({id:uid("tx"),...data,createdAt:new Date().toISOString()});
    }
@@ -3890,7 +3948,7 @@ $("transactionForm").addEventListener("submit",e=>{
   saveState();
   closeTransactionModal();
   refreshAll();
-  showToast(id?"Fatura atualizada com sucesso.":"Fatura salva com sucesso.");
+  showToast(id?"Fatura atualizada com sucesso.":($("recurringEnabled")?.checked===true?"Fatura e recorrências salvas com sucesso.":"Fatura salva com sucesso."));
   return;
  }
 
