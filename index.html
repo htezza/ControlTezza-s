@@ -1674,8 +1674,8 @@ body{padding-bottom:92px!important}
     </div>
 
  <div class="flex gap-2">
-  <select id="dashboardMonth" class="input !w-auto" onchange="renderDashboard()"></select>
-  <select id="dashboardYear" class="input !w-auto" onchange="renderDashboard()"></select>
+  <select id="dashboardMonth" class="input !w-auto" onchange="renderDashboard()" style="display:none!important"></select>
+  <select id="dashboardYear" class="input !w-auto" onchange="renderDashboard()" style="display:none!important"></select>
     <!-- Navegação de mês do Dashboard no desktop: mesmas classes visuais de Lançamentos -->
     <div id="dashboardMonthNavigation" class="relative flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
       <button type="button" onclick="changeDashboardMonth(-1)" class="month-nav" title="Mês anterior" aria-label="Mês anterior">
