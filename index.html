@@ -4111,47 +4111,150 @@ function createCreditCardInvoiceRecurrence(data,count,frequency){
 }
 
 function ensureCreditCardInvoiceRecurrences(){
+
  const groups=new Map();
+
  state.transactions.forEach(t=>{
-  if(t&&t.isCreditCardInvoice&&t.recurrenceGroup) {
-   if(!groups.has(t.recurrenceGroup))groups.set(t.recurrenceGroup,[]);
+  if(t&&t.isCreditCardInvoice&&t.recurrenceGroup){
+
+   if(!groups.has(t.recurrenceGroup))
+    groups.set(t.recurrenceGroup,[]);
+
    groups.get(t.recurrenceGroup).push(t);
   }
  });
+
  let changed=false;
+
  groups.forEach(list=>{
-  const template=[...list].sort((a,b)=>(Number(a.recurrenceNumber)||999999)-(Number(b.recurrenceNumber)||999999))[0];
-  const total=Math.max(2,Math.min(120,Number(template.recurrenceTotal)||0));
+
+  const template=
+   [...list].sort(
+    (a,b)=>
+     (Number(a.recurrenceNumber)||999999)-
+     (Number(b.recurrenceNumber)||999999)
+   )[0];
+
+  const total=
+   Math.min(
+    120,
+    Math.max(
+     1,
+     Number(template.recurrenceTotal)||0
+    )
+   );
+
   if(!total)return;
-  const frequency=template.recurrenceFrequency==='yearly'?'yearly':'monthly';
-  const byNumber=new Map(list.map(t=>[Number(t.recurrenceNumber),t]));
-  const baseNumber=Number(template.recurrenceNumber)||1;
-  const baseDate=template.date;
-  const baseItems=Array.isArray(template.subTransactions)?template.subTransactions:[];
-  for(let n=1;n<=total;n++){
+
+  const frequency=
+   template.recurrenceFrequency==="yearly"
+    ?"yearly"
+    :"monthly";
+
+  const byNumber=
+   new Map(
+    list.map(
+     t=>[Number(t.recurrenceNumber),t]
+    )
+   );
+
+  /*
+   IMPORTANTE:
+   A rotina de reparação não deve recriar parcelas/faturas que o usuário
+   excluiu deliberadamente no final da recorrência.
+
+   Portanto, usamos o maior recurrenceNumber que ainda existe como limite
+   da reparação. Assim:
+
+   1,2,3,4,5,6,7,8,9,10,11,12
+   exclui 7 em diante
+   fica 1..6
+   a função NÃO recria 7..12.
+
+   Ao mesmo tempo, se existir um buraco no meio, por exemplo:
+   1,2,3,5,6
+   a função continua podendo reconstruir o nº 4.
+  */
+
+  const existingNumbers=
+   list
+    .map(t=>Number(t.recurrenceNumber))
+    .filter(n=>Number.isFinite(n)&&n>=1);
+
+  if(!existingNumbers.length)return;
+
+  const maxExistingNumber=
+   Math.max(...existingNumbers);
+
+  const repairUntil=
+   Math.min(total,maxExistingNumber);
+
+  const baseNumber=
+   Number(template.recurrenceNumber)||1;
+
+  const baseDate=
+   template.date;
+
+  const baseItems=
+   Array.isArray(template.subTransactions)
+    ?template.subTransactions
+    :[];
+
+  for(let n=1;n<=repairUntil;n++){
+
    if(byNumber.has(n))continue;
-   const steps=n-baseNumber;
-   const invoiceDate=frequency==='yearly'?addYears(baseDate,steps):addMonths(baseDate,steps);
-   const items=baseItems.map(item=>({
-    ...item,
-    date:frequency==='yearly'?addYears(item.date||baseDate,steps):addMonths(item.date||baseDate,steps),
-    paid:n===1?!!template.paid:false
-   }));
+
+   const steps=
+    n-baseNumber;
+
+   const invoiceDate=
+    frequency==="yearly"
+     ?addYears(baseDate,steps)
+     :addMonths(baseDate,steps);
+
+   /*
+    A data dentro do lançamento representa a data REAL da compra.
+    Ela não deve ser deslocada quando uma fatura recorrente é reparada.
+   */
+   const items=
+    baseItems.map(item=>({
+     ...item,
+     date:item.date||baseDate,
+     paid:n===1?!!template.paid:false
+    }));
+
    state.transactions.push({
+
     ...template,
-    id:uid('tx'),
+
+    id:uid("tx"),
+
     date:invoiceDate,
-    paid:n===1?!!template.paid:false,
+
+    paid:
+     n===1
+      ?!!template.paid
+      :false,
+
     subTransactions:items,
+
     recurrenceNumber:n,
+
     recurrenceTotal:total,
+
     recurrenceFrequency:frequency,
-    recurrenceType:'creditCardInvoice',
+
+    recurrenceType:"creditCardInvoice",
+
     createdAt:new Date().toISOString()
+
    });
+
    changed=true;
   }
+
  });
+
  return changed;
 }
 
