@@ -677,6 +677,26 @@ header{background:rgba(255,255,255,.88)!important;border-bottom-color:#e5e7eb!im
   }
 }
 
+/* =========================================================
+   DASHBOARD MOBILE — LEGENDA COMPLETA DO GRÁFICO DE CATEGORIAS
+   Aumenta somente a área do gráfico de pizza no celular para
+   que todas as categorias da legenda fiquem visíveis.
+   Desktop permanece inalterado.
+   ========================================================= */
+@media(max-width:639px){
+  #page-dashboard .grid.grid-cols-1.xl\\:grid-cols-5 > .xl\\:col-span-2 .chart-container{
+    height:390px!important;
+    min-height:390px!important;
+    overflow:visible!important;
+  }
+
+  #page-dashboard #categoryChart{
+    width:100%!important;
+    height:100%!important;
+  }
+}
+
+
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
 
