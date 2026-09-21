@@ -12,6 +12,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 tailwind.config={theme:{extend:{colors:{brand:{50:"#eff6ff",500:"#3b82f6",600:"#2563eb",700:"#1d4ed8"}}}}}
 </script>
@@ -2165,7 +2166,7 @@ body{padding-bottom:92px!important}
 <div class="flex items-start justify-between gap-3">
 <div>
 <div class="font-semibold text-sm text-slate-800 flex items-center gap-2">Lançamentos da fatura <span class="credit-invoice-badge">Cartão de crédito</span></div>
-<div class="text-[11px] text-slate-500 mt-1">Você pode importar o CSV da fatura ou continuar adicionando as compras manualmente.</div>
+<div class="text-[11px] text-slate-500 mt-1">Você pode importar o PDF da fatura ou continuar adicionando as compras manualmente.</div>
 </div>
 </div>
 
@@ -2173,13 +2174,13 @@ body{padding-bottom:92px!important}
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 <div class="min-w-0">
 <div class="font-semibold text-sm text-slate-700">Importar lançamentos do cartão</div>
-<div class="text-[11px] text-slate-400 mt-1">CSV padrão: Data, Descrição e Valor. As demais colunas serão ignoradas e “Pag Fat Deb Cc” não será importado.</div>
+<div class="text-[11px] text-slate-400 mt-1">Importe o PDF da fatura do cartão. As transações são identificadas automaticamente e pagamentos/valores negativos são ignorados.</div>
 </div>
 <div class="shrink-0">
-<label for="creditCardCsvFile" class="btn btn-secondary cursor-pointer inline-flex items-center justify-center gap-2">
-<span>Importar CSV</span>
+<label for="creditCardPdfFile" class="btn btn-secondary cursor-pointer inline-flex items-center justify-center gap-2">
+<span>Importar PDF</span>
 </label>
-<input id="creditCardCsvFile" type="file" accept=".csv,text/csv" class="hidden" onchange="importCreditCardCSV(event)">
+<input id="creditCardPdfFile" type="file" accept=".pdf,application/pdf" class="hidden" onchange="importCreditCardPDF(event)">
 </div>
 </div>
 <div id="creditCardImportStatus" class="hidden mt-3 text-xs rounded-lg px-3 py-2"></div>
@@ -4113,122 +4114,106 @@ function saveCreditCardItemDraft(){
  showToast(wasEditing?"Lançamento atualizado na lista.":"Lançamento adicionado à fatura.");
 }
 
-function parseCreditCardCSVText(text){
- const clean=String(text||"").replace(/^\uFEFF/,"");
- const lines=clean.split(/\r?\n/).filter(line=>line.trim()!=="");
- if(!lines.length)throw new Error("O arquivo está vazio.");
-
- // O CSV do Sicredi possui informações da fatura antes da tabela de lançamentos.
- // Por isso, procuramos a linha que realmente contém Data, Descrição e Valor.
- const parseLine=line=>{
-  const out=[];let cur="";let quoted=false;
-  for(let i=0;i<line.length;i++){
-   const ch=line[i];
-   if(ch==='"'){
-    if(quoted&&line[i+1]==='"'){cur+='"';i++;}
-    else quoted=!quoted;
-   }else if(ch===';'&&!quoted){out.push(cur.trim());cur="";}
-   else if(ch===','&&!quoted&&line.indexOf(';')<0){out.push(cur.trim());cur="";}
-   else cur+=ch;
-  }
-  out.push(cur.trim());
-  return out;
- };
-
- const normalizeHeader=value=>String(value||"")
-  .replace(/^\uFEFF/,"")
-  .replace(/\s+/g," ")
-  .trim()
-  .toLowerCase();
-
- let headerLineIndex=-1;
- let headers=[];
- for(let i=0;i<lines.length;i++){
-  const candidate=parseLine(lines[i]).map(normalizeHeader);
-  const hasDate=candidate.some(h=>h==="data"||h==="data da compra");
-  const hasDesc=candidate.some(h=>h==="descrição"||h==="descricao"||h==="descrição da compra"||h==="descricao da compra");
-  const hasValue=candidate.some(h=>h==="valor"||h==="valor da compra"||h==="valor (r$)");
-  if(hasDate&&hasDesc&&hasValue){
-   headerLineIndex=i;
-   headers=candidate;
-   break;
+function parseCreditCardPDFTextItems(items){
+ const words=(items||[]).filter(x=>String(x?.str||"").trim()).map(x=>({
+  str:String(x.str||"").trim(),
+  x:Number(x.transform?.[4]||0),
+  y:Number(x.transform?.[5]||0)
+ }));
+ const dateRe=/^(\d{1,2})\/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)$/i;
+ const timeRe=/^\d{1,2}:\d{2}$/;
+ const amountRe=/^-?[\d.]+,\d{2}$/i;
+ const rows=[];
+ for(const w of words){
+  if(!dateRe.test(w.str))continue;
+  const time=words.find(q=>q!==w&&Math.abs(q.y-w.y)<1.2&&q.x>w.x&&q.x<w.x+45&&timeRe.test(q.str));
+  if(!time)continue;
+  const same=words.filter(q=>Math.abs(q.y-w.y)<1.2&&q.x>w.x&&q.x<560);
+  const amount=same.filter(q=>amountRe.test(q.str)).sort((a,b)=>b.x-a.x)[0];
+  if(amount){
+   const sign=same.find(q=>q.x<amount.x&&q.x>amount.x-28&&/^-?R\$$/i.test(q.str));
+   rows.push({dateText:`${w.str} ${time.str}`,dateY:w.y,amountText:`${sign?.str?.startsWith("-")?"-":""}${amount.str}`,words});
   }
  }
+ return rows;
+}
+function parseCreditCardPDFText(pagesText,pages){
+ const months={jan:1,fev:2,mar:3,abr:4,mai:5,jun:6,jul:7,ago:8,set:9,out:10,nov:11,dez:12};
+ const dueMatch=String(pagesText||"").match(/Vencimento\s+(\d{2})\/(\d{2})\/(\d{4})/i);
+ if(!dueMatch)throw new Error("Não foi possível identificar o vencimento da fatura no PDF.");
+ const invoiceMonth=Number(dueMatch[2]),invoiceYear=Number(dueMatch[3]);
+ const rows=[];
+ for(const page of pages){
+  const pageRows=parseCreditCardPDFTextItems(page.items);
+  for(const row of pageRows){
+   const dm=row.dateText.match(/^(\d{1,2})\/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)\s+\d{1,2}:\d{2}$/i);
+   if(!dm)continue;
+   const day=Number(dm[1]),month=months[dm[2].toLowerCase()];
+   let year=invoiceYear;
+   if(month>invoiceMonth)year--;
+   const date=`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+   const amount=Number(String(row.amountText).replace(/R\$\s*/i,"").replace(/\./g,"").replace(",","."));
+   if(!Number.isFinite(amount)||amount<=0)continue;
 
- if(headerLineIndex<0)throw new Error("Não foi encontrada a tabela de lançamentos. O arquivo deve conter as colunas Data, Descrição e Valor.");
-
- const findHeader=(names)=>{
-  for(const n of names){const i=headers.findIndex(h=>h===n);if(i>=0)return i;}
-  return -1;
- };
- const dateIdx=findHeader(["data","data da compra"]);
- const descIdx=findHeader(["descrição","descricao","descrição da compra","descricao da compra"]);
- const valueIdx=findHeader(["valor","valor da compra","valor (r$)"]);
- if(dateIdx<0||descIdx<0||valueIdx<0)throw new Error("O CSV precisa possuir as colunas Data, Descrição e Valor.");
-
- const parseBRNumber=value=>{
-  let v=String(value||"").trim().replace(/\s/g,"").replace(/^r\$/i,"");
-  if(!v)return NaN;
-  // Aceita R$ 1.234,56, 1.234,56 e também 1234.56.
-  if(v.includes(","))v=v.replace(/\./g,"").replace(/,/g,".");
-  return Number(v);
- };
- const parseDate=value=>{
-  const v=String(value||"").trim();
-  const m=v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
-  if(m)return `${m[3]}-${String(m[2]).padStart(2,"0")}-${String(m[1]).padStart(2,"0")}`;
-  if(/^\d{4}-\d{2}-\d{2}$/.test(v))return v;
-  return "";
- };
-
- const items=[];let ignored=0,invalid=0;
- for(let i=headerLineIndex+1;i<lines.length;i++){
-  const cols=parseLine(lines[i]);
-  const description=normalizeDescription(cols[descIdx]);
-  if(!description)continue;
-  if(normalizeDescription(description).toLowerCase()==="pag fat deb cc"){ignored++;continue;}
-  const date=parseDate(cols[dateIdx]);
-  const amount=parseBRNumber(cols[valueIdx]);
-  if(!date||!Number.isFinite(amount)||amount<=0){invalid++;continue;}
-  items.push({id:uid("cc"),description,categoryId:findAutomaticCategoryId(description),amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
+   const rowY=row.dateY;
+   const nextDateY=page.dateRows.find(y=>y>rowY+1.2)||Infinity;
+   const descWords=row.words
+    .filter(q=>q.y<=rowY+10&&q.y>rowY-10&&q.x>=225&&q.x<500&&q.y<nextDateY)
+    .sort((a,b)=>a.y-b.y||a.x-b.x)
+    .map(q=>q.str)
+    .filter(Boolean);
+   let description=normalizeDescription(descWords.join(" "));
+   if(!description)continue;
+   rows.push({id:uid("cc"),description,categoryId:findAutomaticCategoryId(description),amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
+  }
  }
- return {items,ignored,invalid};
+ return rows;
 }
 
-function importCreditCardCSV(event){
- const input=event?.target||$("creditCardCsvFile");
+async function importCreditCardPDF(event){
+ const input=event?.target||$("creditCardPdfFile");
  const file=input?.files?.[0];
  if(!file)return;
- if(!/\.csv$/i.test(file.name)){showToast("Selecione um arquivo CSV.","error");input.value="";return;}
-
- const reader=new FileReader();
- reader.onload=()=>{
-  try{
-   const result=parseCreditCardCSVText(reader.result);
-   if(!result.items.length){
-    showToast("Nenhum lançamento válido foi encontrado no CSV.","error");
-    updateCreditCardImportStatus("Nenhum lançamento válido encontrado.",true);
-    return;
-   }
-   if(creditCardItems.length){
-    const ok=confirm(`Já existem ${creditCardItems.length} lançamento(s) nesta fatura.\n\nDeseja adicionar os ${result.items.length} lançamento(s) importado(s) à lista atual?`);
-    if(!ok)return;
-   }
-   creditCardItems.push(...result.items);
-   renderCreditCardItems();
-   const pending=result.items.length;
-   updateCreditCardImportStatus(`${pending} lançamento(s) importado(s). ${result.ignored?`${result.ignored} registro(s) “Pag Fat Deb Cc” ignorado(s). `:""}${result.invalid?`${result.invalid} linha(s) inválida(s) ignorada(s).`:""}`,false);
-   showToast(`${pending} lançamento(s) importado(s).`);
-  }catch(err){
-   console.error(err);
-   updateCreditCardImportStatus(err.message||"Não foi possível ler o CSV.",true);
-   showToast(err.message||"Não foi possível ler o CSV.","error");
-  }finally{input.value="";}
- };
- reader.onerror=()=>{updateCreditCardImportStatus("Não foi possível ler o arquivo.",true);showToast("Não foi possível ler o arquivo.","error");input.value="";};
- reader.readAsText(file,"UTF-8");
+ if(!/\.pdf$/i.test(file.name)){showToast("Selecione um arquivo PDF.","error");input.value="";return;}
+ try{
+  if(typeof pdfjsLib==="undefined")throw new Error("O leitor de PDF não está disponível. Recarregue a página e tente novamente.");
+  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  updateCreditCardImportStatus("Lendo a fatura PDF...",false);
+  const buffer=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:buffer}).promise;
+  const pages=[];
+  let allText="";
+  for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
+   const page=await pdf.getPage(pageNo);
+   const content=await page.getTextContent();
+   const items=content.items||[];
+   const normalizedItems=items.map(x=>({str:String(x.str||"").trim(),x:Number(x.transform?.[4]||0),y:Number(x.transform?.[5]||0)}));
+   const dateRows=normalizedItems.filter(x=>/^(\d{1,2})\/(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)$/i.test(x.str))
+    .filter(x=>normalizedItems.some(q=>q!==x&&Math.abs(q.y-x.y)<1.2&&q.x>x.x&&q.x<x.x+45&&/^\d{1,2}:\d{2}$/.test(q.str)))
+    .map(x=>x.y).sort((a,b)=>a-b);
+   pages.push({items,dateRows});
+   allText+=items.map(x=>String(x.str||"")).join(" ")+" ";
+  }
+  const items=parseCreditCardPDFText(allText,pages);
+  if(!items.length){
+   showToast("Nenhuma transação válida foi encontrada no PDF.","error");
+   updateCreditCardImportStatus("Nenhuma transação válida encontrada na fatura.",true);
+   return;
+  }
+  if(creditCardItems.length){
+   const ok=confirm(`Já existem ${creditCardItems.length} lançamento(s) nesta fatura.\n\nDeseja adicionar os ${items.length} lançamento(s) importado(s) à lista atual?`);
+   if(!ok)return;
+  }
+  creditCardItems.push(...items);
+  renderCreditCardItems();
+  updateCreditCardImportStatus(`${items.length} lançamento(s) importado(s) do PDF.`,false);
+  showToast(`${items.length} lançamento(s) importado(s) da fatura.`);
+ }catch(err){
+  console.error(err);
+  updateCreditCardImportStatus(err.message||"Não foi possível ler o PDF.",true);
+  showToast(err.message||"Não foi possível ler o PDF.","error");
+ }finally{input.value="";}
 }
-
 function updateCreditCardImportStatus(message,error=false){
  const el=$("creditCardImportStatus");
  if(!el)return;
