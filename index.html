@@ -2165,7 +2165,7 @@ body{padding-bottom:92px!important}
 <div class="flex items-start justify-between gap-3">
 <div>
 <div class="font-semibold text-sm text-slate-800 flex items-center gap-2">Lançamentos da fatura <span class="credit-invoice-badge">Cartão de crédito</span></div>
-<div class="text-[11px] text-slate-500 mt-1">Você pode importar o CSV da fatura ou continuar adicionando as compras manualmente.</div>
+<div class="text-[11px] text-slate-500 mt-1">Você pode importar o TXT da fatura ou continuar adicionando as compras manualmente.</div>
 </div>
 </div>
 
@@ -2173,13 +2173,13 @@ body{padding-bottom:92px!important}
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 <div class="min-w-0">
 <div class="font-semibold text-sm text-slate-700">Importar lançamentos do cartão</div>
-<div class="text-[11px] text-slate-400 mt-1">CSV padrão: Data, Descrição e Valor. As demais colunas serão ignoradas e “Pag Fat Deb Cc” não será importado.</div>
+<div class="text-[11px] text-slate-400 mt-1">TXT padrão: Descrição;Data;Valor. O separador é “;” e “Pag Fat Deb Cc” não será importado.</div>
 </div>
 <div class="shrink-0">
 <label for="creditCardCsvFile" class="btn btn-secondary cursor-pointer inline-flex items-center justify-center gap-2">
-<span>Importar CSV</span>
+<span>Importar TXT</span>
 </label>
-<input id="creditCardCsvFile" type="file" accept=".csv,text/csv" class="hidden" onchange="importCreditCardCSV(event)">
+<input id="creditCardCsvFile" type="file" accept=".txt,text/plain" class="hidden" onchange="importCreditCardCSV(event)">
 </div>
 </div>
 <div id="creditCardImportStatus" class="hidden mt-3 text-xs rounded-lg px-3 py-2"></div>
@@ -4118,8 +4118,8 @@ function parseCreditCardCSVText(text){
  const lines=clean.split(/\r?\n/).filter(line=>line.trim()!=="");
  if(!lines.length)throw new Error("O arquivo está vazio.");
 
- // O CSV do Sicredi possui informações da fatura antes da tabela de lançamentos.
- // Por isso, procuramos a linha que realmente contém Data, Descrição e Valor.
+ // TXT padrão da importação: Descrição;Data;Valor
+ // Exemplo: SUPERMERCADO ABC;20/09/2026;152,80
  const parseLine=line=>{
   const out=[];let cur="";let quoted=false;
   for(let i=0;i<line.length;i++){
@@ -4128,7 +4128,6 @@ function parseCreditCardCSVText(text){
     if(quoted&&line[i+1]==='"'){cur+='"';i++;}
     else quoted=!quoted;
    }else if(ch===';'&&!quoted){out.push(cur.trim());cur="";}
-   else if(ch===','&&!quoted&&line.indexOf(';')<0){out.push(cur.trim());cur="";}
    else cur+=ch;
   }
   out.push(cur.trim());
@@ -4141,30 +4140,15 @@ function parseCreditCardCSVText(text){
   .trim()
   .toLowerCase();
 
- let headerLineIndex=-1;
- let headers=[];
- for(let i=0;i<lines.length;i++){
-  const candidate=parseLine(lines[i]).map(normalizeHeader);
-  const hasDate=candidate.some(h=>h==="data"||h==="data da compra");
-  const hasDesc=candidate.some(h=>h==="descrição"||h==="descricao"||h==="descrição da compra"||h==="descricao da compra");
-  const hasValue=candidate.some(h=>h==="valor"||h==="valor da compra"||h==="valor (r$)");
-  if(hasDate&&hasDesc&&hasValue){
-   headerLineIndex=i;
-   headers=candidate;
-   break;
-  }
- }
+ // O novo TXT possui obrigatoriamente as colunas na ordem:
+ // Descrição;Data;Valor
+ const firstCols=parseLine(lines[0]).map(normalizeHeader);
+ const isHeader=firstCols.length>=3 &&
+  (firstCols[0]==="descrição"||firstCols[0]==="descricao"||firstCols[0]==="descrição da compra"||firstCols[0]==="descricao da compra") &&
+  (firstCols[1]==="data"||firstCols[1]==="data da compra") &&
+  (firstCols[2]==="valor"||firstCols[2]==="valor da compra"||firstCols[2]==="valor (r$)");
 
- if(headerLineIndex<0)throw new Error("Não foi encontrada a tabela de lançamentos. O arquivo deve conter as colunas Data, Descrição e Valor.");
-
- const findHeader=(names)=>{
-  for(const n of names){const i=headers.findIndex(h=>h===n);if(i>=0)return i;}
-  return -1;
- };
- const dateIdx=findHeader(["data","data da compra"]);
- const descIdx=findHeader(["descrição","descricao","descrição da compra","descricao da compra"]);
- const valueIdx=findHeader(["valor","valor da compra","valor (r$)"]);
- if(dateIdx<0||descIdx<0||valueIdx<0)throw new Error("O CSV precisa possuir as colunas Data, Descrição e Valor.");
+ const startIndex=isHeader?1:0;
 
  const parseBRNumber=value=>{
   let v=String(value||"").trim().replace(/\s/g,"").replace(/^r\$/i,"");
@@ -4173,6 +4157,7 @@ function parseCreditCardCSVText(text){
   if(v.includes(","))v=v.replace(/\./g,"").replace(/,/g,".");
   return Number(v);
  };
+
  const parseDate=value=>{
   const v=String(value||"").trim();
   const m=v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
@@ -4182,14 +4167,19 @@ function parseCreditCardCSVText(text){
  };
 
  const items=[];let ignored=0,invalid=0;
- for(let i=headerLineIndex+1;i<lines.length;i++){
+ for(let i=startIndex;i<lines.length;i++){
   const cols=parseLine(lines[i]);
-  const description=normalizeDescription(cols[descIdx]);
+  // Novo padrão fixo: descrição;data;valor
+  if(cols.length<3){invalid++;continue;}
+
+  const description=normalizeDescription(cols[0]);
   if(!description)continue;
   if(normalizeDescription(description).toLowerCase()==="pag fat deb cc"){ignored++;continue;}
-  const date=parseDate(cols[dateIdx]);
-  const amount=parseBRNumber(cols[valueIdx]);
+
+  const date=parseDate(cols[1]);
+  const amount=parseBRNumber(cols[2]);
   if(!date||!Number.isFinite(amount)||amount<=0){invalid++;continue;}
+
   items.push({id:uid("cc"),description,categoryId:findAutomaticCategoryId(description),amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
  }
  return {items,ignored,invalid};
@@ -4199,14 +4189,14 @@ function importCreditCardCSV(event){
  const input=event?.target||$("creditCardCsvFile");
  const file=input?.files?.[0];
  if(!file)return;
- if(!/\.csv$/i.test(file.name)){showToast("Selecione um arquivo CSV.","error");input.value="";return;}
+ if(!/\.txt$/i.test(file.name)){showToast("Selecione um arquivo TXT no formato Descrição;Data;Valor.","error");input.value="";return;}
 
  const reader=new FileReader();
  reader.onload=()=>{
   try{
    const result=parseCreditCardCSVText(reader.result);
    if(!result.items.length){
-    showToast("Nenhum lançamento válido foi encontrado no CSV.","error");
+    showToast("Nenhum lançamento válido foi encontrado no TXT.","error");
     updateCreditCardImportStatus("Nenhum lançamento válido encontrado.",true);
     return;
    }
@@ -4221,14 +4211,13 @@ function importCreditCardCSV(event){
    showToast(`${pending} lançamento(s) importado(s).`);
   }catch(err){
    console.error(err);
-   updateCreditCardImportStatus(err.message||"Não foi possível ler o CSV.",true);
-   showToast(err.message||"Não foi possível ler o CSV.","error");
+   updateCreditCardImportStatus(err.message||"Não foi possível ler o TXT.",true);
+   showToast(err.message||"Não foi possível ler o TXT.","error");
   }finally{input.value="";}
  };
  reader.onerror=()=>{updateCreditCardImportStatus("Não foi possível ler o arquivo.",true);showToast("Não foi possível ler o arquivo.","error");input.value="";};
  reader.readAsText(file,"UTF-8");
 }
-
 function updateCreditCardImportStatus(message,error=false){
  const el=$("creditCardImportStatus");
  if(!el)return;
