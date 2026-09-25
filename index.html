@@ -4104,7 +4104,15 @@ function getAnalyticsTransactions(){
  });
  return result;
 }
-function getTransactionMonthItems(month){return getAnalyticsTransactions().filter(t=>(t.date||"").slice(0,7)===month);}
+function getTransactionMonthItems(month){
+ return getAnalyticsTransactions().filter(t=>{
+   const referenceDate = t.paid && t.paymentDate
+     ? t.paymentDate
+     : t.date;
+
+   return (referenceDate||"").slice(0,7) === month;
+ });
+}
 
 function getPreviousMonth(month){
  const [year,monthNumber]=month.split("-").map(Number);
