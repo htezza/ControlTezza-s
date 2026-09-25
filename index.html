@@ -2452,7 +2452,7 @@ body{padding-bottom:92px!important}
 <div>
 <label class="text-xs font-semibold text-slate-600">Forma de pagamento</label>
 <select id="transactionPaymentMethod" onchange="toggleCreditCardMode()" class="input mt-1">
-<option value="">Não informado</option><option value="Pix">Pix</option><option value="Cartão de crédito">Cartão de crédito</option><option value="Cartão de débito">Cartão de débito</option><option value="Dinheiro">Dinheiro</option><option value="Boleto">Boleto</option><option value="Transferência">Transferência</option><option value="Débito automático">Débito automático</option><option value="Cheque">Cheque</option><option value="Outro">Outro</option>
+<option value="">Não informado</option><option value="Boleto">Boleto</option><option value="Cartão de débito">Cartão de débito</option><option value="Cartão de crédito">Cartão de crédito</option><option value="Cheque">Cheque</option><option value="Débito automático">Débito automático</option><option value="Dinheiro">Dinheiro</option><option value="Outro">Outro</option><option value="Pix">Pix</option><option value="Transferência">Transferência</option>
 </select>
 <div class="text-[11px] text-slate-400 mt-1">Ao escolher cartão de crédito, cadastre cada compra da fatura separadamente.</div>
 </div>
@@ -3596,9 +3596,11 @@ function populateContactLists(){
 
   inst.innerHTML=
    '<option value="">Selecione...</option>'+
-   state.institutions.map(x=>
-    `<option value="${esc(x)}">${esc(x)}</option>`
-   ).join("");
+   [...state.institutions]
+    .sort((a,b)=>String(a||"").localeCompare(String(b||""),"pt-BR",{sensitivity:"base"}))
+    .map(x=>
+     `<option value="${esc(x)}">${esc(x)}</option>`
+    ).join("");
 
   if(state.institutions.includes(iv))
    inst.value=iv;
@@ -3610,9 +3612,11 @@ function populateContactLists(){
 
   resp.innerHTML=
    '<option value="">Selecione...</option>'+
-   state.responsibles.map(x=>
-    `<option value="${esc(x)}">${esc(x)}</option>`
-   ).join("");
+   [...state.responsibles]
+    .sort((a,b)=>String(a||"").localeCompare(String(b||""),"pt-BR",{sensitivity:"base"}))
+    .map(x=>
+     `<option value="${esc(x)}">${esc(x)}</option>`
+    ).join("");
 
   if(state.responsibles.includes(rv))
    resp.value=rv;
@@ -3802,9 +3806,11 @@ function populateCategorySelects(){
   ).join("");
 
  t.innerHTML=
-  state.categories.map(c=>
-   `<option value="${c.id}">${esc(c.name)}</option>`
-  ).join("");
+  [...state.categories]
+   .sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"pt-BR",{sensitivity:"base"}))
+   .map(c=>
+    `<option value="${c.id}">${esc(c.name)}</option>`
+   ).join("");
 
  f.value=fv;
  t.value=tv;
