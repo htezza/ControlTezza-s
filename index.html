@@ -1826,6 +1826,44 @@ body{padding-bottom:92px!important}
   #mobileHeaderLogo img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;padding:3px!important}
 }
 </style>
+<style id="fincontrol-category-evolution-mobile-header-fix">
+@media(max-width:639px){
+  #categoryEvolutionCard .category-evolution-table-wrap > .overflow-x-auto{
+    overflow:hidden!important;
+    width:100%!important;
+  }
+  #categoryEvolutionCard table{
+    width:100%!important;
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+  #categoryEvolutionCard thead th{
+    white-space:nowrap!important;
+    word-break:normal!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    line-height:1.15!important;
+    font-size:9px!important;
+    letter-spacing:.02em!important;
+    padding-left:6px!important;
+    padding-right:6px!important;
+  }
+  #categoryEvolutionCard thead th:nth-child(1){
+    width:38%!important;
+    text-align:left!important;
+  }
+  #categoryEvolutionCard thead th:nth-child(2),
+  #categoryEvolutionCard thead th:nth-child(3),
+  #categoryEvolutionCard thead th:nth-child(4){
+    width:20.666%!important;
+  }
+  #categoryEvolutionCard tbody td{
+    padding-left:6px!important;
+    padding-right:6px!important;
+  }
+}
+</style>
+
 </head>
 
 <body class="text-slate-800">
