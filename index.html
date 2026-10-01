@@ -972,6 +972,24 @@ header{
   #categoryChartExpandClose{position:absolute;top:14px;right:14px;width:34px;height:34px;border:0;border-radius:9px;background:#f1f5f9;color:#475569;font-size:22px;line-height:1;cursor:pointer}
   #categoryChartExpandClose:hover{background:#e2e8f0;color:#0f172a}
 }
+
+
+/* Lançamentos — agrupamento visual por categoria dentro de Entradas e Saídas */
+#page-lancamentos .transaction-type-header td{position:relative}
+#page-lancamentos .transaction-category-header td{position:relative}
+#page-lancamentos .transaction-category-header:hover td{background:#f8fafc!important}
+@media(max-width:639px){
+  #page-lancamentos table tbody tr.transaction-type-header td{
+    padding:10px 14px!important;
+  }
+  #page-lancamentos table tbody tr.transaction-category-header td{
+    padding:9px 14px!important;
+  }
+  #page-lancamentos table tbody tr.transaction-category-header .text-sm{
+    font-size:13px!important;
+  }
+}
+
 </style>
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -2432,7 +2450,7 @@ body{padding-bottom:92px!important}
 
 <div>
 <label class="text-xs font-semibold text-slate-600">Valor *</label>
-<input id="transactionAmount" required type="number" min="0.01" step="0.01" class="input mt-1" placeholder="0,00">
+<input id="transactionAmount" required type="text" inputmode="decimal" autocomplete="off" class="input mt-1 money-input mt-1" placeholder="0,00">
 </div>
 
 <div>
@@ -2477,6 +2495,22 @@ body{padding-bottom:92px!important}
 
 </div>
 
+<div id="incomeCompositeEditor" class="hidden border border-emerald-200 bg-emerald-50/40 rounded-xl p-4 space-y-4">
+<div><div class="font-semibold text-sm text-slate-800">Sublançamentos da entrada <span class="credit-invoice-badge" style="background:#ecfdf5;color:#047857">Entrada composta</span></div><div class="text-[11px] text-slate-500 mt-1">Cadastre manualmente as partes da entrada. As partes marcadas como despesa serão lançadas automaticamente nas saídas.</div></div>
+<div class="border border-emerald-200 bg-white rounded-xl p-3 space-y-3">
+<div class="font-semibold text-xs text-slate-600 uppercase tracking-wide" id="incomeSubDraftTitle">Novo sublançamento</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<div class="md:col-span-2"><label class="text-[11px] font-semibold text-slate-600">Descrição *</label><input id="incomeSubDraftDescription" class="input mt-1" placeholder="Ex.: Transferência"></div>
+<div><label class="text-[11px] font-semibold text-slate-600">Valor *</label><input id="incomeSubDraftAmount" class="input mt-1 money-input" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
+<div><label class="text-[11px] font-semibold text-slate-600">Categoria *</label><select id="incomeSubDraftCategory" class="input mt-1"></select><div class="text-[11px] text-slate-400 mt-1">A categoria será usada nos gráficos quando este sublançamento for marcado como despesa.</div></div>
+<div class="md:col-span-2 flex items-center gap-3"><input id="incomeSubDraftExpense" type="checkbox" class="w-4 h-4"><div><div class="text-sm font-semibold text-slate-700">Lançar como despesa</div><div class="text-[11px] text-slate-400">Se marcado, esta parte entra nas saídas usando a categoria acima.</div></div></div>
+</div>
+<div class="flex justify-end gap-2"><button type="button" id="incomeSubDraftCancel" onclick="cancelIncomeSubItemEdit()" class="btn btn-secondary hidden">Cancelar edição</button><button type="button" id="incomeSubDraftSave" onclick="saveIncomeSubItemDraft()" class="btn btn-primary">Adicionar sublançamento</button></div>
+</div>
+<div><div class="flex items-center justify-between gap-2 mb-2"><div class="font-semibold text-sm text-slate-700">Sublançamentos</div><span id="incomeSubItemsCount" class="text-[11px] text-slate-400">0 itens</span></div><div id="incomeSubItems" class="credit-invoice-items"></div></div>
+<div class="credit-invoice-total flex items-center justify-between gap-3"><span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total da entrada</span><span id="incomeSubItemsTotal" class="text-lg font-bold text-emerald-700">R$ 0,00</span></div>
+</div>
+
 <div id="creditCardInvoiceEditor" class="hidden border border-blue-200 bg-blue-50/40 rounded-xl p-4 space-y-4">
 <div class="flex items-start justify-between gap-3">
 <div>
@@ -2505,7 +2539,7 @@ body{padding-bottom:92px!important}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 <div class="md:col-span-2"><label class="text-[11px] font-semibold text-slate-600">Descrição da compra *</label><input id="creditCardDraftDescription" class="input mt-1" placeholder="Ex.: Supermercado"></div>
 <div><label class="text-[11px] font-semibold text-slate-600">Categoria *</label><select id="creditCardDraftCategory" class="input mt-1"></select></div>
-<div><label class="text-[11px] font-semibold text-slate-600">Valor *</label><input id="creditCardDraftAmount" class="input mt-1" type="number" min="0.01" step="0.01" placeholder="0,00"></div>
+<div><label class="text-[11px] font-semibold text-slate-600">Valor *</label><input id="creditCardDraftAmount" class="input mt-1 money-input" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00"></div>
 <div><label class="text-[11px] font-semibold text-slate-600">Data da compra *</label><input id="creditCardDraftDate" class="input mt-1" type="date"></div>
 </div>
 <div class="flex justify-end gap-2">
@@ -2514,7 +2548,23 @@ body{padding-bottom:92px!important}
 </div>
 </div>
 <div><div class="flex items-center justify-between gap-2 mb-2"><div class="font-semibold text-sm text-slate-700">Lançamentos adicionados</div><span id="creditCardItemsCount" class="text-[11px] text-slate-400">0 itens</span></div><div id="creditCardItems" class="credit-invoice-items"></div><div id="creditCardClassificationStatus" class="text-[11px] text-slate-400 mt-2">Adicione manualmente ou importe os lançamentos da fatura.</div></div>
-<div class="credit-invoice-total flex items-center justify-between gap-3"><span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Total da fatura</span><span id="creditCardItemsTotal" class="text-lg font-bold text-slate-900">R$ 0,00</span></div>
+<div class="credit-invoice-total space-y-2">
+<div class="flex items-center justify-between gap-3">
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Soma dos lançamentos</span>
+<span id="creditCardItemsSubtotal" class="text-sm font-bold text-slate-700">R$ 0,00</span>
+</div>
+<div class="flex items-center justify-between gap-3">
+<div>
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wide">Diferença</span>
+<div class="text-[10px] text-slate-400 mt-0.5">Pode ser positiva ou negativa</div>
+</div>
+<input id="creditCardDifference" type="text" inputmode="decimal" autocomplete="off" class="input money-input !w-36 text-right font-bold" placeholder="0,00" value="0,00">
+</div>
+<div class="border-t border-slate-200 pt-2 flex items-center justify-between gap-3">
+<span class="text-xs font-bold text-slate-700 uppercase tracking-wide">Total da fatura</span>
+<span id="creditCardItemsTotal" class="text-lg font-bold text-slate-900">R$ 0,00</span>
+</div>
+</div>
 </div>
 
 <div>
@@ -3398,7 +3448,24 @@ function saveNoBackup(){
  )
 }
 
-function migrateCreditCardInvoices(){state.transactions=state.transactions.map(t=>{if(!t||!t.isCreditCardInvoice)return t;const items=Array.isArray(t.subTransactions)?t.subTransactions:[];const total=items.reduce((a,x)=>a+Number(x.amount||0),0);return {...t,type:"expense",categoryId:null,paymentMethod:"Cartão de crédito",amount:total||Number(t.amount)||0,subTransactions:items};});}
+function migrateCreditCardInvoices(){
+ state.transactions=state.transactions.map(t=>{
+  if(!t||!t.isCreditCardInvoice)return t;
+  const items=Array.isArray(t.subTransactions)?t.subTransactions:[];
+  const subtotal=items.reduce((a,x)=>a+Number(x.amount||0),0);
+  const difference=Number.isFinite(Number(t.difference))?Number(t.difference):0;
+  const total=subtotal+difference;
+  return {
+   ...t,
+   type:"expense",
+   categoryId:null,
+   paymentMethod:"Cartão de crédito",
+   difference,
+   amount:total>=0?total:(subtotal||Number(t.amount)||0),
+   subTransactions:items
+  };
+ });
+}
 
 function loadState(){
 
@@ -4120,6 +4187,20 @@ function getTransactionMonthItems(month){
  });
 }
 
+// Totais financeiros do dashboard usam o lançamento principal da fatura.
+// Isso é importante porque t.amount já representa o valor líquido da fatura
+// (subtotal dos lançamentos + diferença de pagamento), enquanto
+// getAnalyticsTransactions() abre a fatura em seus sublançamentos para
+// alimentar os gráficos por categoria.
+function getDashboardMonthItems(month){
+ return state.transactions.filter(t=>{
+   const referenceDate = t.paid && t.paymentDate
+     ? t.paymentDate
+     : t.date;
+   return (referenceDate||"").slice(0,7) === month;
+ });
+}
+
 function getPreviousMonth(month){
  const [year,monthNumber]=month.split("-").map(Number);
  const d=new Date(year,monthNumber-2,1);
@@ -4140,15 +4221,19 @@ function setDashboardComparison(id,current,previous){
 
 function renderDashboard(){
  const sel=dashboardSelectedMonth||monthISO();if(!sel)return;
- const tx=getTransactionMonthItems(sel);
+ // Cards, resultado e fluxo de caixa usam o lançamento principal da fatura,
+ // cujo amount já contém a diferença de pagamento.
+ const dashboardTx=getDashboardMonthItems(sel);
+ const categoryTx=getTransactionMonthItems(sel);
  const previousMonth=getPreviousMonth(sel);
- const previousTx=getTransactionMonthItems(previousMonth);
- const inc=tx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
- const exp=tx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
- const expected=tx.filter(t=>t.type==="expense"&&!t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const previousCategoryTx=getTransactionMonthItems(previousMonth);
+ const previousDashboardTx=getDashboardMonthItems(previousMonth);
+ const inc=dashboardTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const exp=dashboardTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const expected=dashboardTx.filter(t=>t.type==="expense"&&!t.paid).reduce((s,t)=>s+Number(t.amount),0);
  const result=inc-exp;
- const previousInc=previousTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
- const previousExp=previousTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const previousInc=previousDashboardTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const previousExp=previousDashboardTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
  const previousResult=previousInc-previousExp;
  $("cardIncome").textContent=money(inc);
  $("cardExpense").textContent=money(exp);
@@ -4158,7 +4243,7 @@ function renderDashboard(){
  setDashboardComparison("cardExpenseComparison",exp,previousExp);
  setDashboardComparison("cardResultComparison",result,previousResult);
  $("cardResult").classList.toggle("text-emerald-600",result>=0);$("cardResult").classList.toggle("text-rose-600",result<0);
- renderAlerts();renderCashFlowChart(sel);renderCategoryChart(tx);renderCategoryEvolution(tx,previousTx,sel,previousMonth);refreshPrivacy();
+ renderAlerts();renderCashFlowChart(sel);renderCategoryChart(categoryTx);renderCategoryEvolution(categoryTx,previousCategoryTx,sel,previousMonth);refreshPrivacy();
 }
 
 function renderAlerts(){
@@ -4214,7 +4299,7 @@ function renderAlerts(){
 function renderCashFlowChart(sel){
  if(cashFlowChart)cashFlowChart.destroy();
  const d=new Date(sel+"-01T00:00:00"),labels=[],inc=[],exp=[];
- for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1),k=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`,tx=getTransactionMonthItems(k).filter(t=>t.paid);labels.push(x.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""));inc.push(tx.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0));exp.push(tx.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0));}
+ for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1),k=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`,tx=getDashboardMonthItems(k).filter(t=>t.paid);labels.push(x.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""));inc.push(tx.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0));exp.push(tx.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0));}
  cashFlowChart=new Chart($("cashFlowChart"),{type:"bar",data:{labels,datasets:[{label:"Entradas",data:inc,borderRadius:7},{label:"Saídas",data:exp,borderRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${money(c.raw)}`}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>money(v)},grid:{color:"#f1f5f9"}},x:{grid:{display:false}}}}});
 }
 
@@ -4326,18 +4411,136 @@ function toggleTransactionFilters(force){
 }
 
 function renderTransactions(){
- updateTransactionFilterBadge();let tx=[...state.transactions];
- const m=$("filterMonth").value,cat=$("filterCategory").value,type=$("filterType").value,st=$("filterStatus").value,inst=$("filterInstitution").value,resp=$("filterResponsible").value,q=$("filterSearch").value.toLowerCase();
- if(transactionQuickFilter==="expected")tx=tx.filter(t=>t.date.slice(0,7)===m&&!t.paid&&t.type==="expense");
- else if(transactionQuickFilter==="alerts"){const today=todayISO(),lim=new Date(today+"T00:00:00");lim.setDate(lim.getDate()+3);const z=`${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,"0")}-${String(lim.getDate()).padStart(2,"0")}`;tx=tx.filter(t=>!t.paid&&t.date<=z);}
+ updateTransactionFilterBadge();
+ let tx=[...state.transactions];
+ const m=$("filterMonth").value,
+       cat=$("filterCategory").value,
+       type=$("filterType").value,
+       st=$("filterStatus").value,
+       inst=$("filterInstitution").value,
+       resp=$("filterResponsible").value,
+       q=$("filterSearch").value.toLowerCase();
+
+ if(transactionQuickFilter==="expected")
+   tx=tx.filter(t=>t.date.slice(0,7)===m&&!t.paid&&t.type==="expense");
+ else if(transactionQuickFilter==="alerts"){
+   const today=todayISO(),lim=new Date(today+"T00:00:00");
+   lim.setDate(lim.getDate()+3);
+   const z=`${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,"0")}-${String(lim.getDate()).padStart(2,"0")}`;
+   tx=tx.filter(t=>!t.paid&&t.date<=z);
+ }
  else if(m)tx=tx.filter(t=>t.date.slice(0,7)===m);
- if(cat)tx=tx.filter(t=>t.categoryId===cat||(t.isCreditCardInvoice&&Array.isArray(t.subTransactions)&&t.subTransactions.some(c=>c.categoryId===cat)));
- if(type)tx=tx.filter(t=>t.type===type);if(st)tx=tx.filter(t=>status(t)===st);if(inst)tx=tx.filter(t=>(t.institution||"")===inst);if(resp)tx=tx.filter(t=>(t.responsible||"")===resp);
- if(q)tx=tx.filter(t=>(t.description||"").toLowerCase().includes(q)||(t.notes||"").toLowerCase().includes(q)||(t.isCreditCardInvoice&&Array.isArray(t.subTransactions)&&t.subTransactions.some(c=>(c.description||"").toLowerCase().includes(q))));
- tx.sort((a,b)=>{const ap=a.paid===true,bp=b.paid===true;if(ap!==bp)return ap?1:-1;return a.date.localeCompare(b.date);});
+
+ if(cat)tx=tx.filter(t=>
+   t.categoryId===cat ||
+   (t.isCreditCardInvoice&&Array.isArray(t.subTransactions)&&t.subTransactions.some(c=>c.categoryId===cat))
+ );
+ if(type)tx=tx.filter(t=>t.type===type);
+ if(st)tx=tx.filter(t=>status(t)===st);
+ if(inst)tx=tx.filter(t=>(t.institution||"")===inst);
+ if(resp)tx=tx.filter(t=>(t.responsible||"")===resp);
+ if(q)tx=tx.filter(t=>
+   (t.description||"").toLowerCase().includes(q) ||
+   (t.notes||"").toLowerCase().includes(q) ||
+   (t.isCreditCardInvoice&&Array.isArray(t.subTransactions)&&t.subTransactions.some(c=>(c.description||"").toLowerCase().includes(q)))
+ );
+
+ tx.sort((a,b)=>{
+   const ap=a.paid===true,bp=b.paid===true;
+   if(ap!==bp)return ap?1:-1;
+   return a.date.localeCompare(b.date);
+ });
+
  $("transactionsEmpty").classList.toggle("hidden",!!tx.length);
- const renderRow=t=>{const s=status(t),income=t.type==="income",invoice=!!t.isCreditCardInvoice,n=Array.isArray(t.subTransactions)?t.subTransactions.length:0;const group=t.installmentGroup?`<div class="text-[10px] text-slate-400">Parcela ${t.installmentNumber}/${t.installmentTotal}</div>`:t.recurrenceGroup?`<div class="text-[10px] text-blue-500">Recorrência ${t.recurrenceNumber}/${t.recurrenceTotal}</div>`:invoice?`<div class="text-[10px] text-blue-500">Fatura · ${n} lançamento(s)</div>`:"";return `<tr class="${s==="overdue"?"alert-row":""} hover:bg-slate-50"><td class="px-5 py-4 text-sm">${formatDate(t.date)}</td><td class="px-5 py-4"><div class="font-semibold text-sm flex items-center gap-2">${invoice?`<span class="text-blue-600">▣</span>`:""}${esc(t.description)}</div>${group}</td><td class="px-5 py-4 text-sm text-slate-500">${esc(t.institution||"—")}</td><td class="px-5 py-4 text-sm text-slate-500">${esc(t.responsible||"—")}</td><td class="px-5 py-4 text-sm text-slate-500">${invoice?`<span class="text-blue-600 font-semibold">Múltiplas categorias</span>`:esc(categoryName(t.categoryId))}</td><td class="px-5 py-4 text-xs font-bold ${income?"text-emerald-600":"text-rose-600"}">${income?"ENTRADA":"SAÍDA"}</td><td class="px-5 py-4 font-bold ${income?"text-emerald-600":"text-rose-600"}">${income?"+":"-"} ${money(t.amount)}</td><td class="px-5 py-4">${statusHTML(s)}</td><td class="px-5 py-4"><div class="flex justify-end gap-1">${invoice?`<button onclick="openCreditInvoice('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600" title="Ver fatura">▣</button>`:""}${t.paid?`<button onclick="openPaymentHistory('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500" title="Ver histórico do pagamento">↺</button>`:`<button onclick="payTransaction('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600" title="Dar baixa">✓</button>`}<button onclick="openTransactionModal('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600" title="Editar">✎</button><button onclick="deleteTransaction('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-rose-600" title="Excluir">×</button></div></td></tr>`;};
- const incomes=tx.filter(t=>t.type==="income"),expenses=tx.filter(t=>t.type==="expense");const section=(title,items,income)=>items.length?`<tr><td colspan="9" class="px-5 py-2.5 bg-slate-50 border-t border-b border-slate-200 text-[11px] font-bold uppercase tracking-wide ${income?"text-emerald-600":"text-rose-600"}">${title}</td></tr>${items.map(renderRow).join("")}`:"";$("transactionsTable").innerHTML=section("Entradas",incomes,true)+section("Saídas",expenses,false);
+
+ const renderRow=t=>{
+   const s=status(t),
+         income=t.type==="income",
+         invoice=!!t.isCreditCardInvoice,
+         n=Array.isArray(t.subTransactions)?t.subTransactions.length:0;
+   const group=t.installmentGroup
+     ?`<div class="text-[10px] text-slate-400">Parcela ${t.installmentNumber}/${t.installmentTotal}</div>`
+     :t.recurrenceGroup
+       ?`<div class="text-[10px] text-blue-500">Recorrência ${t.recurrenceNumber}/${t.recurrenceTotal}</div>`
+       :invoice
+         ?`<div class="text-[10px] text-blue-500">Fatura · ${n} lançamento(s)</div>`
+         :"";
+
+   return `<tr class="${s==="overdue"?"alert-row":""} hover:bg-slate-50">
+     <td class="px-5 py-4 text-sm">${formatDate(t.date)}</td>
+     <td class="px-5 py-4"><div class="font-semibold text-sm flex items-center gap-2">${invoice?`<span class="text-blue-600">▣</span>`:""}${esc(t.description)}</div>${group}</td>
+     <td class="px-5 py-4 text-sm text-slate-500">${esc(t.institution||"—")}</td>
+     <td class="px-5 py-4 text-sm text-slate-500">${esc(t.responsible||"—")}</td>
+     <td class="px-5 py-4 text-sm text-slate-500">${invoice?`<span class="text-blue-600 font-semibold">Múltiplas categorias</span>`:esc(categoryName(t.categoryId))}</td>
+     <td class="px-5 py-4 text-xs font-bold ${income?"text-emerald-600":"text-rose-600"}">${income?"ENTRADA":"SAÍDA"}</td>
+     <td class="px-5 py-4 font-bold ${income?"text-emerald-600":"text-rose-600"}">${income?"+":"-"} ${money(t.amount)}</td>
+     <td class="px-5 py-4">${statusHTML(s)}</td>
+     <td class="px-5 py-4"><div class="flex justify-end gap-1">${invoice?`<button onclick="openCreditInvoice('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600" title="Ver fatura">▣</button>`:""}${t.paid?`<button onclick="openPaymentHistory('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500" title="Ver histórico do pagamento">↺</button>`:`<button onclick="payTransaction('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-emerald-50 text-emerald-600" title="Dar baixa">✓</button>`}<button onclick="openTransactionModal('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600" title="Editar">✎</button><button onclick="deleteTransaction('${t.id}')" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-rose-600" title="Excluir">×</button></div></td>
+   </tr>`;
+ };
+
+ // Hierarquia visual: Entradas/Saídas → Categoria → lançamentos.
+ // O sistema atual não possui um campo de "subcategoria" separado;
+ // por isso a categoria do próprio lançamento é usada como agrupador.
+ const categoryLabel=t=>{
+   if(t.isCreditCardInvoice) return "Múltiplas categorias";
+   return categoryName(t.categoryId);
+ };
+
+ const renderGroupedSection=(title,items,income)=>{
+   if(!items.length)return "";
+
+   const groups=new Map();
+   items.forEach(t=>{
+     const key=categoryLabel(t);
+     if(!groups.has(key))groups.set(key,[]);
+     groups.get(key).push(t);
+   });
+
+   // Categorias com maior valor primeiro, mantendo os lançamentos na ordem atual.
+   const grouped=[...groups.entries()].sort((a,b)=>{
+     const totalA=a[1].reduce((sum,t)=>sum+Number(t.amount||0),0);
+     const totalB=b[1].reduce((sum,t)=>sum+Number(t.amount||0),0);
+     return totalB-totalA;
+   });
+
+   const sectionTotal=items.reduce((sum,t)=>sum+Number(t.amount||0),0);
+   const color=income?"text-emerald-600":"text-rose-600";
+   const bg=income?"bg-emerald-50":"bg-rose-50";
+
+   return `<tr class="transaction-type-header">
+     <td colspan="9" class="px-5 py-3 bg-slate-50 border-t border-b border-slate-200">
+       <div class="flex items-center justify-between gap-3">
+         <div class="flex items-center gap-2 ${color}">
+           <span class="w-2 h-2 rounded-full ${income?"bg-emerald-500":"bg-rose-500"}"></span>
+           <span class="text-[11px] font-bold uppercase tracking-wide">${title}</span>
+           <span class="text-[10px] text-slate-400 font-medium">${items.length} lançamento${items.length===1?"":"s"}</span>
+         </div>
+         <span class="text-sm font-bold ${color}">${income?"+":"-"} ${money(sectionTotal)}</span>
+       </div>
+     </td>
+   </tr>
+   ${grouped.map(([name,group])=>{
+     const total=group.reduce((sum,t)=>sum+Number(t.amount||0),0);
+     return `<tr class="transaction-category-header">
+       <td colspan="9" class="px-5 py-2.5 bg-white border-b border-slate-100">
+         <div class="flex items-center justify-between gap-3 pl-2 border-l-2 ${income?"border-emerald-400":"border-rose-400"}">
+           <div class="min-w-0 flex items-center gap-2">
+             <span class="font-semibold text-sm text-slate-700 truncate">${esc(name)}</span>
+             <span class="text-[10px] text-slate-400 whitespace-nowrap">${group.length} lançamento${group.length===1?"":"s"}</span>
+           </div>
+           <span class="text-sm font-bold ${color} whitespace-nowrap">${income?"+":"-"} ${money(total)}</span>
+         </div>
+       </td>
+     </tr>${group.map(renderRow).join("")}`;
+   }).join("")}`;
+ };
+
+ const incomes=tx.filter(t=>t.type==="income");
+ const expenses=tx.filter(t=>t.type==="expense");
+ $("transactionsTable").innerHTML=
+   renderGroupedSection("Entradas",incomes,true)+
+   renderGroupedSection("Saídas",expenses,false);
 }
 
 function clearFilters(){
@@ -4360,9 +4563,174 @@ function clearFilters(){
  renderTransactions()
 }
 
+
+/* =========================================================
+   MÁSCARA MONETÁRIA — valores em BRL
+   ========================================================= */
+
+function parseMoneyBR(value){
+ const raw=String(value??"").trim();
+ if(!raw)return 0;
+
+ let v=raw
+  .replace(/\s/g,"")
+  .replace(/R\$/gi,"")
+  .replace(/[^\d,.\-]/g,"");
+
+ if(!v)return 0;
+
+ // Formato brasileiro: 1.234,56
+ if(v.includes(",")){
+  v=v.replace(/\./g,"").replace(",",".");
+ }else{
+  // Sem vírgula, aceita ponto decimal ou inteiro.
+  // Para valores digitados pela máscara, o ponto é separador decimal somente
+  // quando houver exatamente 1-2 dígitos depois dele.
+  const parts=v.split(".");
+  if(parts.length>2){
+   v=parts.join("");
+  }
+ }
+
+ const n=Number(v);
+ return Number.isFinite(n)?n:0;
+}
+
+function formatMoneyInput(value){
+ const n=parseMoneyBR(value);
+ if(!Number.isFinite(n))return "";
+ return n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function applyMoneyMask(input){
+ if(!input)return;
+ const raw=input.value;
+ if(raw===""||raw==="-"||raw==="0,")return;
+
+ const negative=/^-/.test(raw);
+ const digits=raw.replace(/\D/g,"");
+ if(!digits){
+  input.value=negative?"-":"";
+  return;
+ }
+
+ let cents=Number(digits)/100;
+ if(!Number.isFinite(cents))return;
+
+ let formatted=cents.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+ if(negative)formatted="-"+formatted;
+ input.value=formatted;
+}
+
+function setupMoneyInputs(){
+ document.querySelectorAll(".money-input").forEach(input=>{
+  if(input.dataset.moneyMaskReady==="1")return;
+  input.dataset.moneyMaskReady="1";
+
+  input.addEventListener("input",()=>{
+   applyMoneyMask(input);
+   if(input.id==="creditCardDifference")updateCreditCardTotal();
+   else if(input.id==="creditCardDraftAmount")updateCreditCardSaveState();
+  });
+
+  input.addEventListener("blur",()=>{
+   if(input.value!=="" && input.value!=="-")
+    input.value=formatMoneyInput(input.value);
+  });
+
+  input.addEventListener("focus",()=>{
+   // Mantém a leitura amigável enquanto o usuário digita.
+   if(input.value)input.value=formatMoneyInput(input.value);
+  });
+ });
+}
+
 let creditCardItems=[];
 let creditCardItemEditingIndex=-1;
+let incomeSubItems=[];
+let incomeSubItemEditingIndex=-1;
 
+function isIncomeCompositeForm(){return $("transactionType")?.value==="income" && !isCreditCardInvoiceForm();}
+function incomeSubCategoryOptionsHTML(selected=""){return '<option value="">Selecione...</option>'+state.categories.map(c=>`<option value="${esc(c.id)}" ${c.id===selected?"selected":""}>${esc(c.name)}${c.type==="expense"?" — Despesa":" — Entrada"}</option>`).join("");}
+function resetIncomeSubItemDraft(){incomeSubItemEditingIndex=-1;const d=$("incomeSubDraftDescription"),a=$("incomeSubDraftAmount"),e=$("incomeSubDraftExpense"),c=$("incomeSubDraftCategory");if(!d)return;d.value="";a.value="";e.checked=false;c.innerHTML=incomeSubCategoryOptionsHTML("");$("incomeSubDraftTitle").textContent="Novo sublançamento";$("incomeSubDraftSave").textContent="Adicionar sublançamento";$("incomeSubDraftCancel").classList.add("hidden");}
+function toggleIncomeSubExpense(){}
+function updateIncomeCompositeTotal(){
+ const total=incomeSubItems.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ const amountInput=$("transactionAmount");
+ if(amountInput && isIncomeCompositeForm()){
+  amountInput.value=total>0?formatMoneyInput(total):"";
+  amountInput.readOnly=true;
+ }
+ return total;
+}
+function renderIncomeSubItems(updateMainTotal=true){
+ const box=$("incomeSubItems"),count=$("incomeSubItemsCount"),totalEl=$("incomeSubItemsTotal");
+ if(!box)return;
+ const total=incomeSubItems.reduce((sum,x)=>sum+Number(x.amount||0),0);
+ if(updateMainTotal) updateIncomeCompositeTotal();
+ if(count)count.textContent=`${incomeSubItems.length} item${incomeSubItems.length===1?"":"s"}`;
+ if(totalEl)totalEl.textContent=money(total);
+ box.innerHTML=incomeSubItems.length?incomeSubItems.map((x,i)=>{
+  const cat=categoryName(x.categoryId);
+  return `<div class="credit-invoice-item">
+   <div class="flex items-start gap-3">
+    <div class="min-w-0 flex-1">
+     <div class="font-semibold text-sm">${esc(x.description)}</div>
+     <div class="text-[11px] text-slate-400 mt-1">${esc(cat)}${x.expense?` · <span class="text-rose-600 font-semibold">Será lançado como despesa</span>`:""}</div>
+    </div>
+    <div class="text-right shrink-0">
+     <div class="font-bold text-sm text-emerald-600">${money(x.amount)}</div>
+     <div class="flex justify-end gap-1 mt-2">
+      <button type="button" onclick="editIncomeSubItem(${i})" class="w-8 h-8 rounded-lg hover:bg-blue-50 text-blue-600" title="Editar">✎</button>
+      <button type="button" onclick="removeIncomeSubItem(${i})" class="w-8 h-8 rounded-lg hover:bg-rose-50 text-rose-600" title="Excluir">×</button>
+     </div>
+    </div>
+   </div>
+  </div>`;
+ }).join(""): `<div class="text-center text-xs text-slate-400 py-5">Nenhum sublançamento adicionado.</div>`;
+}
+
+function syncIncomeGeneratedExpenses(parent){
+ if(!parent||parent.type!=="income")return;
+ const items=Array.isArray(parent.subTransactions)?parent.subTransactions:[];
+ const generated=state.transactions.filter(x=>x.generatedFromIncomeId===parent.id);
+ const bySubId=new Map(generated.map(x=>[x.generatedFromIncomeSubId,x]));
+ const wanted=new Set();
+ items.forEach(item=>{
+  if(!item.expense)return;
+  const subId=item.id||uid("incsub");
+  item.id=subId;
+  wanted.add(subId);
+  const existing=bySubId.get(subId);
+  const expenseData={
+   type:"expense",
+   description:item.description,
+   amount:Number(item.amount)||0,
+   date:parent.date,
+   categoryId:item.categoryId||null,
+   institution:parent.institution||"",
+   responsible:parent.responsible||"",
+   notes:`Despesa gerada pela entrada: ${parent.description||""}`,
+   paymentMethod:parent.paymentMethod||"",
+   paid:existing?!!existing.paid:!!parent.paid,
+   generatedFromIncomeId:parent.id,
+   generatedFromIncomeSubId:subId,
+   sourceIncomeId:parent.id,
+   sourceIncomeSubId:subId
+  };
+  if(existing){
+   Object.assign(existing,expenseData);
+  }else{
+   state.transactions.push({id:uid("tx"),...expenseData,createdAt:new Date().toISOString()});
+  }
+ });
+ state.transactions=state.transactions.filter(x=>x.generatedFromIncomeId!==parent.id||wanted.has(x.generatedFromIncomeSubId));
+}
+
+function saveIncomeSubItemDraft(){const description=$("incomeSubDraftDescription").value.trim(),amount=parseMoneyBR($("incomeSubDraftAmount").value),expense=$("incomeSubDraftExpense").checked,categoryId=$("incomeSubDraftCategory").value||"",category=state.categories.find(c=>c.id===categoryId);if(!description||!(amount>0)||!categoryId||(expense&&category?.type!=="expense")){showToast(expense?"Preencha descrição, valor e selecione uma categoria de despesa.":"Preencha descrição, valor e categoria.","error");return;}const old=incomeSubItemEditingIndex>=0?incomeSubItems[incomeSubItemEditingIndex]:null;const item={id:old?.id||uid("incsub"),description,amount,expense,categoryId,createdAt:old?.createdAt||new Date().toISOString()};if(incomeSubItemEditingIndex>=0)incomeSubItems[incomeSubItemEditingIndex]=item;else incomeSubItems.push(item);renderIncomeSubItems();resetIncomeSubItemDraft();}
+function editIncomeSubItem(i){const x=incomeSubItems[i];if(!x)return;incomeSubItemEditingIndex=i;$("incomeSubDraftDescription").value=x.description||"";$("incomeSubDraftAmount").value=formatMoneyInput(x.amount);$("incomeSubDraftExpense").checked=!!x.expense;$("incomeSubDraftCategory").innerHTML=incomeSubCategoryOptionsHTML(x.categoryId||"");$("incomeSubDraftTitle").textContent=`Editando sublançamento ${i+1}`;$("incomeSubDraftSave").textContent="Atualizar sublançamento";$("incomeSubDraftCancel").classList.remove("hidden");}
+function cancelIncomeSubItemEdit(){resetIncomeSubItemDraft();}
+function removeIncomeSubItem(i){if(i<0||i>=incomeSubItems.length)return;if(incomeSubItemEditingIndex===i)resetIncomeSubItemDraft();else if(incomeSubItemEditingIndex>i)incomeSubItemEditingIndex--;incomeSubItems.splice(i,1);renderIncomeSubItems();}
 function isCreditCardInvoiceForm(){return $("transactionPaymentMethod")?.value==="Cartão de crédito";}
 
 function categoryOptionsHTML(selected=""){
@@ -4377,6 +4745,7 @@ function resetCreditCardItemDraft(){
  c.innerHTML=categoryOptionsHTML("");
  a.value="";
  dt.value=$("transactionDate")?.value||todayISO();
+ if($("creditCardDifference"))$("creditCardDifference").value="0,00";
  title.textContent="Novo lançamento da fatura";
  b.textContent="Salvar lançamento";
  cancel.classList.add("hidden");
@@ -4411,7 +4780,7 @@ function editCreditCardItem(i){
  creditCardItemEditingIndex=i;
  $("creditCardDraftDescription").value=x.description||"";
  $("creditCardDraftCategory").innerHTML=categoryOptionsHTML(x.categoryId||"");
- $("creditCardDraftAmount").value=Number(x.amount)||"";
+ $("creditCardDraftAmount").value=x.amount>0?formatMoneyInput(x.amount):"";
  $("creditCardDraftDate").value=x.date||todayISO();
  $("creditCardDraftTitle").textContent=`Editando lançamento ${i+1}`;
  $("creditCardDraftSave").textContent="Atualizar lançamento";
@@ -4423,7 +4792,7 @@ function editCreditCardItem(i){
 function cancelCreditCardItemEdit(){resetCreditCardItemDraft();}
 
 function saveCreditCardItemDraft(){
- const description=$("creditCardDraftDescription").value.trim(),categoryId=$("creditCardDraftCategory").value,amount=Number($("creditCardDraftAmount").value),date=$("creditCardDraftDate").value;
+ const description=$("creditCardDraftDescription").value.trim(),categoryId=$("creditCardDraftCategory").value,amount=parseMoneyBR($("creditCardDraftAmount").value),date=$("creditCardDraftDate").value;
  if(!description||!categoryId||!(amount>0)||!date){
   showToast("Preencha descrição, categoria, valor e data da compra.","error");
   return;
@@ -4614,7 +4983,21 @@ function renderCreditCardItems(){
  updateCreditCardSaveState();
 }
 
-function updateCreditCardTotal(){const total=creditCardItems.reduce((s,x)=>s+(Number(x.amount)||0),0);if($("creditCardItemsTotal"))$("creditCardItemsTotal").textContent=money(total);if($("transactionAmount")){$("transactionAmount").value=total?total.toFixed(2):"";$("transactionAmount").readOnly=isCreditCardInvoiceForm();}}
+function updateCreditCardTotal(){
+ const subtotal=creditCardItems.reduce((s,x)=>s+(Number(x.amount)||0),0);
+ const difference=parseMoneyBR($("creditCardDifference")?.value||"0");
+ const total=subtotal+difference;
+
+ if($("creditCardItemsSubtotal"))$("creditCardItemsSubtotal").textContent=money(subtotal);
+ if($("creditCardItemsTotal"))$("creditCardItemsTotal").textContent=money(total);
+
+ // Somente a fatura usa o total calculado pelos sublançamentos.
+ // Nunca sobrescrever o valor de um lançamento comum ao abrir/editar o modal.
+ if($("transactionAmount") && isCreditCardInvoiceForm()){
+  $("transactionAmount").value=total?formatMoneyInput(total):"";
+  $("transactionAmount").readOnly=true;
+ }
+}
 function toggleCreditCardMode(){
  const active=isCreditCardInvoiceForm();
  $("creditCardInvoiceEditor")?.classList.toggle("hidden",!active);
@@ -4629,6 +5012,7 @@ function toggleCreditCardMode(){
   if(!$("creditCardDraftDate").value)$("creditCardDraftDate").value=$("transactionDate").value||todayISO();
   if(!$("creditCardDraftCategory").innerHTML)$("creditCardDraftCategory").innerHTML=categoryOptionsHTML("");
   renderCreditCardItems();
+  setupMoneyInputs();
   updateCreditCardSaveState();
  }else updateCreditCardTotal();
 }
@@ -4840,6 +5224,8 @@ function openTransactionModal(id=null){
  $("transactionForm").reset();
  creditCardItems=[];
  creditCardItemEditingIndex=-1;
+ incomeSubItems=[];
+ incomeSubItemEditingIndex=-1;
  $("transactionId").value=id||"";
  $("transactionDate").value=todayISO();
  $("transactionPaid").checked=true;
@@ -4856,7 +5242,7 @@ function openTransactionModal(id=null){
   if(!t)return;
   $("transactionModalTitle").textContent=t.isCreditCardInvoice?"Editar fatura do cartão":"Editar lançamento";
   $("transactionDescription").value=t.description||"";
-  $("transactionAmount").value=t.amount||"";
+  $("transactionAmount").value=Number(t.amount||0)>0?formatMoneyInput(t.amount):"";
   $("transactionDate").value=t.date||todayISO();
   $("transactionCategory").value=t.categoryId||"";
   $("transactionInstitution").value=t.institution||"";
@@ -4864,9 +5250,11 @@ function openTransactionModal(id=null){
   $("transactionNotes").value=t.notes||"";
   $("transactionPaid").checked=!!t.paid;
   $("transactionPaymentMethod").value=t.paymentMethod||"";
+  if(t.type==="income" && !t.isCreditCardInvoice && Array.isArray(t.subTransactions)){incomeSubItems=t.subTransactions.map(x=>({...x,amount:Number(x.amount)||0,expense:!!x.expense,categoryId:x.categoryId||""}));}
   if(t.isCreditCardInvoice){
    $("transactionPaymentMethod").value="Cartão de crédito";
    creditCardItems=Array.isArray(t.subTransactions)?t.subTransactions.map(x=>({...x,amount:Number(x.amount)||0})):[]; 
+   if($("creditCardDifference"))$("creditCardDifference").value=formatMoneyInput(Number(t.difference||0));
    if(t.recurrenceGroup){
     // Fatura já recorrente: não mostrar os controles de criação novamente.
     // A escolha de quais faturas alterar será feita ao salvar.
@@ -4881,13 +5269,38 @@ function openTransactionModal(id=null){
   $("recurrenceCard").classList.remove("hidden");
  }
  toggleCreditCardMode();
+ if(isIncomeCompositeForm()){
+  // Ao abrir uma entrada antiga, preserva o valor histórico gravado.
+  // O total passa a ser recalculado quando qualquer sublançamento for editado.
+  renderIncomeSubItems(false);
+  resetIncomeSubItemDraft();
+  $("transactionAmount").readOnly=true;
+}
+ // O modo normal não deve perder o valor carregado pela edição.
+ if(id){
+  const edited=state.transactions.find(x=>x.id===id);
+  if(edited && !edited.isCreditCardInvoice && !isIncomeCompositeForm()){
+   $("transactionAmount").value=formatMoneyInput(Number(edited.amount||0));
+   $("transactionAmount").readOnly=false;
+  }
+ }
+ setupMoneyInputs();
  $("transactionFormSubmit").textContent=isCreditCardInvoiceForm()?"Salvar fatura":"Salvar lançamento";
- if(isCreditCardInvoiceForm())resetCreditCardItemDraft();
+ if(isCreditCardInvoiceForm()){
+  if($("creditCardDifference") && !$("creditCardDifference").value)$("creditCardDifference").value="0,00";
+  resetCreditCardItemDraft();
+  if(id){
+   const edited=state.transactions.find(x=>x.id===id);
+   if(edited&&edited.isCreditCardInvoice&&$("creditCardDifference"))$("creditCardDifference").value=formatMoneyInput(Number(edited.difference||0));
+  }
+  setupMoneyInputs();
+  updateCreditCardTotal();
+ }
  $("transactionModal").classList.add("open");
 }
 function closeTransactionModal(){$("transactionModal").classList.remove("open");}
 
-function setTransactionType(type){$("transactionType").value=type;const a=$("typeIncome"),b=$("typeExpense");a.className=type==="income"?"rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";b.className=type==="expense"?"rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";const old=$("transactionCategory").value;populateCategorySelects();const ok=state.categories.find(c=>c.id===old&&c.type===type);$("transactionCategory").value=ok?ok.id:(state.categories.find(c=>c.type===type)?.id||"");}
+function setTransactionType(type){$("transactionType").value=type;const a=$("typeIncome"),b=$("typeExpense");a.className=type==="income"?"rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";b.className=type==="expense"?"rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 p-3 font-bold":"rounded-xl border-2 border-slate-200 p-3 font-bold text-slate-500";const old=$("transactionCategory").value;populateCategorySelects();const ok=state.categories.find(c=>c.id===old&&c.type===type);$("transactionCategory").value=ok?ok.id:(state.categories.find(c=>c.type===type)?.id||"");const composite=type==="income"&&!isCreditCardInvoiceForm();$("incomeCompositeEditor")?.classList.toggle("hidden",!composite);$("transactionCategory")?.closest("div")?.parentElement?.classList.remove("hidden");$("transactionAmount").readOnly=composite;}
 function toggleInstallments(){const e=$("installmentEnabled").checked;$("installmentFields").classList.toggle("hidden",!e);if(e){$("recurringEnabled").checked=false;$("recurrenceFields").classList.add("hidden");}}
 function toggleRecurrence(){
  const e=$("recurringEnabled").checked;
@@ -4903,13 +5316,14 @@ function toggleRecurrence(){
    ========================================================= */
 
 $("transactionPaymentMethod").addEventListener("change",()=>{toggleCreditCardMode();if(isCreditCardInvoiceForm()){$("transactionFormSubmit").textContent="Salvar fatura";}else $("transactionFormSubmit").textContent="Salvar lançamento";});
+$("incomeSubDraftExpense").addEventListener("change",toggleIncomeSubExpense);
 $("transactionDate").addEventListener("change",()=>{if(isCreditCardInvoiceForm()&&creditCardItemEditingIndex<0&&$("creditCardDraftDate"))$("creditCardDraftDate").value=$("transactionDate").value;});
 $("transactionForm").addEventListener("submit",e=>{
  e.preventDefault();
  const id=$("transactionId").value,
  type=$("transactionType").value,
  description=$("transactionDescription").value.trim(),
- amount=Number($("transactionAmount").value),
+ amount=parseMoneyBR($("transactionAmount").value),
  date=$("transactionDate").value,
  categoryId=$("transactionCategory").value,
  institution=$("transactionInstitution").value.trim(),
@@ -4940,12 +5354,19 @@ $("transactionForm").addEventListener("submit",e=>{
    return;
   }
 
-  const total=creditCardItems.reduce((sum,x)=>sum+Number(x.amount||0),0);
+  const subtotal=creditCardItems.reduce((sum,x)=>sum+Number(x.amount||0),0);
+  const difference=parseMoneyBR($("creditCardDifference")?.value||"0");
+  const total=subtotal+difference;
+  if(total<0){
+   showToast("O total da fatura não pode ser negativo.","error");
+   return;
+  }
   const items=creditCardItems.map(x=>({...x,type:"expense",paid,createdAt:x.createdAt||new Date().toISOString()}));
   const data={
    type:"expense",
    description,
    amount:total,
+   difference,
    date,
    categoryId:null,
    institution,
@@ -5024,6 +5445,17 @@ $("transactionForm").addEventListener("submit",e=>{
   refreshAll();
   showToast(id?"Fatura atualizada com sucesso.":($("recurringEnabled")?.checked===true?"Fatura e recorrências salvas com sucesso.":"Fatura salva com sucesso."));
   return;
+ }
+
+ if(type==="income" && !invoice){
+  if(incomeSubItemEditingIndex>=0){showToast("Finalize a edição do sublançamento antes de salvar a entrada.","error");return;}
+  if(!incomeSubItems.length){showToast("Adicione pelo menos um sublançamento à entrada.","error");return;}
+  const total=incomeSubItems.reduce((s,x)=>s+Number(x.amount||0),0);
+  if(total<=0){showToast("O total da entrada deve ser maior que zero.","error");return;}
+  const data={type:"income",description,amount:total,date,categoryId,institution,responsible,notes,paid,paymentMethod,subTransactions:incomeSubItems.map(x=>({...x,amount:Number(x.amount)||0}))};
+  if(id){const current=state.transactions.find(t=>t.id===id);if(!current)return;const i=state.transactions.findIndex(t=>t.id===id);if(i>=0)state.transactions[i]={...state.transactions[i],...data,date};syncIncomeGeneratedExpenses(state.transactions[i]);}
+  else {const parent={id:uid("tx"),...data,createdAt:new Date().toISOString()};state.transactions.push(parent);syncIncomeGeneratedExpenses(parent);}
+  saveState();closeTransactionModal();refreshAll();showToast(id?"Entrada atualizada com sucesso.":"Entrada composta salva com sucesso.");return;
  }
 
  if(amount<=0||!categoryId){
@@ -5158,7 +5590,11 @@ function createRecurrence(d){
    NOVO FLUXO DE BAIXA
    ========================================================= */
 
-function openCreditInvoice(id){const t=state.transactions.find(x=>x.id===id);if(!t||!t.isCreditCardInvoice)return;const items=Array.isArray(t.subTransactions)?t.subTransactions:[];$("creditInvoiceInfo").textContent=`${t.description} · ${t.institution||"Cartão não informado"} · Vencimento ${formatDate(t.date)}`;$("creditInvoiceDetailsContent").innerHTML=`<div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-slate-50 rounded-xl p-3"><div class="text-[11px] text-slate-400">Total da fatura</div><div class="text-lg font-bold mt-1">${money(t.amount)}</div></div><div class="bg-slate-50 rounded-xl p-3"><div class="text-[11px] text-slate-400">Lançamentos</div><div class="text-lg font-bold mt-1">${items.length}</div></div></div><div class="space-y-2">${items.map((x,i)=>`<div class="border border-slate-200 rounded-xl p-3 flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">${i+1}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm truncate">${esc(x.description)}</div><div class="text-xs text-slate-400 mt-1">${formatDate(x.date)} · ${esc(categoryName(x.categoryId))}</div></div><div class="text-right"><div class="font-bold text-sm text-rose-600">- ${money(x.amount)}</div><div class="text-[10px] mt-1">${x.paid?"Pago":"Pendente"}</div></div></div>`).join("")||`<div class="text-center text-slate-400 p-6">Nenhum lançamento nesta fatura.</div>`}</div><div class="mt-4 flex justify-between items-center bg-slate-50 rounded-xl p-4"><span class="font-semibold text-sm">Soma das compras</span><strong>${money(items.reduce((s,x)=>s+Number(x.amount||0),0))}</strong></div>`;$("creditInvoiceEditButton").onclick=()=>{closeCreditInvoiceModal();openTransactionModal(id);};$("creditInvoiceModal").classList.add("open");}
+function openCreditInvoice(id){const t=state.transactions.find(x=>x.id===id);if(!t||!t.isCreditCardInvoice)return;const items=Array.isArray(t.subTransactions)?t.subTransactions:[];$("creditInvoiceInfo").textContent=`${t.description} · ${t.institution||"Cartão não informado"} · Vencimento ${formatDate(t.date)}`;$("creditInvoiceDetailsContent").innerHTML=`<div class="grid grid-cols-2 gap-3 mb-4"><div class="bg-slate-50 rounded-xl p-3"><div class="text-[11px] text-slate-400">Total da fatura</div><div class="text-lg font-bold mt-1">${money(t.amount)}</div></div><div class="bg-slate-50 rounded-xl p-3"><div class="text-[11px] text-slate-400">Lançamentos</div><div class="text-lg font-bold mt-1">${items.length}</div></div></div><div class="space-y-2">${items.map((x,i)=>`<div class="border border-slate-200 rounded-xl p-3 flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">${i+1}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm truncate">${esc(x.description)}</div><div class="text-xs text-slate-400 mt-1">${formatDate(x.date)} · ${esc(categoryName(x.categoryId))}</div></div><div class="text-right"><div class="font-bold text-sm text-rose-600">- ${money(x.amount)}</div><div class="text-[10px] mt-1">${x.paid?"Pago":"Pendente"}</div></div></div>`).join("")||`<div class="text-center text-slate-400 p-6">Nenhum lançamento nesta fatura.</div>`}</div><div class="mt-4 bg-slate-50 rounded-xl p-4 space-y-2">
+<div class="flex justify-between items-center"><span class="font-semibold text-sm">Soma dos lançamentos</span><strong>${money(items.reduce((s,x)=>s+Number(x.amount||0),0))}</strong></div>
+<div class="flex justify-between items-center"><span class="font-semibold text-sm">Diferença</span><strong class="${Number(t.difference||0)<0?'text-emerald-600':'text-slate-700'}">${money(Number(t.difference||0))}</strong></div>
+<div class="border-t border-slate-200 pt-2 flex justify-between items-center"><span class="font-bold text-sm">Total da fatura</span><strong>${money(t.amount)}</strong></div>
+</div>`;$("creditInvoiceEditButton").onclick=()=>{closeCreditInvoiceModal();openTransactionModal(id);};$("creditInvoiceModal").classList.add("open");}
 function closeCreditInvoiceModal(){$("creditInvoiceModal").classList.remove("open");}
 
 function payTransaction(id){
@@ -5222,6 +5658,7 @@ $("paymentForm").addEventListener("submit",e=>{
  t.paid=true;
  t.paidAt=new Date().toISOString();
  if(t.isCreditCardInvoice&&Array.isArray(t.subTransactions))t.subTransactions=t.subTransactions.map(x=>({...x,paid:true,paidAt:t.paidAt}));
+ if(t.type==="income"&&t.subTransactions?.length){t.subTransactions=t.subTransactions.map(x=>x.expense?{...x,paid:true,paidAt:t.paidAt}:x);const generated=state.transactions.filter(x=>x.generatedFromIncomeId===t.id);generated.forEach(x=>{x.paid=true;x.paidAt=t.paidAt;x.paymentDate=paymentDate;x.paymentMethod=paymentMethod;x.paymentInstitution=paymentInstitution;x.paidAmount=x.amount;});}
  t.paymentDate=paymentDate;
  t.paymentMethod=paymentMethod;
  t.paymentInstitution=paymentInstitution;
@@ -5297,10 +5734,7 @@ function deleteTransaction(id){
    "Clique em Cancelar para manter o lançamento."
   ))return;
 
-  state.transactions=
-   state.transactions.filter(
-    x=>x.id!==id
-   );
+  state.transactions=state.transactions.filter(x=>x.id!==id && x.generatedFromIncomeId!==id);
 
  }
 
@@ -6485,6 +6919,7 @@ function showToast(
 function refreshAll(){
 
  populateCategorySelects();
+ setupMoneyInputs();
  populateContactLists();
  renderDashboard();
  renderTransactions();
