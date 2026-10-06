@@ -960,6 +960,15 @@ header{
 
 
 
+
+
+#categoryChartDetailsModal{display:none;position:fixed;inset:0;z-index:2147483640;align-items:center;justify-content:center;background:rgba(15,23,42,.58);padding:32px}
+#categoryChartDetailsModal.open{display:flex}
+#categoryChartDetailsPanel{position:relative;width:min(620px,90vw);max-height:min(760px,86vh);overflow:hidden;background:#fff;border-radius:18px;border:1px solid #e2e8f0;box-shadow:0 24px 70px rgba(15,23,42,.28);padding:22px}
+#categoryChartDetailsClose{position:absolute;top:14px;right:14px;width:34px;height:34px;border:0;border-radius:9px;background:#f1f5f9;color:#475569;font-size:22px;line-height:1;cursor:pointer}
+#categoryChartDetailsClose:hover{background:#e2e8f0;color:#0f172a}
+@media(max-width:639px){#categoryChartDetailsModal{padding:14px}#categoryChartDetailsPanel{width:100%;max-height:86vh;padding:18px}}
+
 /* Gráfico de categorias — expansão exclusiva no desktop */
 #categoryChartExpandModal{display:none}
 @media(min-width:1024px){
@@ -4338,6 +4347,9 @@ function renderCashFlowChart(sel){
 function renderCategoryChart(tx){
  if(categoryChart)categoryChart.destroy();
  window.categoryChart=categoryChart;
+ /* Mantém exatamente os lançamentos usados pelo gráfico para o detalhe
+    da categoria, sem alterar nenhuma regra de cálculo do dashboard. */
+ window.categoryChartTransactions=Array.isArray(tx)?tx.slice():[];
  const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+Number(t.amount);});
  let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[1];}
  categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",radius:window.innerWidth<=639?"85%":"100%",plugins:{legend:{position:"bottom",labels:{boxWidth:14,boxHeight:10,padding:8,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
@@ -7398,13 +7410,82 @@ document.addEventListener('click', function(e){
   </div>
 </div>
 
+<!-- Detalhes dos lançamentos da categoria selecionada -->
+<div id="categoryChartDetailsModal" aria-hidden="true">
+  <div id="categoryChartDetailsPanel">
+    <button type="button" id="categoryChartDetailsClose" aria-label="Fechar lançamentos">&times;</button>
+    <div class="flex items-start justify-between gap-4 pr-10">
+      <div>
+        <h3 id="categoryChartDetailsTitle" class="font-bold text-lg">Lançamentos</h3>
+        <p id="categoryChartDetailsCount" class="text-xs text-slate-400 mt-1"></p>
+      </div>
+    </div>
+    <div id="categoryChartDetailsBody" class="mt-4 max-h-[60vh] overflow-y-auto pr-1"></div>
+  </div>
+</div>
+
 <script id="fincontrol-category-chart-expand-desktop">
 (function(){
   let expandedChart=null;
 
+  function closeCategoryDetails(){
+    const modal=document.getElementById("categoryChartDetailsModal");
+    if(!modal)return;
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden","true");
+  }
+
+  function openCategoryDetails(categoryLabel){
+    const modal=document.getElementById("categoryChartDetailsModal");
+    const title=document.getElementById("categoryChartDetailsTitle");
+    const body=document.getElementById("categoryChartDetailsBody");
+    const count=document.getElementById("categoryChartDetailsCount");
+    if(!modal||!body)return;
+
+    const sourceTx=Array.isArray(window.categoryChartTransactions)
+      ? window.categoryChartTransactions
+      : [];
+
+    const items=sourceTx.filter(t=>{
+      if(t?.type!=="expense" || !t?.paid) return false;
+      return categoryName(t.categoryId)===categoryLabel;
+    });
+
+    if(title)title.textContent=categoryLabel;
+    if(count)count.textContent=`${items.length} lançamento${items.length===1?"":"s"}`;
+
+    if(!items.length){
+      body.innerHTML='<div class="text-sm text-slate-500 py-8 text-center">Nenhum lançamento encontrado para esta categoria.</div>';
+    }else{
+      body.innerHTML=items.map(t=>{
+        const date=t.date?new Date(t.date+"T00:00:00").toLocaleDateString("pt-BR"):"—";
+        const description=(t.description||t.name||"Lançamento sem descrição").toString();
+        const amount=money(Number(t.amount)||0);
+        const origin=t.creditCardInvoice?'<span class="text-[10px] text-blue-600 font-semibold">Cartão de crédito</span>':'';
+        return `<div class="flex items-center justify-between gap-4 border-b border-slate-100 py-3 last:border-b-0">
+          <div class="min-w-0">
+            <div class="font-semibold text-sm text-slate-700 truncate">${escapeHtmlForCategoryDetails(description)}</div>
+            <div class="text-xs text-slate-400 mt-1">${date} ${origin}</div>
+          </div>
+          <div class="font-bold text-sm text-rose-600 whitespace-nowrap">${amount}</div>
+        </div>`;
+      }).join("");
+    }
+
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden","false");
+  }
+
+  function escapeHtmlForCategoryDetails(value){
+    return String(value).replace(/[&<>'"]/g,function(ch){
+      return ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"})[ch];
+    });
+  }
+
   function closeExpandedCategoryChart(){
     const modal=document.getElementById("categoryChartExpandModal");
     if(!modal)return;
+    closeCategoryDetails();
     if(expandedChart){expandedChart.destroy();expandedChart=null;}
     modal.classList.remove("open");
     modal.setAttribute("aria-hidden","true");
@@ -7430,8 +7511,21 @@ document.addEventListener('click', function(e){
         maintainAspectRatio:false,
         cutout:"68%",
         radius:"100%",
+        onClick:function(event,elements){
+          if(!elements||!elements.length)return;
+          const index=elements[0].index;
+          const label=this.data.labels[index];
+          if(label && label!=="Sem despesas")openCategoryDetails(label);
+        },
         plugins:{
-          legend:{position:"bottom",labels:{boxWidth:16,boxHeight:12,padding:10,font:{size:12}}},
+          legend:{
+            position:"bottom",
+            labels:{boxWidth:16,boxHeight:12,padding:10,font:{size:12}},
+            onClick:function(event,legendItem){
+              const label=legendItem?.text;
+              if(label && label!=="Sem despesas")openCategoryDetails(label);
+            }
+          },
           tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}
         }
       }
@@ -7445,6 +7539,8 @@ document.addEventListener('click', function(e){
     const card=document.getElementById("categoryChartCard");
     const close=document.getElementById("categoryChartExpandClose");
     const modal=document.getElementById("categoryChartExpandModal");
+    const detailsClose=document.getElementById("categoryChartDetailsClose");
+    const detailsModal=document.getElementById("categoryChartDetailsModal");
     if(!card||!close||!modal)return;
 
     card.addEventListener("click",function(){
@@ -7454,8 +7550,15 @@ document.addEventListener('click', function(e){
     modal.addEventListener("click",function(e){
       if(e.target===modal)closeExpandedCategoryChart();
     });
+    if(detailsClose)detailsClose.addEventListener("click",closeCategoryDetails);
+    if(detailsModal)detailsModal.addEventListener("click",function(e){
+      if(e.target===detailsModal)closeCategoryDetails();
+    });
     document.addEventListener("keydown",function(e){
-      if(e.key==="Escape")closeExpandedCategoryChart();
+      if(e.key==="Escape"){
+        if(detailsModal?.classList.contains("open")) closeCategoryDetails();
+        else closeExpandedCategoryChart();
+      }
     });
     window.addEventListener("resize",function(){
       if(window.innerWidth<1024)closeExpandedCategoryChart();
