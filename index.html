@@ -4352,7 +4352,17 @@ function renderCategoryChart(tx){
  window.categoryChartTransactions=Array.isArray(tx)?tx.slice():[];
  const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+Number(t.amount);});
  let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[1];}
- categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",radius:window.innerWidth<=639?"85%":"100%",plugins:{legend:{position:"bottom",labels:{boxWidth:14,boxHeight:10,padding:8,font:{size:10}}},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
+ categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",radius:window.innerWidth<=639?"85%":"100%",onClick:function(event,elements){
+   /* No celular não existe a tela de expansão do desktop: o toque
+      diretamente na fatia abre os lançamentos da categoria. */
+   if(window.innerWidth>=1024 || !elements||!elements.length||typeof window.openCategoryChartDetails!=="function")return;
+   const label=this.data.labels[elements[0].index];
+   if(label && label!=="Sem despesas")window.openCategoryChartDetails(label);
+ },plugins:{legend:{position:"bottom",labels:{boxWidth:14,boxHeight:10,padding:8,font:{size:10}},onClick:function(event,legendItem){
+   if(window.innerWidth>=1024 || typeof window.openCategoryChartDetails!=="function")return;
+   const label=legendItem?.text;
+   if(label && label!=="Sem despesas")window.openCategoryChartDetails(label);
+ }},tooltip:{callbacks:{label:c=>`${c.label}: ${money(c.raw)}`}}}}});
  window.categoryChart=categoryChart;
 }
 
@@ -7475,6 +7485,9 @@ document.addEventListener('click', function(e){
     modal.classList.add("open");
     modal.setAttribute("aria-hidden","false");
   }
+
+  /* Expõe somente a abertura do detalhe para o gráfico principal no celular. */
+  window.openCategoryChartDetails=openCategoryDetails;
 
   function escapeHtmlForCategoryDetails(value){
     return String(value).replace(/[&<>'"]/g,function(ch){
