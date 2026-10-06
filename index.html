@@ -2836,6 +2836,11 @@ Confirmar baixa
         <label class="text-xs font-semibold text-slate-600">Categoria</label>
         <select id="automaticRuleCategory" required class="input mt-1"></select>
       </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-600">Nome fantasia</label>
+        <input id="automaticRuleFantasyName" class="input mt-1" placeholder="Ex.: Rei da Marmita">
+        <div class="text-[11px] text-slate-400 mt-1">Quando esta descrição aparecer na fatura, o sistema exibirá somente este nome.</div>
+      </div>
       <div class="flex justify-end gap-2">
         <button type="button" onclick="closeAutomaticRuleModal()" class="btn btn-secondary">Cancelar</button>
         <button class="btn btn-primary">Salvar regra</button>
@@ -2936,7 +2941,7 @@ let state={
   {id:"cat-pets",name:"Pets",type:"expense",system:true},
   {id:"cat-other-expense",name:"Outras saídas",type:"expense",system:true}
  ],
- settings:{name:"",currency:"BRL",automaticCategoryRules:{}},
+ settings:{name:"",currency:"BRL",automaticCategoryRules:{},automaticFantasyNameRules:{}},
  institutions:[],
  responsibles:[],
  privacy:false
@@ -2952,6 +2957,33 @@ const getAutomaticCategoryRules=()=>{
  return rules&&typeof rules==="object"&&!Array.isArray(rules)
   ?rules
   :{};
+};
+
+const getAutomaticFantasyNameRules=()=>{
+ const rules=state.settings?.automaticFantasyNameRules;
+ return rules&&typeof rules==="object"&&!Array.isArray(rules)
+  ?rules
+  :{};
+};
+
+const findAutomaticRuleKey=description=>{
+ const targetDescription=normalizeRuleText(description);
+ if(!targetDescription)return "";
+ const rules=getAutomaticCategoryRules();
+ return Object.entries(rules)
+  .map(([rule])=>rule)
+  .filter(rule=>{
+   const normalizedRule=normalizeRuleText(rule);
+   return normalizedRule&&targetDescription.includes(normalizedRule);
+  })
+  .sort((a,b)=>normalizeRuleText(b).length-normalizeRuleText(a).length)[0]||"";
+};
+
+const findAutomaticFantasyName=description=>{
+ const key=findAutomaticRuleKey(description);
+ if(!key)return "";
+ const names=getAutomaticFantasyNameRules();
+ return normalizeDescription(names[key]||"");
 };
 
 const normalizeRuleText=value=>normalizeDescription(value)
@@ -4756,6 +4788,7 @@ function addCreditCardItem(item={}){
  creditCardItems.push({
   id:item.id||uid("cc"),
   description:item.description||"",
+  displayName:item.displayName||findAutomaticFantasyName(item.description||"")||"",
   categoryId:item.categoryId||"",
   amount:Number(item.amount)||0,
   date:item.date||$("transactionDate").value||todayISO(),
@@ -4799,7 +4832,9 @@ function saveCreditCardItemDraft(){
  }
  const item={
   id:creditCardItemEditingIndex>=0?creditCardItems[creditCardItemEditingIndex].id:uid("cc"),
-  description,categoryId,amount,date,
+  description,
+  displayName:findAutomaticFantasyName(description)||"",
+  categoryId,amount,date,
   paid:$("transactionPaid").checked,
   imported:creditCardItemEditingIndex>=0?!!creditCardItems[creditCardItemEditingIndex].imported:false,
   createdAt:creditCardItemEditingIndex>=0?(creditCardItems[creditCardItemEditingIndex].createdAt||new Date().toISOString()):new Date().toISOString()
@@ -4879,7 +4914,7 @@ function parseCreditCardCSVText(text){
   const amount=parseBRNumber(cols[2]);
   if(!date||!Number.isFinite(amount)||amount<=0){invalid++;continue;}
 
-  items.push({id:uid("cc"),description,categoryId:findAutomaticCategoryId(description),amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
+  items.push({id:uid("cc"),description,displayName:findAutomaticFantasyName(description)||"",categoryId:findAutomaticCategoryId(description),amount,date,paid:!!$("transactionPaid")?.checked,imported:true,createdAt:new Date().toISOString()});
  }
  return {items,ignored,invalid};
 }
@@ -4965,7 +5000,7 @@ function renderCreditCardItems(){
    <div class="flex items-start gap-3">
     <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">${i+1}</div>
     <div class="min-w-0 flex-1">
-     <div class="font-semibold text-sm text-slate-800 truncate">${esc(x.description)}</div>
+     <div class="font-semibold text-sm text-slate-800 truncate">${esc(x.displayName||findAutomaticFantasyName(x.description)||x.description)}</div>
      <div class="credit-invoice-purchase-date text-[11px] text-slate-400 mt-1">${formatDate(x.date)} · ${pending?'<span class="text-amber-600 font-semibold">Classificação pendente</span>':esc(categoryName(x.categoryId))}${x.imported?' · <span class="text-blue-500">Importado</span>':''}</div>
     </div>
     <div class="text-right shrink-0">
@@ -5955,19 +5990,24 @@ function renderAutomaticRules(){
  const c=$("automaticRulesList");
  if(!c)return;
  const rules=getAutomaticCategoryRules();
+ const names=getAutomaticFantasyNameRules();
  const entries=Object.entries(rules).sort((a,b)=>a[0].localeCompare(b[0],"pt-BR",{sensitivity:"base"}));
- c.innerHTML=entries.length?entries.map(([description,category])=>`
+ c.innerHTML=entries.length?entries.map(([description,category])=>{
+  const fantasyName=normalizeDescription(names[description]||"");
+  return `
   <div class="px-4 sm:px-5 py-3 flex items-center gap-3 min-w-0">
    <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">${uiIcon("down",15)}</div>
    <div class="min-w-0 flex-1">
     <div class="font-semibold text-sm text-slate-800 truncate">${esc(description)}</div>
     <div class="text-[11px] text-slate-400 mt-0.5">Descrição contém <span class="font-semibold text-slate-500">${esc(description)}</span> → <span class="font-semibold text-slate-600">${esc(category)}</span></div>
+    ${fantasyName?`<div class="text-[11px] text-emerald-600 mt-0.5">Nome fantasia: <span class="font-semibold">${esc(fantasyName)}</span></div>`:""}
    </div>
    <div class="flex items-center gap-1 shrink-0">
     <button onclick="editAutomaticRule(this.dataset.rule)" data-rule="${esc(description)}" class="w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 flex items-center justify-center" title="Editar regra">✎</button>
     <button onclick="deleteAutomaticRule(this.dataset.rule)" data-rule="${esc(description)}" class="w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 flex items-center justify-center" title="Excluir regra">×</button>
    </div>
-  </div>`).join(""):`<div class="p-8 text-center text-slate-400 text-sm">Nenhuma regra automática cadastrada.</div>`;
+  </div>`;
+ }).join(""):`<div class="p-8 text-center text-slate-400 text-sm">Nenhuma regra automática cadastrada.</div>`;
 }
 
 function populateAutomaticRuleCategories(selected=""){
@@ -5979,10 +6019,12 @@ function populateAutomaticRuleCategories(selected=""){
 
 function openAutomaticRuleModal(description=""){
  const rules=getAutomaticCategoryRules();
+ const names=getAutomaticFantasyNameRules();
  const editing=description&&Object.prototype.hasOwnProperty.call(rules,description);
  $("automaticRuleForm").reset();
  $("automaticRuleId").value=editing?description:"";
  $("automaticRuleDescription").value=editing?description:"";
+ $("automaticRuleFantasyName").value=editing?normalizeDescription(names[description]||""):"";
  populateAutomaticRuleCategories(editing?rules[description]:"");
  $("automaticRuleModalTitle").textContent=editing?"Editar regra automática":"Nova regra automática";
  $("automaticRuleModal").classList.add("open");
@@ -5994,10 +6036,13 @@ function editAutomaticRule(description){ openAutomaticRuleModal(description); }
 
 function deleteAutomaticRule(description){
  const rules={...getAutomaticCategoryRules()};
+ const names={...getAutomaticFantasyNameRules()};
  if(!Object.prototype.hasOwnProperty.call(rules,description))return;
  if(!confirm(`Excluir a regra automática "${description}"?`))return;
  delete rules[description];
+ delete names[description];
  state.settings.automaticCategoryRules=rules;
+ state.settings.automaticFantasyNameRules=names;
  saveState();
  renderAutomaticRules();
  showToast("Regra automática excluída.");
@@ -6008,13 +6053,21 @@ $("automaticRuleForm")?.addEventListener("submit",e=>{
  const oldDescription=$("automaticRuleId").value;
  const description=normalizeDescription($("automaticRuleDescription").value);
  const category=normalizeDescription($("automaticRuleCategory").value);
+ const fantasyName=normalizeDescription($("automaticRuleFantasyName").value);
  if(!description||!category)return;
  const rules={...getAutomaticCategoryRules()};
+ const names={...getAutomaticFantasyNameRules()};
  const duplicate=Object.keys(rules).find(key=>normalizeRuleText(key)===normalizeRuleText(description)&&key!==oldDescription);
  if(duplicate){showToast("Já existe uma regra para essa descrição.","error");return;}
- if(oldDescription&&oldDescription!==description)delete rules[oldDescription];
+ if(oldDescription&&oldDescription!==description){
+  delete rules[oldDescription];
+  delete names[oldDescription];
+ }
  rules[description]=category;
+ if(fantasyName)names[description]=fantasyName;
+ else delete names[description];
  state.settings.automaticCategoryRules=rules;
+ state.settings.automaticFantasyNameRules=names;
  saveState();
  closeAutomaticRuleModal();
  renderAutomaticRules();
