@@ -4228,11 +4228,8 @@ function getTransactionMonthItems(month){
  });
 }
 
-// Totais financeiros do dashboard usam o lançamento principal da fatura.
-// Isso é importante porque t.amount já representa o valor líquido da fatura
-// (subtotal dos lançamentos + diferença de pagamento), enquanto
-// getAnalyticsTransactions() abre a fatura em seus sublançamentos para
-// alimentar os gráficos por categoria.
+// Cards e somatórios financeiros usam o valor efetivamente pago/recebido.
+// Gráficos usam getTransactionMonthItems(), que abre faturas nos lançamentos internos.
 function getDashboardMonthItems(month){
  return state.transactions.filter(t=>{
    const referenceDate = t.paid && t.paymentDate
@@ -4262,19 +4259,19 @@ function setDashboardComparison(id,current,previous){
 
 function renderDashboard(){
  const sel=dashboardSelectedMonth||monthISO();if(!sel)return;
- // Cards, resultado e fluxo de caixa usam o lançamento principal da fatura,
- // cujo amount já contém a diferença de pagamento.
+ // Cards e resultado usam o valor efetivamente pago/recebido.
+ // Os gráficos usam os valores dos lançamentos internos das faturas.
  const dashboardTx=getDashboardMonthItems(sel);
  const categoryTx=getTransactionMonthItems(sel);
  const previousMonth=getPreviousMonth(sel);
  const previousCategoryTx=getTransactionMonthItems(previousMonth);
  const previousDashboardTx=getDashboardMonthItems(previousMonth);
- const inc=dashboardTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
- const exp=dashboardTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const inc=dashboardTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.paidAmount??t.amount),0);
+ const exp=dashboardTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.paidAmount??t.amount),0);
  const expected=dashboardTx.filter(t=>t.type==="expense"&&!t.paid).reduce((s,t)=>s+Number(t.amount),0);
  const result=inc-exp;
- const previousInc=previousDashboardTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
- const previousExp=previousDashboardTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.amount),0);
+ const previousInc=previousDashboardTx.filter(t=>t.type==="income"&&t.paid).reduce((s,t)=>s+Number(t.paidAmount??t.amount),0);
+ const previousExp=previousDashboardTx.filter(t=>t.type==="expense"&&t.paid).reduce((s,t)=>s+Number(t.paidAmount??t.amount),0);
  const previousResult=previousInc-previousExp;
  $("cardIncome").textContent=money(inc);
  $("cardExpense").textContent=money(exp);
@@ -4340,7 +4337,7 @@ function renderAlerts(){
 function renderCashFlowChart(sel){
  if(cashFlowChart)cashFlowChart.destroy();
  const d=new Date(sel+"-01T00:00:00"),labels=[],inc=[],exp=[];
- for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1),k=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`,tx=getDashboardMonthItems(k).filter(t=>t.paid);labels.push(x.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""));inc.push(tx.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0));exp.push(tx.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0));}
+ for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1),k=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`,tx=getTransactionMonthItems(k).filter(t=>t.paid);labels.push(x.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""));inc.push(tx.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0));exp.push(tx.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0));}
  cashFlowChart=new Chart($("cashFlowChart"),{type:"bar",data:{labels,datasets:[{label:"Entradas",data:inc,borderRadius:7},{label:"Saídas",data:exp,borderRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${money(c.raw)}`}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>money(v)},grid:{color:"#f1f5f9"}},x:{grid:{display:false}}}}});
 }
 
