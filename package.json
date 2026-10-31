@@ -1,0 +1,8 @@
+{
+  "name": "fincontrol-render",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FinControl com armazenamento em disco persistente no Render",
+  "engines": { "node": ">=22" },
+  "scripts": { "start": "node server.cjs", "test": "node --test test.cjs" }
+}
