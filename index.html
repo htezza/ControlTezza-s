@@ -2058,20 +2058,20 @@ body{padding-bottom:92px!important}
   <p class="text-xs sm:text-sm text-slate-500">Entradas do mês</p>
   <h3 id="cardIncome" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-emerald-600">R$ 0,00</h3>
   <div id="cardIncomeComparison" class="privacy-value mt-1 text-[10px] sm:text-xs text-slate-400">— vs. mês anterior</div>
-  <div class="mt-1 text-[10px] sm:text-xs text-slate-400">Receitas recebidas</div>
+  <div id="cardIncomeOrigin" class="privacy-value mt-1 text-[10px] sm:text-xs text-slate-400">Receitas recebidas</div>
 </div>
 
 <div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver lançamentos que compõem as saídas do mês" onclick="goToDashboardTransactions('expense')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('expense')}">
   <p class="text-xs sm:text-sm text-slate-500">Saídas do mês</p>
   <h3 id="cardExpense" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-rose-600">R$ 0,00</h3>
   <div id="cardExpenseComparison" class="privacy-value mt-1 text-[10px] sm:text-xs text-slate-400">— vs. mês anterior</div>
-  <div class="mt-1 text-[10px] sm:text-xs text-slate-400">Gastos pagos</div>
+  <div id="cardExpenseOrigin" class="privacy-value mt-1 text-[10px] sm:text-xs text-slate-400">Gastos pagos</div>
 </div>
 
 <div class="card p-3 sm:p-4 cursor-pointer" role="button" tabindex="0" title="Ver despesas previstas do mês" onclick="goToDashboardTransactions('expected')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('expected')}">
-  <p class="text-xs sm:text-sm text-slate-500">Despesas previstas</p>
+  <p class="text-xs sm:text-sm text-slate-500">Contas do mês em aberto</p>
   <h3 id="cardExpected" class="privacy-value text-base sm:text-xl font-bold mt-1 sm:mt-1.5 text-orange-600">R$ 0,00</h3>
-  <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Despesas ainda não pagas</div>
+  <div class="mt-1 sm:mt-2 text-[10px] sm:text-xs text-slate-400">Vencem neste mês e continuam em aberto</div>
 </div>
 
 <div class="card p-3 sm:p-4">
@@ -2083,6 +2083,7 @@ body{padding-bottom:92px!important}
  
   </div>
 
+  <div class="card p-3 mb-4 text-xs text-slate-500">Entradas, saídas e resultado consideram o mês do pagamento ou recebimento. Contas em aberto consideram o vencimento. Os gráficos de lançamentos comuns seguem o caixa; faturas mantêm o tratamento atual.</div>
   <div id="dashboardAlerts" class="hidden card p-4 mb-6 border-orange-200 bg-orange-50 cursor-pointer" role="button" tabindex="0" title="Ver compromissos atrasados e vencendo nos próximos 3 dias" onclick="goToDashboardTransactions('alerts')" onkeydown="if(event.key==='Enter'||event.key===' ') {event.preventDefault();goToDashboardTransactions('alerts')}"></div>
 
   <div class="grid grid-cols-1 xl:grid-cols-5 gap-3 mb-4">
@@ -4218,11 +4219,49 @@ function getAnalyticsTransactions(){
  });
  return result;
 }
+
+// O vencimento preserva o vínculo; a data de pagamento determina o caixa.
+function transactionCashDate(t){
+ if(t.isCreditCardInvoice || t.creditCardInvoice)return t.paid&&t.paymentDate?t.paymentDate:t.date;
+ return t.paid ? (t.paymentDate || t.paymentHistory?.slice(-1)[0]?.date || t.date) : t.date;
+}
+function transactionCashAmount(t){
+ return Number(t.creditCardInvoice ? t.amount : (t.paid ? t.paidAmount??t.amount : t.amount))||0;
+}
+function transactionInMonth(t,month,cashOnly=false){
+ if(!month)return true;
+ const cashMonth=(transactionCashDate(t)||'').slice(0,7);
+ if(cashOnly)return t.paid&&cashMonth===month;
+ if(t.isCreditCardInvoice)return (t.date||'').slice(0,7)===month;
+ return (t.date||'').slice(0,7)===month || (t.paid&&cashMonth===month);
+}
+function transactionMonthLabel(date){
+ if(!date)return 'não informado';
+ return new Date(date.slice(0,7)+'-01T00:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+}
+function transactionTimingHTML(t,month=''){
+ if(t.isCreditCardInvoice||t.creditCardInvoice)return '';
+ const paid=t.type==='income'?'Recebida':'Paga';
+ const origin=(t.date||'').slice(0,7),cash=(transactionCashDate(t)||'').slice(0,7);
+ let text=t.paid ? paid+' em '+formatDate(transactionCashDate(t)) : 'Vencimento: '+formatDate(t.date);
+ if(t.paid&&origin!==cash){
+  text+=' · Conta de '+transactionMonthLabel(t.date);
+  if(month&&cash!==month)text+=' · Sem movimentação de caixa neste mês';
+ }
+ return '<div class="text-xs text-slate-500 mt-1">'+esc(text)+'</div>';
+}
+function listedCashAmount(t,month){
+ return t.paid&&(!month||(transactionCashDate(t)||'').slice(0,7)===month)?transactionCashAmount(t):0;
+}
+function transactionTotalsLabel(items,month){
+ const cash=items.reduce((s,t)=>s+listedCashAmount(t,month),0);
+ const pending=items.filter(t=>!t.paid).reduce((s,t)=>s+Number(t.amount||0),0);
+ return money(cash)+' movimentados'+(pending?' · '+money(pending)+' em aberto':'');
+}
+
 function getTransactionMonthItems(month){
  return getAnalyticsTransactions().filter(t=>{
-   const referenceDate = t.paid && t.paymentDate
-     ? t.paymentDate
-     : t.date;
+   const referenceDate = transactionCashDate(t);
 
    return (referenceDate||"").slice(0,7) === month;
  });
@@ -4232,9 +4271,7 @@ function getTransactionMonthItems(month){
 // Gráficos usam getTransactionMonthItems(), que abre faturas nos lançamentos internos.
 function getDashboardMonthItems(month){
  return state.transactions.filter(t=>{
-   const referenceDate = t.paid && t.paymentDate
-     ? t.paymentDate
-     : t.date;
+   const referenceDate = transactionCashDate(t);
    return (referenceDate||"").slice(0,7) === month;
  });
 }
@@ -4277,6 +4314,11 @@ function renderDashboard(){
  $("cardExpense").textContent=money(exp);
  $("cardExpected").textContent=money(expected);
  $("cardResult").textContent=money(result);
+ for(const [type,id] of [['income','cardIncomeOrigin'],['expense','cardExpenseOrigin']]){
+  const paid=dashboardTx.filter(t=>t.type===type&&t.paid);
+  const other=paid.filter(t=>!t.isCreditCardInvoice&&(t.date||'').slice(0,7)!==sel).reduce((s,t)=>s+transactionCashAmount(t),0);
+  $(id).textContent=other ? money(other)+' referentes a contas de outros meses' : (type==='income'?'Recebido neste mês':'Pago neste mês');
+ }
  setDashboardComparison("cardIncomeComparison",inc,previousInc);
  setDashboardComparison("cardExpenseComparison",exp,previousExp);
  setDashboardComparison("cardResultComparison",result,previousResult);
@@ -4337,7 +4379,7 @@ function renderAlerts(){
 function renderCashFlowChart(sel){
  if(cashFlowChart)cashFlowChart.destroy();
  const d=new Date(sel+"-01T00:00:00"),labels=[],inc=[],exp=[];
- for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1),k=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`,tx=getTransactionMonthItems(k).filter(t=>t.paid);labels.push(x.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""));inc.push(tx.filter(t=>t.type==="income").reduce((s,t)=>s+Number(t.amount),0));exp.push(tx.filter(t=>t.type==="expense").reduce((s,t)=>s+Number(t.amount),0));}
+ for(let i=5;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1),k=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}`,tx=getTransactionMonthItems(k).filter(t=>t.paid);labels.push(x.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""));inc.push(tx.filter(t=>t.type==="income").reduce((s,t)=>s+transactionCashAmount(t),0));exp.push(tx.filter(t=>t.type==="expense").reduce((s,t)=>s+transactionCashAmount(t),0));}
  cashFlowChart=new Chart($("cashFlowChart"),{type:"bar",data:{labels,datasets:[{label:"Entradas",data:inc,borderRadius:7},{label:"Saídas",data:exp,borderRadius:7}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${money(c.raw)}`}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>money(v)},grid:{color:"#f1f5f9"}},x:{grid:{display:false}}}}});
 }
 
@@ -4347,8 +4389,8 @@ function renderCategoryChart(tx){
  /* Mantém exatamente os lançamentos usados pelo gráfico para o detalhe
     da categoria, sem alterar nenhuma regra de cálculo do dashboard. */
  window.categoryChartTransactions=Array.isArray(tx)?tx.slice():[];
- const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+Number(t.amount);});
- let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[1];}
+ const g={};tx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{const n=categoryName(t.categoryId);g[n]=(g[n]||0)+transactionCashAmount(t);});
+ let labels=Object.keys(g),data=Object.values(g);if(!labels.length){labels=["Sem despesas"];data=[0];}
  categoryChart=new Chart($("categoryChart"),{type:"doughnut",data:{labels,datasets:[{data}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",radius:window.innerWidth<=639?"85%":"100%",onClick:function(event,elements){
    /* No celular não existe a tela de expansão do desktop: o toque
       diretamente na fatia abre os lançamentos da categoria. */
@@ -4372,11 +4414,11 @@ function renderCategoryEvolution(currentTx,previousTx,currentMonth,previousMonth
  const previous={};
  currentTx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{
   const n=categoryName(t.categoryId);
-  current[n]=(current[n]||0)+Number(t.amount);
+  current[n]=(current[n]||0)+transactionCashAmount(t);
  });
  previousTx.filter(t=>t.type==="expense"&&t.paid).forEach(t=>{
   const n=categoryName(t.categoryId);
-  previous[n]=(previous[n]||0)+Number(t.amount);
+  previous[n]=(previous[n]||0)+transactionCashAmount(t);
  });
 
  const categories=[...new Set([...Object.keys(current),...Object.keys(previous)])]
@@ -4402,7 +4444,7 @@ function renderCategoryEvolution(currentTx,previousTx,currentMonth,previousMonth
   if(prev===0){
    if(cur>0){
     variationText="Novo";
-    variationClass="text-emerald-600";
+    variationClass="text-slate-400";
    }else{
     variationText="0,0%";
    }
@@ -4423,8 +4465,8 @@ function renderCategoryEvolution(currentTx,previousTx,currentMonth,previousMonth
 }
 
 function renderRecentTransactions(){
- const c=$("recentTransactions"),tx=[...state.transactions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
- c.innerHTML=tx.length?tx.map(t=>{const invoice=!!t.isCreditCardInvoice,n=Array.isArray(t.subTransactions)?t.subTransactions.length:0;return `<div class="px-5 py-4 flex items-center gap-4"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${t.type==="income"?"bg-emerald-50 text-emerald-600":"bg-rose-50 text-rose-600"} flex items-center justify-center font-bold">${uiIcon(invoice?"card":t.type==="income"?"up":"down",16)}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm truncate">${esc(t.description)}</div><div class="text-xs text-slate-400 mt-1">${formatDate(t.date)} · ${invoice?`Fatura · ${n} lançamento(s)`:esc(categoryName(t.categoryId))}${t.institution?` · ${esc(t.institution)}`:""}</div></div><div class="text-right"><div class="privacy-value font-bold text-sm ${t.type==="income"?"text-emerald-600":"text-rose-600"}">${t.type==="income"?"+":"-"} ${money(t.amount)}</div><div class="mt-1">${statusHTML(status(t))}</div></div></div>`;}).join(""):`<div class="p-10 text-center text-slate-400">Nenhum lançamento cadastrado.</div>`;
+ const c=$("recentTransactions"),tx=[...state.transactions].sort((a,b)=>(transactionCashDate(b)||"").localeCompare(transactionCashDate(a)||"")).slice(0,6);
+ c.innerHTML=tx.length?tx.map(t=>{const invoice=!!t.isCreditCardInvoice,n=Array.isArray(t.subTransactions)?t.subTransactions.length:0;return `<div class="px-5 py-4 flex items-center gap-4"><div class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${t.type==="income"?"bg-emerald-50 text-emerald-600":"bg-rose-50 text-rose-600"} flex items-center justify-center font-bold">${uiIcon(invoice?"card":t.type==="income"?"up":"down",16)}</div><div class="min-w-0 flex-1"><div class="font-semibold text-sm truncate">${esc(t.description)}</div><div class="text-xs text-slate-400 mt-1">${formatDate(t.date)} · ${invoice?`Fatura · ${n} lançamento(s)`:esc(categoryName(t.categoryId))}${t.institution?` · ${esc(t.institution)}`:""}</div></div><div class="text-right"><div class="privacy-value font-bold text-sm ${t.type==="income"?"text-emerald-600":"text-rose-600"}">${t.type==="income"?"+":"-"} ${money(getTransactionDisplayAmount(t))}</div><div class="mt-1">${statusHTML(status(t))}${transactionTimingHTML(t)}</div></div></div>`;}).join(""):`<div class="p-10 text-center text-slate-400">Nenhum lançamento cadastrado.</div>`;
 }
 
 function updateTransactionFilterBadge(){
@@ -4483,7 +4525,7 @@ function renderTransactions(){
    const z=`${lim.getFullYear()}-${String(lim.getMonth()+1).padStart(2,"0")}-${String(lim.getDate()).padStart(2,"0")}`;
    tx=tx.filter(t=>!t.paid&&t.date<=z);
  }
- else if(m)tx=tx.filter(t=>t.date.slice(0,7)===m);
+ else if(m)tx=tx.filter(t=>transactionInMonth(t,m,transactionQuickFilter==='income'||transactionQuickFilter==='expense'));
 
  if(cat)tx=tx.filter(t=>
    t.categoryId===cat ||
@@ -4505,6 +4547,9 @@ function renderTransactions(){
    return a.date.localeCompare(b.date);
  });
 
+ let note=$('transactionTimingNote');
+ if(!note){note=document.createElement('div');note.id='transactionTimingNote';note.className='p-3 text-xs text-slate-500 bg-blue-50';$('transactionsTable').closest('table').before(note);}
+ note.textContent=(transactionQuickFilter==='income'||transactionQuickFilter==='expense')?'Esta lista mostra os pagamentos ou recebimentos que compõem o card do mês.':'A lista reúne contas com vencimento no mês e pagamentos de contas de outros meses. Totais movimentados contam somente o caixa do mês selecionado; contas quitadas em outro mês aparecem apenas como referência. Faturas mantêm sua regra atual.';
  $("transactionsEmpty").classList.toggle("hidden",!!tx.length);
 
  const renderRow=t=>{
@@ -4522,7 +4567,7 @@ function renderTransactions(){
 
    return `<tr class="${s==="overdue"?"alert-row":""} hover:bg-slate-50">
      <td class="px-5 py-4 text-sm">${formatDate(t.date)}</td>
-     <td class="px-5 py-4"><div class="font-semibold text-sm flex items-center gap-2">${invoice?`<span class="text-blue-600">▣</span>`:""}${esc(t.description)}</div>${group}</td>
+     <td class="px-5 py-4"><div class="font-semibold text-sm flex items-center gap-2">${invoice?`<span class="text-blue-600">▣</span>`:""}${esc(t.description)}</div>${group}${transactionTimingHTML(t,m)}</td>
      <td class="px-5 py-4 text-sm text-slate-500">${esc(t.institution||"—")}</td>
      <td class="px-5 py-4 text-sm text-slate-500">${esc(t.responsible||"—")}</td>
      <td class="px-5 py-4 text-sm text-slate-500">${invoice?`<span class="text-blue-600 font-semibold">Múltiplas categorias</span>`:esc(categoryName(t.categoryId))}</td>
@@ -4570,7 +4615,7 @@ function renderTransactions(){
            <span class="text-[11px] font-bold uppercase tracking-wide">${title}</span>
            <span class="text-[10px] text-slate-400 font-medium">${items.length} lançamento${items.length===1?"":"s"}</span>
          </div>
-         <span class="text-sm font-bold ${color}">${income?"+":"-"} ${money(sectionTotal)}</span>
+         <span class="text-sm font-bold ${color}">${transactionTotalsLabel(items,m)}</span>
        </div>
      </td>
    </tr>
@@ -4583,7 +4628,7 @@ function renderTransactions(){
              <span class="font-semibold text-sm text-slate-700 truncate">${esc(name)}</span>
              <span class="text-[10px] text-slate-400 whitespace-nowrap">${group.length} lançamento${group.length===1?"":"s"}</span>
            </div>
-           <span class="text-sm font-bold ${color} whitespace-nowrap">${income?"+":"-"} ${money(total)}</span>
+           <span class="text-sm font-bold ${color} whitespace-nowrap">${transactionTotalsLabel(group,m)}</span>
          </div>
        </td>
      </tr>${group.map(renderRow).join("")}`;
@@ -5896,7 +5941,7 @@ function renderCommitments(){
 
  const open=
   state.transactions.filter(
-   t=>!t.paid
+   t=>!t.paid&&t.type==="expense"
   );
 
  const todayISOValue=todayISO();
@@ -7470,12 +7515,12 @@ document.addEventListener('click', function(e){
       body.innerHTML=items.map(t=>{
         const date=t.date?new Date(t.date+"T00:00:00").toLocaleDateString("pt-BR"):"—";
         const description=(t.description||t.name||"Lançamento sem descrição").toString();
-        const amount=money(Number(t.amount)||0);
+        const amount=money(transactionCashAmount(t));
         const origin=t.creditCardInvoice?'<span class="text-[10px] text-blue-600 font-semibold">Cartão de crédito</span>':'';
         return `<div class="flex items-center justify-between gap-4 border-b border-slate-100 py-3 last:border-b-0">
           <div class="min-w-0">
             <div class="font-semibold text-sm text-slate-700 truncate">${escapeHtmlForCategoryDetails(description)}</div>
-            <div class="text-xs text-slate-400 mt-1">${date} ${origin}</div>
+            <div class="text-xs text-slate-400 mt-1">${date} ${origin}</div>${transactionTimingHTML(t)}
           </div>
           <div class="font-bold text-sm text-rose-600 whitespace-nowrap">${amount}</div>
         </div>`;
